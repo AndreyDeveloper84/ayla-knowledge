@@ -163,6 +163,14 @@ class KnowledgeValidatorTests(unittest.TestCase):
                 f"expected missing-section error for {section!r}",
             )
 
+    def test_generated_domain_registry_matches_schema(self) -> None:
+        from scripts.render_domain_registry import OUTPUT_PATH, render_registry
+
+        self.assertEqual(
+            render_registry(self.schema),
+            OUTPUT_PATH.read_text(encoding="utf-8"),
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
