@@ -1,7 +1,10 @@
-schema_version: "1.5"
+schema_version: "1.6"
 specification: "../00 Foundation/Ayla Knowledge Architecture Specification.md"
 
 schema_changes:
+  "1.6":
+    - register decision-log document type with required normative sections
+    - validator rejects document types missing from document_type_rules
   "1.5":
     - require core normative sections for constitution documents
   "1.4":
@@ -336,6 +339,12 @@ document_type_rules:
       - revision
       - amendments
       - superseded_by
+  decision-log:
+    normative: true
+    require_sections:
+      - Назначение
+      - Реестр решений
+      - Change Log
   moc:
     normative: false
   glossary:

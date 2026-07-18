@@ -82,6 +82,53 @@ class KnowledgeValidatorTests(unittest.TestCase):
             any("Missing Foundation" in warning for warning in reporter.warnings)
         )
 
+    def test_unknown_document_type_is_rejected(self) -> None:
+        node = Node(
+            path=ROOT / "00 Foundation" / "Example.md",
+            metadata={
+                "node_id": "ayla.example",
+                "title": "Example",
+                "type": "definitely-not-a-real-type",
+                "source_kind": "canonical",
+                "system_owner": ["ayla-knowledge"],
+            },
+            body="",
+        )
+        reporter = Reporter()
+
+        check_metadata(node, self.schema, reporter)
+
+        self.assertTrue(
+            any("unknown document type" in error for error in reporter.errors)
+        )
+
+    def test_decision_log_type_requires_normative_sections(self) -> None:
+        from scripts.validate_knowledge import check_required_sections
+
+        node = Node(
+            path=ROOT / "02 Strategy" / "Ayla Decision Log.md",
+            metadata={
+                "node_id": "ayla.example.decision-log",
+                "title": "Example Decision Log",
+                "type": "decision-log",
+                "source_kind": "canonical",
+                "system_owner": ["shared"],
+            },
+            body="# Empty\n",
+        )
+        reporter = Reporter()
+
+        check_required_sections(node, self.schema, reporter)
+
+        for section in ("Назначение", "Реестр решений", "Change Log"):
+            self.assertTrue(
+                any(
+                    f"missing required section {section!r}" in error
+                    for error in reporter.errors
+                ),
+                f"expected missing-section error for {section!r}",
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -208,6 +208,10 @@ def check_metadata(
                     node.label, f"{field} contains unsupported value {value!r}"
                 )
 
+    doc_type = metadata.get("type")
+    if doc_type is not None and doc_type not in schema.get("document_type_rules", {}):
+        reporter.error(node.label, f"unknown document type {doc_type!r}")
+
     node_id = metadata.get("node_id")
     node_id_pattern = (
         schema.get("field_constraints", {})
