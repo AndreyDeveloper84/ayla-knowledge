@@ -30,7 +30,9 @@ python -m unittest discover -s tests -v
 
 ## Начать здесь
 
+- [Ayla Root MOC](Ayla.md)
 - [Knowledge Architecture Specification](00%20Foundation/Ayla%20Knowledge%20Architecture%20Specification.md)
 - [Ayla Constitution](00%20Foundation/Ayla%20Constitution.md)
+- [Ayla Decision Log](02%20Strategy/Ayla%20Decision%20Log.md)
 - [Machine-readable schema](.knowledge/schema.yaml)
 - [Mirror source manifest](.knowledge/sources-manifest.yaml)
