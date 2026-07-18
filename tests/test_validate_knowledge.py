@@ -129,6 +129,40 @@ class KnowledgeValidatorTests(unittest.TestCase):
                 f"expected missing-section error for {section!r}",
             )
 
+    def test_terminology_standard_requires_normative_sections(self) -> None:
+        from scripts.validate_knowledge import check_required_sections
+
+        node = Node(
+            path=ROOT / "00 Foundation" / "Ayla Glossary.md",
+            metadata={
+                "node_id": "ayla.example.glossary",
+                "title": "Example Glossary",
+                "type": "terminology-standard",
+                "source_kind": "canonical",
+                "system_owner": ["ayla-knowledge"],
+            },
+            body="# Empty\n",
+        )
+        reporter = Reporter()
+
+        check_required_sections(node, self.schema, reporter)
+
+        for section in (
+            "Purpose and authority",
+            "Правила использования",
+            "Key term authority matrix",
+            "Change process",
+            "Definition of Done",
+            "Change Log",
+        ):
+            self.assertTrue(
+                any(
+                    f"missing required section {section!r}" in error
+                    for error in reporter.errors
+                ),
+                f"expected missing-section error for {section!r}",
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

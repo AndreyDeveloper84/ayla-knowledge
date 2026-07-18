@@ -1,7 +1,9 @@
-schema_version: "1.6"
+schema_version: "1.7"
 specification: "../00 Foundation/Ayla Knowledge Architecture Specification.md"
 
 schema_changes:
+  "1.7":
+    - require core normative sections for terminology-standard documents
   "1.6":
     - register decision-log document type with required normative sections
     - validator rejects document types missing from document_type_rules
@@ -351,6 +353,13 @@ document_type_rules:
     normative: false
   terminology-standard:
     normative: true
+    require_sections:
+      - Purpose and authority
+      - Правила использования
+      - Key term authority matrix
+      - Change process
+      - Definition of Done
+      - Change Log
   dashboard:
     normative: false
   source-placeholder:
