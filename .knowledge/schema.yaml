@@ -1,5 +1,12 @@
-schema_version: "1.4"
+schema_version: "1.5"
 specification: "../00 Foundation/Ayla Knowledge Architecture Specification.md"
+
+schema_changes:
+  "1.5":
+    - require core normative sections for constitution documents
+  "1.4":
+    - establish stable filenames and node IDs
+    - add staged-migration validation profile
 
 versioning:
   canonical_filename:
@@ -294,6 +301,15 @@ document_type_rules:
       - Change Log
   constitution:
     normative: true
+    require_sections:
+      - Преамбула
+      - Термины
+      - Статья I. Миссия и предметная область Ayla
+      - Статья IV. Экономическая нейтральность
+      - Статья XII. Границы компетенции, безопасность и соразмерность
+      - Статья XIV. Автономия, согласия и приватность
+      - Управление Конституцией
+      - Заключительное положение
   foundation:
     normative: true
   product-thesis:

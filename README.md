@@ -31,5 +31,6 @@ python -m unittest discover -s tests -v
 ## Начать здесь
 
 - [Knowledge Architecture Specification](00%20Foundation/Ayla%20Knowledge%20Architecture%20Specification.md)
+- [Ayla Constitution](00%20Foundation/Ayla%20Constitution.md)
 - [Machine-readable schema](.knowledge/schema.yaml)
 - [Mirror source manifest](.knowledge/sources-manifest.yaml)
