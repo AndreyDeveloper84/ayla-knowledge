@@ -1,0 +1,373 @@
+schema_version: "1.4"
+specification: "../00 Foundation/Ayla Knowledge Architecture Specification.md"
+
+versioning:
+  canonical_filename:
+    stable: true
+    prohibit_semantic_version_suffix: true
+  node_id:
+    stable: true
+    prohibit_semantic_version_suffix: true
+  revision_history:
+    source: git
+  semantic_version_field: version
+
+validation_profiles:
+  default:
+    applies_to: all-active-knowledge-nodes
+  staged_migration:
+    when:
+      status: review
+      activation_status: pending-infrastructure
+    missing_relationship_targets: warning
+
+required_fields:
+  - node_id
+  - title
+  - type
+  - status
+  - version
+  - owner
+  - knowledge_area
+  - system_owner
+  - source_kind
+  - classification
+  - data_sensitivity
+  - security_sensitivity
+  - ai_indexing
+  - export_policy
+  - updated
+  - review_cycle
+
+enums:
+  status:
+    - idea
+    - draft
+    - review
+    - approved
+    - approved-with-amendments
+    - implemented
+    - planned
+    - scheduled
+    - in-progress
+    - blocked
+    - delivered
+    - cancelled
+    - deprecated
+    - superseded
+    - archived
+  activation_status:
+    - pending-infrastructure
+    - active
+    - suspended
+  source_kind:
+    - canonical
+    - mirror
+    - external
+  knowledge_area:
+    - foundation
+    - product
+    - strategy
+    - ai-system
+    - domain-model
+    - architecture
+    - safety-governance
+    - design
+    - business
+    - research
+    - operations
+    - sources
+  system_owner:
+    - ayla-platform
+    - ayla-ai-core
+    - ayla-conversation
+    - ayla-user-context
+    - ayla-recommendation
+    - ayla-booking
+    - ayla-provider-platform
+    - ayla-mobile
+    - ayla-mini-app
+    - ayla-knowledge
+    - shared
+    - external
+    - to-be-confirmed
+  source_repository:
+    - beautygo_backend
+    - ai-bot-platform
+    - ayla-knowledge
+    - ayla-ai-core
+    - external
+  term_maturity:
+    - planned
+    - proposed
+    - accepted
+    - implemented
+    - deprecated
+  domain:
+    - cross-domain
+    - identity
+    - consent
+    - user-context
+    - conversation
+    - intent
+    - recommendation
+    - catalog
+    - provider
+    - booking
+    - payment
+    - nutrition
+    - wellness
+    - notification
+    - analytics
+    - marketing
+    - loyalty
+  concerns:
+    - knowledge-management
+    - governance
+    - privacy
+    - security
+    - safety
+    - observability
+    - audit
+    - compliance
+    - explainability
+    - localization
+    - accessibility
+  classification:
+    - public
+    - internal
+    - confidential
+    - restricted
+  data_sensitivity:
+    - none
+    - low
+    - medium
+    - high
+    - critical
+  data_categories:
+    - none
+    - synthetic
+    - pii
+    - health
+    - financial
+    - credentials
+    - raw-user-content
+    - production-data
+  security_sensitivity:
+    - none
+    - low
+    - medium
+    - high
+    - critical
+  ai_indexing:
+    - allowed
+    - metadata-only
+    - denied
+  export_policy:
+    - full
+    - sanitized
+    - metadata-only
+    - prohibited
+  review_cycle:
+    - monthly
+    - quarterly
+    - yearly
+    - before-major-change
+    - event-driven
+
+conditional_rules:
+  domain_context:
+    when_knowledge_area:
+      - product
+      - ai-system
+      - domain-model
+      - architecture
+      - safety-governance
+      - design
+      - business
+    require:
+      - domain
+    non_empty: true
+  mirror:
+    when:
+      source_kind: mirror
+    require:
+      - source_repository
+      - source_path
+      - source_ref
+      - synced
+      - source_content_hash
+    forbid_manual_edit: true
+  restricted:
+    when:
+      classification: restricted
+    allowed_ai_indexing:
+      - denied
+      - metadata-only
+    allowed_export_policy:
+      - metadata-only
+      - prohibited
+  confidential:
+    when:
+      classification: confidential
+    allowed_export_policy:
+      - sanitized
+      - metadata-only
+      - prohibited
+  denied_ai_index:
+    when:
+      ai_indexing: denied
+    allowed_export_policy:
+      - metadata-only
+      - prohibited
+  p0_p1:
+    when_priority:
+      - P0
+      - P1
+    require:
+      - owner
+      - review_cycle
+      - depends_on
+  provisional_system_owner:
+    when_system_owner_contains:
+      - to-be-confirmed
+    allowed_status:
+      - idea
+      - draft
+      - review
+      - planned
+    forbidden_status:
+      - approved
+      - approved-with-amendments
+      - implemented
+      - delivered
+    allowed_until: 2026-08-15
+
+field_constraints:
+  node_id:
+    format: "^[a-z0-9]+(?:[.-][a-z0-9]+)*$"
+    immutable: true
+    unique: true
+  system_owner:
+    type: list
+    min_items: 1
+    unique_items: true
+    items_from_enum: system_owner
+  source_repository:
+    optional: true
+    value_from_enum: source_repository
+  data_categories:
+    optional: true
+    require_when_data_sensitivity:
+      - low
+      - medium
+      - high
+      - critical
+
+lifecycle_transitions:
+  idea: [draft, cancelled]
+  draft: [review, cancelled]
+  review: [draft, approved-with-amendments, approved, cancelled]
+  approved-with-amendments: [approved, implemented, superseded, deprecated]
+  approved: [implemented, superseded, deprecated]
+  implemented: [superseded, deprecated]
+  planned: [scheduled, cancelled]
+  scheduled: [in-progress, blocked, cancelled]
+  in-progress: [blocked, delivered, cancelled]
+  blocked: [scheduled, in-progress, cancelled]
+  delivered: [deprecated, superseded]
+  deprecated: [archived]
+  superseded: [archived]
+  archived: []
+
+document_type_rules:
+  knowledge-architecture-specification:
+    normative: true
+    require_sections:
+      - Назначение и нормативность
+      - Модель источников истины
+      - Модель версионности
+      - Ревью и управление изменениями
+      - Валидация
+      - Миграция из backend
+      - Definition of Done
+      - Change Log
+  constitution:
+    normative: true
+  foundation:
+    normative: true
+  product-thesis:
+    normative: true
+  specification:
+    normative: true
+  ai-specification:
+    normative: true
+    require_sections:
+      - Responsibility
+      - Inputs
+      - Outputs
+      - Owns
+      - Does not own
+  safety-specification:
+    normative: true
+  architecture-specification:
+    normative: true
+  adr:
+    normative: true
+    require:
+      - adr_id
+      - decision_status
+      - revision
+      - amendments
+      - superseded_by
+  moc:
+    normative: false
+  glossary:
+    normative: false
+  terminology-standard:
+    normative: true
+  dashboard:
+    normative: false
+  source-placeholder:
+    normative: false
+
+relationships:
+  depends_on:
+    directed: true
+    acyclic: true
+    target_must_exist: true
+  supersedes:
+    directed: true
+    acyclic: true
+    target_must_exist: true
+  implements:
+    directed: true
+    acyclic: false
+    target_must_exist: true
+    allowed_target_capability: normative
+  adr:
+    directed: true
+    acyclic: false
+    target_must_exist: true
+    allowed_target_types:
+      - adr
+  related:
+    directed: false
+    acyclic: false
+    target_must_exist: true
+  conflicts_with:
+    directed: false
+    acyclic: false
+    target_must_exist: true
+    require_companion_field: conflict_resolution
+
+ai_export:
+  default: deny
+  require_explicit_allow: true
+  prohibited_content:
+    - real-user-pii
+    - real-health-data
+    - raw-user-messages
+    - production-dumps
+    - credentials
+    - encryption-material

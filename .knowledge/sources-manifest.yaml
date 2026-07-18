@@ -1,0 +1,100 @@
+manifest_version: "1.2"
+mode: staging
+target_repository: ayla-knowledge
+generated_branch: generated/mirrors
+conflict_policy: fail-fast
+write_policy: pull-request-only
+enabled_default: false
+
+sync_resolution:
+  branch_resolves_to: git-commit-sha
+  mirror_ref_field: source_ref
+  require_immutable_ref: true
+
+source_content_hash:
+  algorithm: sha256
+  input: canonical-content-before-mirror-metadata
+  encoding: utf-8
+  line_endings: lf
+  bom: excluded
+
+collision_policy:
+  action: fail-fast
+  conflicts:
+    - duplicate-target-path
+    - duplicate-node-id
+    - canonical-mirror-node-id-collision
+    - canonical-mirror-title-collision
+    - locally-modified-mirror
+    - overlapping-include-match
+
+# Mirror sync remains disabled until credentials and generated-branch review
+# are configured. Source paths are relative to each source repository; target
+# paths are relative to the ayla-knowledge vault root.
+sources:
+  - id: beautygo-backend-product
+    enabled: false
+    repository: https://github.com/AndreyDeveloper84/beautygo_backend
+    branch: main
+    include:
+      - docs/product/**/*.md
+    exclude:
+      - docs/**/archive/**
+    target: 01 Product/Mirrors/beautygo-backend
+    mode: mirror
+    owner: Backend Architecture
+    review_policy: source-owner-or-kb-maintainer
+
+  - id: beautygo-backend-architecture
+    enabled: false
+    repository: https://github.com/AndreyDeveloper84/beautygo_backend
+    branch: main
+    include:
+      - docs/architecture/**/*.md
+    exclude:
+      - docs/**/archive/**
+    target: 05 Architecture/Mirrors/beautygo-backend
+    mode: mirror
+    owner: Backend Architecture
+    review_policy: source-owner-or-kb-maintainer
+
+  - id: ai-bot-platform-docs
+    enabled: false
+    repository: https://github.com/AndreyDeveloper84/ai-bot-platform
+    branch: main
+    include:
+      - docs/**/*.md
+    exclude:
+      - docs/**/archive/**
+    target: 03 AI System/Mirrors/ai-bot-platform
+    mode: mirror
+    owner: AI Platform Architecture
+    review_policy: source-owner-or-kb-maintainer
+
+  - id: ayla-ai-core-docs
+    enabled: false
+    repository: https://github.com/AndreyDeveloper84/ayla-ai-core
+    branch: main
+    include:
+      - docs/**/*.md
+    exclude:
+      - docs/**/archive/**
+    target: 03 AI System/Mirrors/ayla-ai-core
+    mode: mirror
+    owner: AI Core Architecture
+    review_policy: source-owner-or-kb-maintainer
+
+validation:
+  schema: schema.yaml
+  command: python scripts/validate_knowledge.py
+  required_checks:
+    - frontmatter
+    - duplicate-yaml-keys
+    - enum-values
+    - stable-filenames
+    - links
+    - relationship-cycles
+    - duplicate-canon
+    - node-id-uniqueness
+    - conditional-rules
+    - ai-export-policy
