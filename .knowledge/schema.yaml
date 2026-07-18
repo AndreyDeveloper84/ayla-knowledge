@@ -1,7 +1,9 @@
-schema_version: "1.7"
+schema_version: "1.8"
 specification: "../00 Foundation/Ayla Knowledge Architecture Specification.md"
 
 schema_changes:
+  "1.8":
+    - register schema-generated metadata-registry document type
   "1.7":
     - require core normative sections for terminology-standard documents
   "1.6":
@@ -358,6 +360,22 @@ document_type_rules:
       - Правила использования
       - Key term authority matrix
       - Change process
+      - Definition of Done
+      - Change Log
+  metadata-registry:
+    normative: true
+    generated_from: .knowledge/schema.yaml
+    require_sections:
+      - Purpose and authority
+      - Source of truth
+      - Required metadata fields
+      - Controlled vocabularies
+      - Lifecycle transitions
+      - Document types
+      - Relationship semantics
+      - Ownership model
+      - Conditional and safety rules
+      - Update procedure
       - Definition of Done
       - Change Log
   dashboard:

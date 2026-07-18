@@ -24,6 +24,7 @@ Architecture v1.3 остаётся `pending-infrastructure` до заверше�
 
 ```powershell
 python -m pip install -r requirements-dev.txt
+python scripts/render_domain_registry.py --check
 python scripts/validate_knowledge.py
 python -m unittest discover -s tests -v
 ```
