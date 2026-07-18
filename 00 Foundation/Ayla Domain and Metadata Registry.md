@@ -42,7 +42,7 @@ migration_source:
   imported: 2026-07-19
 generated_from:
   path: .knowledge/schema.yaml
-  schema_version: "1.8"
+  schema_version: "1.10"
   command: python scripts/render_domain_registry.py
 ---
 
@@ -56,7 +56,7 @@ generated_from:
 
 Документ предоставляет авторам и reviewers человекочитаемое представление
 машинного metadata-контракта Ayla. Он не создаёт независимый набор enum:
-таблицы ниже детерминированно сгенерированы из schema v1.8.
+таблицы ниже детерминированно сгенерированы из schema v1.10.
 
 ## 2. Source of truth
 
@@ -134,6 +134,7 @@ schema и review migration impact.
 | `glossary` | no | — |
 | `terminology-standard` | yes | `Purpose and authority`<br>`Правила использования`<br>`Key term authority matrix`<br>`Change process`<br>`Definition of Done`<br>`Change Log` |
 | `metadata-registry` | yes | `Purpose and authority`<br>`Source of truth`<br>`Required metadata fields`<br>`Controlled vocabularies`<br>`Lifecycle transitions`<br>`Document types`<br>`Relationship semantics`<br>`Ownership model`<br>`Conditional and safety rules`<br>`Update procedure`<br>`Definition of Done`<br>`Change Log` |
+| `user-journey-specification` | yes | `Purpose`<br>`Journey Operating Model`<br>`Journey Overview`<br>`Stage Specifications`<br>`Memory Interaction`<br>`Recommendation and Proactivity Gates`<br>`Cross-channel Experience`<br>`Business Alignment`<br>`Metrics`<br>`Constitutional Traceability`<br>`Change Log` |
 | `dashboard` | no | — |
 | `source-placeholder` | no | — |
 

@@ -171,6 +171,82 @@ class KnowledgeValidatorTests(unittest.TestCase):
             OUTPUT_PATH.read_text(encoding="utf-8"),
         )
 
+    def test_user_journey_specification_requires_normative_sections(self) -> None:
+        from scripts.validate_knowledge import check_required_sections
+
+        node = Node(
+            path=ROOT / "01 Product" / "User Journeys" / "Example.md",
+            metadata={
+                "node_id": "ayla.example.user-journey",
+                "title": "Example User Journey",
+                "type": "user-journey-specification",
+                "source_kind": "canonical",
+                "system_owner": ["shared"],
+            },
+            body="# Empty\n",
+        )
+        reporter = Reporter()
+
+        check_required_sections(node, self.schema, reporter)
+
+        for section in (
+            "Purpose",
+            "Journey Operating Model",
+            "Journey Overview",
+            "Stage Specifications",
+            "Memory Interaction",
+            "Recommendation and Proactivity Gates",
+            "Cross-channel Experience",
+            "Business Alignment",
+            "Metrics",
+            "Constitutional Traceability",
+            "Change Log",
+        ):
+            self.assertTrue(
+                any(
+                    f"missing required section {section!r}" in error
+                    for error in reporter.errors
+                ),
+                f"expected missing-section error for {section!r}",
+            )
+
+    def test_user_journey_normative_semantics_are_not_regressed(self) -> None:
+        path = (
+            ROOT
+            / "01 Product"
+            / "User Journeys"
+            / "Ayla User Journey Specification.md"
+        )
+        body = path.read_text(encoding="utf-8")
+
+        required_fragments = (
+            "### Intent Type",
+            "### Goal Category",
+            "### Product Lifecycle Goal",
+            "S2 Minimal Discovery → S3 Lightweight Intent Confirmation",
+            "### User-Initiated Recommendation Gate",
+            "### Proactive Readiness Gate",
+            "Signal или Explicit Statement → Memory Proposal",
+            "Backend publishes `booking.confirmed`",
+            "Ayla переходит в S8, не подтверждает и не рекомендует",
+            "enter_when:\n      all_of:",
+            "`execution_failed` ведёт в Recovery",
+        )
+        forbidden_fragments = (
+            "Классы намерений (Intent Classes)",
+            "минимум 3 из 4 обязательных слотов",
+            "переход к Stage 4 с минимальным контекстом",
+            "Я запомнила:",
+            "Ayla confirms booking",
+            "Ayla не запрещает, но уточняет",
+            "Есть новый контекст (например, сезонная акция)",
+        )
+
+        for fragment in required_fragments:
+            self.assertIn(fragment, body)
+        for fragment in forbidden_fragments:
+            self.assertNotIn(fragment, body)
+
 
 if __name__ == "__main__":
     unittest.main()
