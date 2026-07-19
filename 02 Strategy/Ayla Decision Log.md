@@ -4,7 +4,7 @@ title: Ayla Decision Log
 type: decision-log
 status: review
 activation_status: pending-infrastructure
-version: "1.8"
+version: "1.9"
 owner: Founder / Product Architecture
 priority: P0
 knowledge_area:
@@ -17,7 +17,7 @@ system_owner:
   - shared
 source_repository: ayla-knowledge
 created: 2026-07-18
-updated: 2026-07-28
+updated: 2026-08-02
 source_kind: canonical
 classification: internal
 data_sensitivity: none
@@ -1434,7 +1434,61 @@ KM-IM-1 от 2026-07-27, зарегистрирован 2026-07-28)
   Миграция runtime-спеки customer-cancellation-reschedule — отдельный
   трек вне vault.
 
+### AYLA-DEC-0035 — Опциональный штатный сценарий онлайн-оплаты в miniapp
+
+**Дата:** 2026-07-19 · **Статус:** действует (каноническая часть);
+техническая спецификация C7 — status review (см. ниже)
+
+> Примечание о нумерации: изначально зарегистрировано как AYLA-DEC-0011
+> (2026-07-19). При консолидации параллельных worktree выяснилось, что
+> номер AYLA-DEC-0011 уже занят решением «Последовательность документов
+> продуктового роадмапа» (2026-07-27), канонизированным и процитированным
+> в других документах. Во избежание коллизии ID эта запись переномерована
+> в AYLA-DEC-0035; содержание не изменено.
+
+- **Решение:** в пилоте Mini App предоставляет штатный, но **опциональный**
+  сценарий онлайн-оплаты **услуги Provider** — не доступа к Ayla
+  (AYLA-DEC-0001, [[Ayla Constitution]] Ст. IV). Пользователь может выбрать
+  оплату сейчас или продолжить без предоплаты согласно AYLA-DEC-0006.
+  **Одноразовая оплата не требует сохранения карты.** Сохранение способа
+  оплаты — отдельное добровольное действие с явным согласием (версия текста
+  согласия + timestamp) и возможностью отзыва; после отзыва метод не
+  используется. DM payment link допускается как recovery/fallback, но не
+  является единственным штатным UX.
+- **Основание:** решение владельца — штатная оплата является базовым
+  ожиданием доверия beauty-аудитории; DM-only как единственный UX создаёт
+  риск оттока. Разведка W4 показала отсутствие платёжного контура в
+  customer API — контур спроектирован как контракт C7.
+- **Статус C7:** review — технические endpoints, events и storage принимаются
+  после закрытия: (а) consent-границы сохранения карты (явное согласие,
+  версия текста, `save_payment_method: false` по умолчанию, граница
+  user-initiated оплаты и безакцептного автоплатежа, запрет использования
+  после отзыва, проверка фактического `payment_method.saved`); (б)
+  authorization boundary (verified customer binding BotUser↔Ayla User,
+  ownership checks, запрет доверять произвольному `ayla_user_id`,
+  сумма платежа только из authoritative Booking snapshot).
+- **Затрагивает:** контракт C7 в `beautygo_backend`
+  `docs/PILOT_CONTRACTS_2026-08-15.md` (status review). Эпик ~23 SP
+  (W1 9, W3 6, W4 8). Зависимость — флип `BOOKING_VIA_AYLA_REST` ← отчёт
+  покрытия каталога на staging.
+- **Связано:** AYLA-DEC-0001 (платит специалист; пользователь платит только
+  за услугу Provider), AYLA-DEC-0006 (опциональная предоплата),
+  AYLA-DEC-0008 (split per-master), AYLA-DEC-0009 (capture-стратегия),
+  AYLA-DEC-0010 (запрет двойного взыскания).
+
 ## Change Log
+
+### v1.9 — 2026-08-02
+
+- добавлена AYLA-DEC-0035 (опциональный штатный сценарий онлайн-оплаты
+  услуги Provider в miniapp; DM-only не является единственным UX);
+  связанный контракт C7 в `beautygo_backend`
+  `docs/PILOT_CONTRACTS_2026-08-15.md` — status review до закрытия
+  consent/authorization границ. Запись перенесена из ветки
+  `agent/agent-task-contract` (изначально AYLA-DEC-0011, 2026-07-19) и
+  переномерована при консолидации worktree во избежание коллизии ID с
+  канонической AYLA-DEC-0011 «Последовательность документов
+  продуктового роадмапа».
 
 ### v1.8 — 2026-07-28
 
@@ -1594,7 +1648,6 @@ KM-IM-1 от 2026-07-27, зарегистрирован 2026-07-28)
   Domain Model — не существуют как файлы в `ayla-knowledge` на дату записи);
 - затронутые документы отмечены: Ayla Domain and Metadata Registry
   (потребуются новые planned-узлы), Domain_Model_MOC (навигация).
-
 
 ### v0.2 — 2026-07-18
 
