@@ -1,7 +1,11 @@
-schema_version: "1.8"
+schema_version: "1.10"
 specification: "../00 Foundation/Ayla Knowledge Architecture Specification.md"
 
 schema_changes:
+  "1.10":
+    - distinguish user-initiated recommendation and proactive readiness gates
+  "1.9":
+    - register user-journey-specification with required normative sections
   "1.8":
     - register schema-generated metadata-registry document type
   "1.7":
@@ -377,6 +381,20 @@ document_type_rules:
       - Conditional and safety rules
       - Update procedure
       - Definition of Done
+      - Change Log
+  user-journey-specification:
+    normative: true
+    require_sections:
+      - Purpose
+      - Journey Operating Model
+      - Journey Overview
+      - Stage Specifications
+      - Memory Interaction
+      - Recommendation and Proactivity Gates
+      - Cross-channel Experience
+      - Business Alignment
+      - Metrics
+      - Constitutional Traceability
       - Change Log
   dashboard:
     normative: false
