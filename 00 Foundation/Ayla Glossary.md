@@ -4,7 +4,7 @@ title: Ayla Glossary
 type: terminology-standard
 status: review
 activation_status: pending-infrastructure
-version: "2.0"
+version: "2.1"
 owner: Product Architecture
 priority: P0
 knowledge_area:
@@ -17,7 +17,7 @@ system_owner:
   - ayla-knowledge
 source_repository: ayla-knowledge
 created: 2026-07-18
-updated: 2026-07-18
+updated: 2026-07-19
 source_kind: canonical
 classification: internal
 data_sensitivity: none
@@ -53,7 +53,7 @@ migration_source:
   imported: 2026-07-18
 ---
 
-# Ayla Glossary v2.0
+# Ayla Glossary v2.1
 
 ## 1. Purpose and authority
 
@@ -88,19 +88,36 @@ Glossary не поддерживает независимые копии enum-р
 
 Glossary не повышает зрелость термина. Термин из proposed-документа остаётся proposed.
 
-## 1.3. Canonical term template
+## 1.3. Canonical term contract
 
-```text
-Canonical name:
-Russian name:
-Definition:
-Not:
-Allowed aliases:
-Forbidden aliases:
-Defined by:
-Status:
-Owner:
-```
+Для ключевого нормативного термина обязательны:
+
+- canonical heading или `Canonical name`;
+- `Definition`;
+- `Defined by`;
+- `Status`;
+- `Owner`.
+
+Дополнительно указываются, когда применимо:
+
+- `Russian name`;
+- `Not`;
+- `Allowed aliases`;
+- `Forbidden aliases`;
+- code name;
+- current basis;
+- planned source.
+
+Расширенный шаблон обязателен, если термин:
+
+- имеет распространённые неоднозначные синонимы;
+- используется одновременно в product language и code/API;
+- заменяет deprecated-термин;
+- ограничивает Safety, Privacy или Economy и требует явного определения
+  допустимого и недопустимого употребления.
+
+Для вспомогательных explanatory terms допускается сокращённая карточка, если
+она не создаёт самостоятельного нормативного контракта.
 
 ## 2. Правила использования
 
@@ -327,7 +344,7 @@ Scope определяется профильной спецификацией.
 **Русское название:** состояние пользовательского пути  
 **Определение:** дискретная стадия journey state machine, например S0–S8.  
 **Defined by:** [[Ayla User Journey Specification]]  
-**Status:** accepted  
+**Status:** proposed  
 **Owner:** Product Architecture
 
 ### User Lifecycle State
@@ -335,7 +352,7 @@ Scope определяется профильной спецификацией.
 **Русское название:** состояние жизненного цикла пользователя  
 **Определение:** стадия отношений User с Ayla, не равная Journey State конкретного сценария.  
 **Defined by:** [[Core User States]]  
-**Status:** accepted  
+**Status:** proposed  
 **Owner:** Product Architecture
 
 ### Conversation State
@@ -350,13 +367,17 @@ Scope определяется профильной спецификацией.
 
 **Русское название:** состояние бронирования  
 **Определение:** текущее lifecycle-состояние Booking.  
-**Defined by:** [[Event Taxonomy]] и [[Booking Lifecycle Specification]]  
+**Current basis:** [[Event Taxonomy]] и существующая backend-модель  
+**Planned canonical source:** [[Booking Lifecycle Specification]]  
+**Status:** proposed  
 **Owner:** Booking Domain
 
 ### Entity State
 
 **Русское название:** состояние сущности  
-**Определение:** lifecycle-состояние конкретной domain entity.
+**Определение:** lifecycle-состояние конкретной domain entity.  
+**Status:** proposed  
+**Owner:** Product Architecture
 
 > Самостоятельное нормативное употребление слова `State` запрещено. Всегда используется квалифицированный термин.
 
@@ -495,19 +516,36 @@ Scope определяется профильной спецификацией.
 **Начальные значения:** `exploring`, `considering`, `ready`, `not-ready`.  
 **Не является:** разрешением системы на проактивное действие.
 
-### Readiness Gate
+### User-Initiated Recommendation Gate
 
-**Русское название:** шлюз уместности  
-**Определение:** policy-механизм, который перед проактивным предложением, напоминанием или рекомендацией оценивает explicit refusal, cooldown, quiet hours, safety risk, relevance, recent duplicates и channel restrictions.  
-**Правило:** если Gate блокирует действие, Ayla применяет `Helpful Restraint` и не предлагает действие.  
+**Русское название:** шлюз рекомендации по запросу пользователя  
+**Определение:** policy-механизм, который перед ответом рекомендацией на явный
+текущий запрос User проверяет Safety, Eligibility, Context Sufficiency,
+Competence Boundary и explicit current refusal.  
+**Не является:** механизмом подавления проактивности; quiet hours и cooldown не
+блокируют ответ на явный запрос User.  
 **Defined by:** [[Ayla User Journey Specification]]  
-**Status:** accepted  
+**Status:** proposed  
+**Owner:** Product Architecture
+
+### Proactive Readiness Gate
+
+**Русское название:** шлюз уместности проактивного действия  
+**Определение:** policy-механизм, который перед проактивным предложением или
+напоминанием дополнительно оценивает explicit refusal, cooldown, quiet hours,
+proactivity Consent, relevance, recent duplicates и channel restrictions.  
+**Правило:** если Gate блокирует проактивность, Ayla применяет `Helpful
+Restraint`, не инициирует действие и не предлагает substitute offer.  
+**Defined by:** [[Ayla User Journey Specification]]; planned source:
+`ADR-0012 Dynamic User Model`  
+**Status:** proposed  
 **Owner:** Product Architecture
 
 ### Suppression Factor
 
 **Русское название:** фактор подавления действия  
-**Определение:** причина, по которой Readiness Gate запрещает или откладывает действие.
+**Определение:** причина, по которой Proactive Readiness Gate запрещает или
+откладывает проактивное действие.
 
 ### Helpful Restraint
 
@@ -691,9 +729,10 @@ Scope определяется профильной спецификацией.
 **Status:** planned  
 **Owner:** User Context Domain
 
-### UserPersonalContext
+### User Personal Context
 
 **Русское название:** персональный контекст пользователя  
+**Canonical code name:** `UserPersonalContext`  
 **Определение:** управляемый контейнер данных и знаний, используемых с учётом Consent, Provenance, Sensitivity Zone и Retention Policy.  
 **Planned source:** `ADR-0011 User Context Privacy`  
 **Status:** planned  
@@ -859,7 +898,8 @@ Scope определяется профильной спецификацией.
 **Русское название:** бронирование / запись  
 **Определение:** канонический агрегат бронирования, существующий на протяжении всего lifecycle — от создания до подтверждения, отмены, завершения или иного финального состояния.  
 **Не является:** только подтверждённой записью.  
-**Defined by:** [[Event Taxonomy]] и [[Booking Lifecycle Specification]]  
+**Current basis:** [[Event Taxonomy]] и существующая backend-модель  
+**Planned canonical source:** [[Booking Lifecycle Specification]]  
 **Status:** proposed  
 **Owner:** Booking Domain
 
@@ -878,13 +918,16 @@ Scope определяется профильной спецификацией.
 **Русское название:** подтверждённое бронирование  
 **Определение:** Booking в состоянии `confirmed`.
 
-### Booking lifecycle states
+### Booking Lifecycle
 
-**Русское название:** состояние бронирования  
-**Определение:** профильное применение канонического термина Booking State к
-полному lifecycle Booking.  
+**Русское название:** жизненный цикл бронирования  
+**Определение:** набор допустимых Booking State и переходов между ними.  
+**Не является:** отдельным состоянием.  
 **Примеры событий:** `booking.created`, `booking.confirmed`, `booking.cancelled`, `booking.completed`.  
-**Правило:** полный enum определяется профильным источником.
+**Правило:** полный enum определяется профильным источником.  
+**Planned canonical source:** [[Booking Lifecycle Specification]]  
+**Status:** planned  
+**Owner:** Booking Domain
 
 ### Appointment
 
@@ -1127,19 +1170,17 @@ Git-репозиторий с каноническими cross-repository док
 
 ### Document Status
 
-Канонические статусы:
+**Определение:** управляемое состояние Knowledge Node в документном lifecycle.
 
-- `idea`;
-- `planned`;
-- `draft`;
-- `review`;
-- `approved-with-amendments`;
-- `approved`;
-- `implemented`;
-- `blocked`;
-- `deprecated`;
-- `superseded`;
-- `archived`.
+Полный перечень допустимых значений и переходов определяется
+`.knowledge/schema.yaml`.
+
+Человекочитаемые пояснения публикуются в
+[[Ayla Domain and Metadata Registry]].
+
+**Defined by:** `.knowledge/schema.yaml`  
+**Status:** implemented  
+**Owner:** Knowledge Owner
 
 ### Architecture Decision Record
 
@@ -1219,7 +1260,31 @@ Glossary не является источником машинных enum-зна
 
 ### Concierge Mode
 
-Режим, в котором человек помогает проверять или выполнять части сценария Ayla.
+**Русское название:** режим консьержа / ручной калибровки  
+**Определение:** операционный режим раннего запуска, ориентировочно для первых
+100–500 пользователей, при котором рекомендации, решения и транзакционные
+сценарии могут проходить ручную проверку, подтверждение или корректировку
+оператором Ayla в зависимости от класса риска.  
+**Режимы проверки:**
+
+- низкорисковые сценарии могут проверяться асинхронно после выдачи;
+- существенные рекомендации и сценарии высокой неопределённости могут
+  требовать проверки до выдачи или выполнения;
+- safety-critical сценарии немедленно обрабатываются утверждёнными
+  policy-правилами и не должны зависеть от доступности оператора.
+
+**Цель:** сбор качественных размеченных данных для калибровки, оценки и
+улучшения Intent Model и Recommendation Engine, а также снижение риска
+ошибочных рекомендаций до перехода к полной автоматизации.  
+**Правило прозрачности:** участие оператора не скрывается, если оно существенно
+влияет на результат.  
+**Правило полномочий:** оператор не заменяет Consent, явное подтверждение User,
+Safety Constraint, authorization или idempotency; транзакция не выполняется
+только на основании ручной корректировки.  
+**Не является:** постоянной заменой автоматизации.  
+**Defined by:** [[Ayla User Journey Specification]]  
+**Status:** proposed  
+**Owner:** Pilot Operations
 
 ### Incident
 
@@ -1287,19 +1352,21 @@ Glossary не является источником машинных enum-зна
 | Tenant | planned `Tenant as Provider Model` | planned | Platform Architecture |
 | Salon | Ayla Glossary | proposed | Provider Domain |
 | Conversation State | [[ADR-0007 Conversation State Enum]] | accepted | Conversation Domain |
-| Journey State, Readiness Gate | [[Ayla User Journey Specification]] | accepted | Product Architecture |
+| Journey State, User-Initiated Recommendation Gate | [[Ayla User Journey Specification]] | proposed | Product Architecture |
+| Proactive Readiness Gate | [[Ayla User Journey Specification]]; planned ADR-0012 | proposed | Product Architecture |
+| User Lifecycle State | [[Core User States]] | proposed | Product Architecture |
 | Intent Type, Goal Category | [[Ayla Intent Model Specification]] | planned | AI Architecture |
 | Recommendation concepts | [[Ayla Recommendation Engine Specification]] | planned | AI Architecture |
 | Memory Source, Memory Entry | [[Memory Entry Schema]] | planned | User Context Domain |
 | User Model, Consent, Safety, Safety-Critical Information | [[Ayla Constitution]] | accepted | Privacy and Safety |
 | Sensitivity Zone, Cross-Provider Memory | planned `ADR-0011 User Context Privacy` | planned | Privacy and Safety |
 | Dynamic User Model | planned `ADR-0012 Dynamic User Model` | planned | User Context Domain |
-| Booking event names | [[Event Taxonomy]] | proposed | Booking Domain |
+| Booking State, booking event names | [[Event Taxonomy]] | proposed | Booking Domain |
 | Booking aggregate | Ayla Glossary / backend model | proposed | Booking Domain |
-| Booking lifecycle | [[Booking Lifecycle Specification]] | planned | Booking Domain |
+| Booking Lifecycle | [[Booking Lifecycle Specification]] | planned | Booking Domain |
 | Booking Fee, Billable Booking | [[Ayla Decision Log]] | proposed | Booking / Payment Domain |
 | Food Scanner | [[Ayla MVP Product Thesis]] | planned | Nutrition Domain |
-| Concierge Mode | [[Ayla User Journey Specification]] | accepted | Pilot Operations |
+| Concierge Mode | [[Ayla User Journey Specification]] | proposed | Pilot Operations |
 
 ## 23. Change process
 
@@ -1350,7 +1417,7 @@ Glossary не является источником машинных enum-зна
 
 ## 25. Definition of Done
 
-Glossary v2.0 считается утверждённым, когда:
+Glossary v2.1 считается утверждённым, когда:
 
 - согласованы базовые product terms;
 - согласованы Intent и Context terms;
@@ -1361,7 +1428,13 @@ Glossary v2.0 считается утверждённым, когда:
 - Glossary не дублирует enum-реестры schema.yaml;
 - Domain and Metadata Registry генерируется из schema либо валидируется против неё;
 - Root MOC ссылается на Glossary;
-- validator проверяет controlled vocabularies.
+- validator проверяет controlled vocabularies;
+- отсутствуют термины с maturity выше maturity профильного источника;
+- каждый accepted-термин имеет разрешимый `Defined by`;
+- каждый термин authority matrix имеет ровно одну нормативную карточку;
+- запрещённые неоднозначности проходят lint;
+- Glossary не содержит independently maintained enum lists;
+- Change Log соответствует фактическим изменениям документа.
 
 ---
 
@@ -1374,7 +1447,7 @@ Glossary v2.0 считается утверждённым, когда:
 5. Как назвать пользовательский экран памяти: «Что Ayla знает обо мне» или иначе.
 6. Нужен ли отдельный `Clinical Boundary`.
 7. Разделять ли `Recommendation` и `Guidance`.
-8. Как обозначать оплаченный, но ещё не подтверждённый визит.
+8. Как обозначать оплаченную, но ещё не подтверждённую Booking.
 
 ---
 
@@ -1389,6 +1462,23 @@ Glossary v2.0 считается утверждённым, когда:
 ---
 
 # Change Log
+
+## v2.1 — 2026-07-19
+
+- удалён неполный список Document Status; источником enum оставлена schema;
+- восстановлено полное определение Concierge Mode для первых 100–500
+  пользователей с risk-based post-hoc, pre-flight и hard policy modes,
+  прозрачностью и ограничением полномочий ручного участия;
+- User-Initiated Recommendation Gate отделён от Proactive Readiness Gate;
+- Journey State, оба gate-термина и Concierge Mode оставлены proposed до
+  approval профильного Journey и принятия ADR-0012;
+- Booking State отделён от Booking Lifecycle;
+- уточнены current и planned источники Booking terminology;
+- полный шаблон заменён выполнимым canonical term contract с минимальными и
+  условно обязательными полями;
+- User Lifecycle State понижен до proposed до материализации источника;
+- `UserPersonalContext` оформлен как code name термина User Personal Context;
+- Definition of Done дополнен проверяемыми условиями.
 
 ## v2.0 — 2026-07-18
 
