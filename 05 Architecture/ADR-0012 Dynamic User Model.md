@@ -10,7 +10,7 @@ type: adr
 status: draft
 decision_status: proposed
 revision: 1
-version: "0.1"
+version: "0.2"
 amendments: []
 superseded_by: null
 owner: Product Architecture
@@ -64,14 +64,15 @@ review_cycle: event-driven
 
 **Статус документа:** Draft (pending owner decision)
 **Статус решения:** Proposed — не принято.
-**Версия:** 0.1 (2026-07-21)
+**Версия:** 0.2 (2026-07-21)
 
-Этот документ — Draft v0.1, подготовленный Knowledge/Canon Architect (W7) по
-GO владельца от 2026-07-21. Он не вводит нормы в действие. Канонизация —
-только после review оркестратором и явного решения владельца по разделу
-«Owner decision required». До канонизации нормативными остаются
-[[Ayla Constitution]] (v2.2), целевые положения [[Ayla User Journey Specification]]
-(v1.2, Review) и действующие контракты пилота.
+Этот документ — Draft v0.2, подготовленный Knowledge/Canon Architect (W7) по
+GO владельца от 2026-07-21 и review оркестратора. Он не вводит нормы в
+действие. Канонизация — только после review оркестратором и явного решения
+владельца по разделу «Owner decision required». До канонизации нормативными
+остаются [[Ayla Constitution]] (v2.2), целевые положения
+[[Ayla User Journey Specification]] (v1.2, Review) и действующие контракты
+пилота.
 
 **Владельцы документа:**
 
@@ -151,7 +152,7 @@ persistent-фактом.
 | `safety` | Safety-critical сведения: ошибка, игнорирование или преждевременное забывание создаёт риск здоровью/безопасности | Подтверждённая аллергия, беременность, приём лекарств, safety-наблюдение провайдера (Конституция Ст. III.4) |
 | `preference` | Устойчивые предпочтения, влияющие на подбор и персонализацию | Любимый Specialist, предпочтительное время, район, бюджет, диета как предпочтение |
 | `context` | Ситуативный контекст, релевантный ограниченное время | «Завал на работе», «в отпуске», временные семейные обстоятельства |
-| `hypothesis` | Неподтверждённые предположения Ayla. Не является фактом и не используется как safety-critical факт | «Вероятно, предпочитает вечер» |
+| `unclassified` | Техническое состояние, когда предмет знания ещё не определён. Не допускается как постоянный класс; должен быть уточнён при подтверждении | Начальный proposal, из которого система ещё не вывела предмет |
 
 ### Измерение 2: `confidence` — насколько знание подтверждено
 
@@ -161,14 +162,16 @@ persistent-фактом.
 | `declared` | Прямо сообщено пользователем или подтверждено им (включая подтверждение Memory Proposal) |
 | `inferred` | Выведено системой из сообщений, поведения или событий; не подтверждено пользователем |
 
-Инвариант: `knowledge_class=hypothesis` допускает только `confidence=inferred`.
-Подтверждение гипотезы изменяет все три оси по норме N-05.
+Инвариант: `knowledge_class` не хранит эпистемическое состояние. Неподтверждённое
+предположение о предпочтении выражается как `knowledge_class=preference`,
+`confidence=inferred`, `memory_status=proposed`. Подтверждение меняет
+`confidence`, `provenance` и `memory_status`, но не предмет знания (N-05).
 
 ### Измерение 3: `lifetime` — как долго знание актуально
 
 | Значение | Семантика |
 |---|---|
-| `persistent` | Актуально до исправления, отзыва или замены; подлежит переподтверждению по N-06/N-09. **Не отменяет zone retention cap** (N-10): эпистемическая устойчивость ≠ бессрочное хранение |
+| `until_changed` | Актуально до исправления, отзыва или замены; подлежит переподтверждению по N-06/N-09. **Не отменяет zone retention cap** (N-10): эпистемическая устойчивость ≠ бессрочное хранение |
 | `time_bounded` | Имеет ожидаемый срок актуальности; к границе срока — переподтверждение или прекращение использования. Временные состояния не сохраняются бесконечно без перепроверки (Конституция Ст. IX) |
 | `ephemeral` | Короткий ситуативный контекст (design candidate: 14–30 дней, Journey §5). Не становится основанием долгосрочных выводов о пользователе |
 
@@ -182,45 +185,59 @@ persistent-фактом.
 |---|---|---|
 | `explicit_answer` | Прямой ответ или сообщение пользователя | `MemoryEntry.source=explicit`; contract sources `explicit`, `conversational` |
 | `imported` | Импорт из внешней или смежной системы на явном основании (устройства, миграции, cross-system import). Основание импорта фиксируется в provenance-метаданных | Резерв для Phase 1+ (wearables, внешние источники — Конституция Ст. VI: подключаются отдельно и добровольно) |
-| `observed_signal` | Наблюдаемое событие или паттерн, надёжно зафиксированные системой, включая safety-наблюдения провайдера (Ст. III.4) | `MemoryEntry.source=signal`; contract sources `behavioral`, `transactional` |
+| `observed_event` | Наблюдаемое событие или паттерн, надёжно зафиксированные системой: запись к специалисту, отмена, поведение в приложении, safety-наблюдение провайдера (Ст. III.4). Само по себе не объясняет мотивов | `MemoryEntry.source=signal`; contract sources `behavioral`, `transactional` |
+| `model_inference` | Вывод Ayla из одного или нескольких `observed_event` с помощью модели/правила. Обязательны ссылки на `evidence_refs` и `derivation_method` | `MemoryEntry.source=inferred` |
 | `confirmed_proposal` | Memory Proposal, подтверждённый пользователем. Исходное provenance сохраняется в истории записи (N-05) | Состояние `confirmed` из Journey Stage 6 |
 
 Бывший плоский `source=inferred` (код, Glossary «Memory Source») на уровне
 модели разлагается: вывод Ayla — это `confidence=inferred` +
-`knowledge_class=hypothesis` + `provenance=observed_signal` (вывод из
-наблюдений). Кодовый enum `source` остаётся без изменений до миграции схемы
-(§«Миграция от текущей реализации»); конфликта моделей нет, есть отображение.
+`knowledge_class=<предмет>` + `provenance=model_inference`, основанный на
+`observed_event` (событиях). Кодовый enum `source` остаётся без изменений до
+миграции схемы (§«Миграция от текущей реализации»); конфликта моделей нет,
+есть отображение.
+
+Для `model_inference` обязательны метаданные:
+- `evidence_refs` — события/сообщения, на которых основан вывод;
+- `derivation_method` — правило или модель, сформировавшая гипотезу.
+Это требование N-13 (объяснимость) и N-02 (audit trail для inferred-записей).
 
 ### Атрибуты состояния записи
 
 Не являются измерениями содержания — описывают положение записи в её
 жизненном цикле (канонизация полей из Journey Stage 6 «Memory Proposal»):
 
-- `memory_status`: `proposed` → (`confirmed` | `rejected`); далее
-  `confirmation_required` (устаревание/противоречие, N-06/N-09) и
-  `superseded` (замещён исправлением или более новым значением, N-12).
-  `rejected` — пользователь отклонил сохранение: запись не персистится,
-  повторный вопрос по той же теме подчиняется anti-spam правилам
-  ask-eligibility (frozen-контракт, cooldown 24ч, skip×2 → пауза).
+- `memory_status`: `proposed` → `confirmed` | `confirmation_required`
+  (устаревание/противоречие, N-06/N-09) | `superseded` (замещён исправлением
+  или более новым значением, N-12).
+- **Decision record (proposal rejection):** когда пользователь отклоняет
+  proposal, сама Memory Entry не создаётся. Создаётся минимальный
+  `ProposalDecision`/`ConsentDecision` без персонального значения:
+  тема/purpose, решение (`rejected`), timestamp, cooldown-метаданные.
+  Это обеспечивает anti-spam, audit согласия и право пользователя видеть
+  историю отказов (ADR-0011 §8). Повторный вопрос по той же теме подчиняется
+  правилам ask-eligibility (frozen-контракт, cooldown 24ч, skip×2 → пауза).
 - `storage_scope`: `session` (только Session Context текущего взаимодействия)
   / `persistent` (Persistent Memory). Исход Consent Check по N-02.
-- `consent_scope`: набор purpose-ключей, в пределах которых запись может
-  использоваться (пример из Journey Stage 6: `provider_selection`).
-  Использование вне `consent_scope` запрещено (N-07).
+- `consent_scope`: набор purpose-ключей из **versioned consent-scope registry**,
+  в пределах которых запись может использоваться (пример:
+  `provider_selection`). Использование вне `consent_scope` запрещено (N-07).
+  Конкретный список purpose-ключей утверждается отдельным контрактом; до
+  утверждения registry реализацию `consent_scope` начинать нельзя.
 
 ### Пример жизненного цикла (нормативная иллюстрация)
 
 1. Пользователь трижды записывается на вечер → создаётся **только** Memory
-   Proposal: `knowledge_class=hypothesis`, `confidence=inferred`,
-   `lifetime=time_bounded`, `provenance=observed_signal`,
-   `memory_status=proposed`, `storage_scope=session` (N-02).
+   Proposal: `knowledge_class=preference`, `confidence=inferred`,
+   `lifetime=time_bounded`, `provenance=model_inference`
+   (на основе `observed_event`: три записи), `memory_status=proposed`,
+   `storage_scope=session` (N-02).
 2. Ayla уточняет: «Похоже, тебе удобнее вечером. Сохранить это для будущих
    подборок?» Пользователь подтверждает → запись становится
    `knowledge_class=preference`, `confidence=declared`,
-   `lifetime=persistent`, `provenance=confirmed_proposal` (исходный
-   `observed_signal` сохранён в истории), `memory_status=confirmed`,
-   `storage_scope=persistent`, `consent_scope=[provider_selection]`,
-   `sensitivity_zone=green` (N-05).
+   `lifetime=until_changed`, `provenance=confirmed_proposal` (исходный
+   `model_inference` и `evidence_refs` сохранены в истории),
+   `memory_status=confirmed`, `storage_scope=persistent`,
+   `consent_scope=[provider_selection]`, `sensitivity_zone=green` (N-05).
 3. Год спустя перед существенным использованием устаревшего факта Ayla
    переспрашивает (N-09). Пользователь: «теперь мне удобнее утром» →
    исправление: старая запись `superseded`, новая — `declared` /
@@ -248,7 +265,7 @@ ADR, а не существуют сегодня.
   этот ADR.
 - ✅ Разрешено: запись с `sensitivity_zone=yellow`,
   `knowledge_class=preference`, `confidence=declared`,
-  `lifetime=persistent`, `provenance=explicit_answer` — один набор осей над
+  `lifetime=until_changed`, `provenance=explicit_answer` — один набор осей над
   одной записью.
 - ⛔ Запрещено: отдельный «профиль предпочтений» с собственной шкалой
   надёжности, не маппируемой на `confidence`, или отдельный «граф знаний»,
@@ -256,10 +273,14 @@ ADR, а не существуют сегодня.
 
 #### N-02. Proposal-first: только Memory Proposal входит в память
 
-Сообщение, событие или вывод создают **только** Memory Proposal. Persistent
-Memory создаётся и используется, только если пройдены Sensitivity Check,
-Purpose Check и Consent Check; иначе — Session Context only
-(`storage_scope=session`) или отказ от сохранения.
+Любое сообщение, событие или вывод сначала создаёт **только** Memory Proposal.
+Persistent Memory создаётся, только если пройдены Sensitivity Check, Purpose
+Check и Consent Check. Explicit save request («запомни, что мне удобно утром»)
+также проходит состояние `proposed`, но может быть подтверждён в том же
+сообщении пользователя, не требуя дополнительного вопроса. Session Context
+only (`storage_scope=session`) допустим, но не отменяет Sensitivity, Purpose,
+access и lawful-basis checks (запрещено «облегчённое» согласие для yellow/red
+только из-за кратковременности или ephemeral-статуса).
 
 - **Источник:** Journey §5 «When Memory is Created» (обязательный flow),
   Journey Stage 6 «Memory Proposal»; Конституция Ст. VI (минимально
@@ -269,8 +290,14 @@ Purpose Check и Consent Check; иначе — Session Context only
   consent-гейт `memory_green` (PERSONAL_CONTEXT contract, блок «Аутентификация»).
 - ✅ Разрешено: «я веган» → proposal (`provenance=explicit_answer`) → проверки
   пройдены → `storage_scope=persistent`, `consent_scope=[provider_selection]`.
+- ✅ Разрешено: «запомни, что мне удобно утром» → proposal
+  (`provenance=explicit_answer`) → то же сообщение подтверждает →
+  `memory_status=confirmed` после checks.
 - ⛔ Запрещено: сигнал «3 вечерние записи подряд» записывается напрямую в
   Persistent Memory, минуя proposal и Consent Check.
+- ⛔ Запрещено: чувствительная yellow/red-гипотеза сохраняется в Session Context
+  без sensitivity/purpose/lawful-basis checks, только потому что
+  `lifetime=ephemeral`.
 
 #### N-03. Молчание ≠ согласие
 
@@ -292,7 +319,7 @@ Purpose Check и Consent Check; иначе — Session Context only
 
 #### N-04. `inferred` и `signal` — не самостоятельное основание Substantial Recommendation
 
-Записи с `confidence=inferred` и/или `provenance=observed_signal` не могут
+Записи с `confidence=inferred` и/или `provenance=model_inference` не могут
 быть единственным основанием Substantial Recommendation. Допустимо: несущественная
 персонализация с вероятностным языком и уточнением; для существенного —
 требуется `declared`/`verified` корроборация или подтверждение пользователя.
@@ -310,19 +337,23 @@ Purpose Check и Consent Check; иначе — Session Context only
 
 #### N-05. Подтверждённая гипотеза трансформируется с сохранением provenance
 
-При подтверждении пользователем гипотеза преобразуется: целевой
-`knowledge_class` (например `preference`), `confidence=declared`,
-`provenance=confirmed_proposal`. Исходные значения измерений сохраняются в
-истории записи. Новый класс знания для этого не вводится.
+При подтверждении пользователем гипотезы предмет знания не меняется:
+`knowledge_class=preference` (или `safety`/`context`). Изменяются
+`confidence: inferred → declared`, `provenance: model_inference →
+confirmed_proposal`, `memory_status: proposed → confirmed`. Исходные значения
+`model_inference`, `evidence_refs` и `derivation_method` сохраняются в истории
+записи.
 
 - **Источник:** Journey §5, MVP Memory Heuristic п.5; Journey Stage 6
   (yaml `provenance_preserved: true`); решение владельца 2026-07-21 (бриф 2.1).
 - **Проверка:** acceptance пилота №7 (flow «ответ → сохранено → учтено»);
   *design candidate* — тест трансформации состояния в `memory_writer`.
-- ✅ Разрешено: hypothesis «вечер» → подтверждена → `preference/declared/
-  confirmed_proposal`, исходный `observed_signal` — в истории записи.
-- ⛔ Запрещено: оформлять подтверждённую гипотезу как новый `knowledge_class`
-  («confirmed») или стирать след того, что знание когда-либо было гипотезой.
+- ✅ Разрешено: proposal о вечернем предпочтении (`preference/inferred/
+  model_inference`) → подтверждена → `preference/declared/confirmed_proposal`,
+  исходный `model_inference` и evidence — в истории записи.
+- ⛔ Запрещено: менять `knowledge_class` при подтверждении (например, с
+  `hypothesis` на `preference`) или стирать след того, что знание было выводом
+  модели.
 
 #### N-06. Safety-critical сведения не удаляются по давности
 
@@ -414,6 +445,9 @@ auto-TTL; yellow: 365 дней; red: 90 дней).
   `consent_at`, шифруется и живёт ≤ 365 дней от последнего использования.
 - ⛔ Запрещено: «переопределить» retention или consent-семантику зоны,
   ссылаясь на `lifetime` или `knowledge_class` из этого ADR.
+- ⛔ Запрещено: рассматривать `storage_scope=session` или `lifetime=ephemeral`
+  как основание не применять sensitivity, purpose, access и lawful-basis
+  checks.
 
 #### N-11. Proactive Readiness Gate (memory-часть)
 
@@ -525,12 +559,12 @@ aliases; в код и документы они не переносятся):
 
 | Draft-класс (Journey v1.2) | `knowledge_class` | `confidence` | `lifetime` | `provenance` | TTL draft-класса → статус |
 |---|---|---|---|---|---|
-| `verified_identity` | `identity` | `verified` | `persistent` | `explicit_answer` (дата рождения), `imported` (связанный channel ID) | «по identity/retention policy» → без изменений; identity живёт преимущественно в canonical User identity (ADR-0009), не в Memory Entry |
-| `persistent_safety` | `safety` | `declared` (user-stated) / `verified` (профессионально подтверждено) | `persistent` | `explicit_answer` / `confirmed_proposal` | «без авто-удаления по возрасту, с переподтверждением» → норма N-06; коллизия с red TTL 90d → OD-2 |
-| `time_bounded_safety` | `safety` | `declared` / `inferred` | `time_bounded` | `explicit_answer` / `observed_signal` (safety-наблюдение провайдера, Ст. III.4) | «по утверждённой safety/retention policy» → OD-5 (число не подтверждено источниками) |
-| `stable` | `preference` | `declared` | `persistent` | `explicit_answer` / `confirmed_proposal` / `imported` | candidate 365d → совпадает с yellow zone cap ADR-0011 §5; для green — без auto-TTL; итог — OD-5 |
-| `ephemeral` | `context` | `declared` / `inferred` | `ephemeral` | `explicit_answer` / `observed_signal` | candidate 14–30d → design candidate (OD-5) |
-| `hypothesis` | `hypothesis` | `inferred` | `time_bounded` | `observed_signal` | candidate 30d → design candidate (OD-5) |
+| `verified_identity` | `identity` | `declared` (дата рождения, введённая пользователем) / `verified` (только при наличии утверждённого `verification_method`) | `until_changed` | `explicit_answer` (дата рождения), `imported` (связанный channel ID) | «по identity/retention policy» → без изменений; identity живёт преимущественно в canonical User identity (ADR-0009), не в Memory Entry |
+| `persistent_safety` | `safety` | `declared` (user-stated) / `verified` (профессионально подтверждено) | `until_changed` | `explicit_answer` / `confirmed_proposal` | «без авто-удаления по возрасту, с переподтверждением» → норма N-06; коллизия с red TTL 90d → OD-2 |
+| `time_bounded_safety` | `safety` | `declared` / `inferred` | `time_bounded` | `explicit_answer` / `observed_event` (safety-наблюдение провайдера, Ст. III.4) | «по утверждённой safety/retention policy» → OD-5 (число не подтверждено источниками) |
+| `stable` | `preference` | `declared` | `until_changed` | `explicit_answer` / `confirmed_proposal` / `imported` | candidate 365d → совпадает с yellow zone cap ADR-0011 §5; для green — без auto-TTL; итог — OD-5 |
+| `ephemeral` | `context` | `declared` / `inferred` | `ephemeral` | `explicit_answer` / `model_inference` | candidate 14–30d → design candidate (OD-5) |
+| `hypothesis` | `preference` / `safety` / `context` (по предмету) | `inferred` | `time_bounded` | `model_inference` | candidate 30d → design candidate (OD-5); `knowledge_class=hypothesis` не вводится |
 
 Числовые TTL из таблицы Journey §5 являются design candidates (само Journey
 это фиксирует): до решений OD-2/OD-5 они не разрешают ни автоматическое
@@ -539,8 +573,10 @@ aliases; в код и документы они не переносятся):
 ### Примирение с sensitivity-зонами ADR-0011
 
 - Зоны и измерения **ортогональны** (N-01): зона назначается по содержимому
-  записи per ADR-0011 §4, а не по `knowledge_class`. `hypothesis` о вечерних
-  слотах — `green`; `hypothesis` о ценовой чувствительности — `yellow`;
+  записи per ADR-0011 §4, а не по `knowledge_class`.
+  `knowledge_class=preference`, `confidence=inferred`, `provenance=model_inference`
+  о вечерних слотах — `green` (содержимое нечувствительно);
+  та же ось о ценовой чувствительности — `yellow`;
   подтверждённая беременность — `red`.
 - Типичные (ненормативные) корреляции: `safety` → обычно `yellow`/`red`;
   `preference` → обычно `green`/`yellow`; `identity` → преимущественно вне
@@ -556,15 +592,15 @@ aliases; в код и документы они не переносятся):
 | # | Норма Journey v1.2 | Решение ADR-0012 | Обоснование |
 |---|---|---|---|
 | 1 | Memory Proposal flow: Signal/Explicit → Proposal → Sensitivity+Purpose Check → Consent Check → Persistent / Session only | **Подтверждено** (N-02); оформлено через атрибуты `memory_status`/`storage_scope`/`consent_scope` | Прямая канонизация draft-источника; атрибуты взяты из Journey Stage 6 yaml, новой семантики не добавлено |
-| 2 | Источники proposal: `explicit` / `signal` / `inferred` | **Подтверждено с перекодировкой**: `inferred` раскладывается в `confidence=inferred` + `knowledge_class=hypothesis` (+ `provenance=observed_signal`) | Требование владельца — ортогональные измерения; плоский `source` не вмещает «подтверждённую гипотезу»; кодовый enum сохраняется до миграции |
+| 2 | Источники proposal: `explicit` / `signal` / `inferred` | **Подтверждено с перекодировкой**: `inferred` раскладывается в `confidence=inferred` + `provenance=model_inference` (на основе `observed_event`); предмет (`knowledge_class`) определяется отдельно | Требование владельца — ортогональные измерения; плоский `source` не вмещает «подтверждённую гипотезу»; кодовый enum сохраняется до миграции |
 | 3 | Молчание ≠ согласие на профилирование и сохранение гипотез | **Подтверждено** (N-03) | Конституция Ст. VII/XIV; совпадает с реализацией W5 (`memory_ask` skip/abandon) |
 | 4 | Heuristic п.1: `explicit` — только в исходной purpose | **Подтверждено** (N-07) | Конституция Ст. V/VI |
 | 5 | Heuristic п.2: временные/изменяемые факты — переподтверждение перед существенным использованием | **Подтверждено** (N-06, N-09) | Конституция Ст. IX |
 | 6 | Heuristic п.3: safety-critical не удаляется по давности → `confirmation_required` | **Подтверждено** (N-06); коллизия с red TTL 90d → **OD-2** | Норма прямо из Конституции Ст. IX; разрешить коллизию с ADR-0011 §5 в этом draft — вне полномочий |
 | 7 | Heuristic п.4: `inferred`/`signal` — не самостоятельное основание Substantial Recommendation | **Подтверждено** (N-04) | Конституция Ст. VII |
-| 8 | Heuristic п.5: подтверждённая гипотеза → declared/confirmed с сохранением provenance | **Подтверждено и формализовано** измерениями (N-05) | Пример владельца канонизирован как комбинация осей |
+| 8 | Heuristic п.5: подтверждённая гипотеза → declared/confirmed с сохранением provenance | **Подтверждено и формализовано** измерениями (N-05): предмет не меняется, меняются `confidence`, `provenance`, `memory_status` | Пример владельца канонизирован как комбинация осей |
 | 9 | Heuristic п.6: TTL/decay/`current_relevance` отложены до ADR-0012 | **Изменено сознательно**: поведенческие триггеры вопрошания канонизированы (N-09); числовые пороги 0.3/0.2 — design candidates; автоматический decay engine — deferred с явным критерием включения | Критерий владельца «либо норма, либо явно deferred с критерием»: выбран вариант «норма поведения сейчас + автоматика позже»; числа вне источников не вводятся |
-| 10 | Классы знаний (6 draft-классов) | **Изменено**: заменены ортогональными измерениями; маппинг — §«Маппинг»; имена классов — deprecated aliases | Прямое требование владельца (бриф 2.1): draft-классы смешивают оси |
+| 10 | Классы знаний (6 draft-классов) | **Изменено**: заменены ортогональными измерениями; `hypothesis` убран из `knowledge_class`; маппинг — §«Маппинг»; имена классов — deprecated aliases | Прямое требование владельца (бриф 2.1): draft-классы смешивают оси |
 | 11 | Proactive Readiness Gate (planned source: ADR-0012) | **Подтверждено в memory-части** (N-11); каналы/тайминг остаются в Journey | Glossary и Journey §6 называют ADR-0012 planned source; scope-ограничение брифа (без UX-политик) |
 | 12 | «What Ayla Remembers»: запоминается только необходимое для помощи | **Подтверждено** (N-08) | Конституция Ст. VI; бриф 2.4 |
 | 13 | Learning Signals: явный feedback меняет `current_relevance`, неявный — нет | **Подтверждено как направление** (N-03, N-12); числовая механика — deferred (N-09) | Числа — design candidates до Measurement Framework |
@@ -580,8 +616,15 @@ ADR. Все шаги миграции — после канонизации и �
 | Существующее поле | Роль в модели | Действие |
 |---|---|---|
 | `sensitivity_zone` | Ось зон (ADR-0011) | Без изменений (N-10) |
-| `kind` (`preference`/`contraindication`/`symptom`/`lifestyle`/`relationship`/`financial`/`other`) | Частичная проекция `knowledge_class`: `contraindication`,`symptom` → `safety`; `preference`,`lifestyle`,`financial` → `preference`; `relationship` → `context`; `other` → `context`. `identity` и `hypothesis` в `kind` отсутствуют (гипотезы кодируются `source=inferred`) | Сохранить; добавить `knowledge_class` аддитивно с backfill по этому маппингу (правила backfill — design candidate, утверждает OD-4) |
-| `source` (`explicit`/`inferred`/`signal`) | Проекция `provenance` + `confidence`: `explicit` → `explicit_answer`+`declared`; `signal` → `observed_signal`+`inferred`; `inferred` → `observed_signal`+`inferred`+`knowledge_class=hypothesis` | Сохранить enum; добавить измерения аддитивно; `confirmed_proposal` — новое значение, появляется только при подтверждении proposal |
+| `kind` (`preference`/`contraindication`/`symptom`/`lifestyle`/`relationship`/`financial`/`other`) | Частичная проекция `knowledge_class`: `contraindication`,`symptom` → `safety`; `preference`,`lifestyle`,`financial` → `preference`; `relationship` → `context`; `other` → `context`. `identity` в `kind` отсутствует; гипотезы кодируются `source=inferred` и проецируются на `knowledge_class` по предмету (например, `preference`) с `confidence=inferred` | Сохранить; добавить `knowledge_class` аддитивно с backfill по этому маппингу (правила backfill — design candidate, утверждает OD-4) |
+| `source` (`explicit`/`inferred`/`signal`) | Проекция `provenance` + `confidence`:
+  `explicit` → `explicit_answer`+`declared`;
+  `signal` → `observed_event`+`inferred`;
+  `inferred` → `model_inference`+`inferred` (на основе `observed_event` в
+  `evidence_refs`). | Сохранить enum; добавить измерения аддитивно;
+  `confirmed_proposal` — новое значение, появляется только при подтверждении
+  proposal. Также contract sources `behavioral`/`transactional` →
+  `observed_event`+`inferred`, а не `declared`. |
 | `consent_at`, `last_inferred_at`, `last_used_at/count`, `ttl_days`, `delete_*`, `deletion_reason` | Слой приватности и аудита ADR-0011 | Без изменений (N-10) |
 | — (отсутствуют) | `confidence`, `lifetime`, `provenance`, `memory_status`, `storage_scope`, `consent_scope` | Аддитивное расширение схемы — владелец реализации №1 (ниже); backfill-правила — design candidate (OD-4) |
 
@@ -594,16 +637,17 @@ yellow/red, fail-closed minor protection, запрет авто-повышени
 
 ### 12 declared-полей Ayla-side (frozen-контракт v1.0)
 
-Все поля: `confidence=declared` (user-stated), `provenance=explicit_answer`
-(contract source `explicit`/`conversational`) или `observed_signal`
-(`behavioral`/`transactional`), `lifetime=persistent`, зона — по контракту
+Все поля: `confidence=declared` для источников `explicit`/`conversational`
+(однозначное утверждение пользователя); `confidence=inferred` для источников
+`behavioral`/`transactional`; `provenance=explicit_answer` или
+`observed_event` соответственно; `lifetime=until_changed`; зона — по контракту
 `green` (см. OD-1 по двум полям):
 
 | Поле контракта | `knowledge_class` | Примечание |
 |---|---|---|
 | `preferred_districts`, `workplace_district`, `home_district` | `preference` | Где удобно получать услугу |
 | `preferred_time_slots`, `busy_days` | `preference` | Когда удобно / когда занят |
-| `price_range_min`, `price_range_max` | `preference` | Бюджет как предпочтение (inferred price floor — отдельная `hypothesis`, `yellow`) |
+| `price_range_min`, `price_range_max` | `preference` | Бюджет как предпочтение (inferred price floor — отдельная запись `preference`/`inferred`/`model_inference`, `yellow`) |
 | `diet_type` | `preference` | Диета как предпочтение; зона — OD-1 (ADR-0011 §4.2 относит vegan/keto/allergies к `yellow`; halal/kosher косвенно затрагивают религиозную принадлежность — требуется ruling владельца/legal) |
 | `skin_sensitivities` | `safety` | User-stated, не клинический диагноз (контракт); зона — OD-1 (контракт: `green`; ADR-0011 §4.2: `yellow`) |
 | `prefers_flexible_cancellation` | `preference` | |
@@ -661,21 +705,24 @@ MemoryEntry, declared prefs, consents). Добавление измерений 
 
 ## Consistency review
 
-Постатейная сверка Draft v0.1 с действующими канонами. Вывод: конфликтов,
-требующих остановки, нет; две коллизии зафиксированы как owner decisions
-(OD-1, OD-2) и не разрешены в тексте ADR.
+Постатейная сверка Draft v0.2 с действующими канонами. Вывод: конфликтов,
+препятствующих продолжению review Draft, нет. Канонизация и реализация
+затронутых частей заблокированы до решений OD-1 и OD-2. OD-1 требует legal
+review (особенно для религиозных выводов, health/safety), OD-2 — совместного
+Privacy/Safety/Legal ruling и amendment ADR-0011. Две коллизии не разрешены
+в тексте ADR.
 
 ### Конституция v2.2
 
 | Статья | Сверка | Вывод |
 |---|---|---|
-| III (Роли; safety-наблюдения) | Наблюдение провайдера — `safety`/`inferred`/`time_bounded`/`observed_signal`; до подтверждения — только соразмерное временное ограничение; запрет провайдерских «предпочтений» и ярлыков — N-02, N-14 | Совместимо |
+| III (Роли; safety-наблюдения) | Наблюдение провайдера — `safety`/`inferred`/`time_bounded`/`observed_event`; до подтверждения — только соразмерное временное ограничение; запрет провайдерских «предпочтений» и ярлыков — N-02, N-14 | Совместимо |
 | IV (Экономическая нейтральность) | N-14 | Совместимо |
-| V (Происхождение знаний) | Модель прямо реализует «источник, цель, надёжность, актуальность, область доступа»: `provenance`/`consent_scope`/`confidence`/`lifetime`+N-09/зона; гипотезы отделены (`knowledge_class=hypothesis`); синтез и аудит — N-13 | Совместимо |
+| V (Происхождение знаний) | Модель прямо реализует «источник, цель, надёжность, актуальность, область доступа»: `provenance`/`consent_scope`/`confidence`/`lifetime`+N-09/зона; гипотезы отделены (`confidence=inferred`, `memory_status=proposed`); синтез и аудит — N-13 | Совместимо |
 | VI (Постепенное доверие) | N-02, N-07, N-08 | Совместимо |
 | VII (Объяснение, вето, неявные сигналы) | N-03, N-04, N-05, N-12, N-13 | Совместимо |
 | IX (Жизненный цикл знаний) | N-06, N-09, N-12; коллизия «safety не удаляется по давности» vs red TTL 90d (ADR-0011 §5) → OD-2, не разрешена здесь | Совместимо с одной зафиксированной коллизией |
-| X (Уместность) | N-11; запрет скрытой диагностики не расширяется: `hypothesis` о состоянии не создаётся по косвенным признакам здоровья (красная зона — только user-stated/explicit consent per ADR-0011 §4.3) | Совместимо |
+| X (Уместность) | N-11; запрет скрытой диагностики не расширяется: inferred-запись о состоянии не создаётся по косвенным признакам здоровья (красная зона — только user-stated/explicit consent per ADR-0011 §4.3) | Совместимо |
 | XI (Честное отражение) | Измерение/оценка/заключение/гипотеза различаются `confidence` и `knowledge_class`; импорт мультимодальных данных → `imported` + отдельные политики (вне scope) | Совместимо |
 | XIV (Автономия, согласия) | N-03, N-07, N-12; отказ от памяти/персонализации (ADR-0011 §8, §13.3) не изменён | Совместимо |
 
@@ -701,11 +748,14 @@ MemoryEntry, declared prefs, consents). Добавление измерений 
 
 - Зоны, consent-семантика, retention, шифрование, аудит, minor protection —
   без изменений (N-10). «Одна модель» достигается ортогональностью, а не
-  заменой зон. Совместимо, кроме двух зафиксированных коллизий:
+  заменой зон. Совместимо, кроме двух зафиксированных коллизий, которые
+  блокируют канонизацию/реализацию затронутых частей до owner decisions:
   - **OD-1** — зона `diet_type`/`skin_sensitivities`: ADR-0011 §4.2 (`yellow`)
-    vs frozen-контракт (все 12 полей `green`).
+    vs frozen-контракт (все 12 полей `green`). Требуется legal review
+    (особенно halal/kosher и health/safety).
   - **OD-2** — red TTL 90d purge vs safety-critical persistence (Ст. IX,
-    Journey `persistent_safety`).
+    Journey `persistent_safety`). Требуется Privacy/Safety/Legal ruling и
+    amendment ADR-0011.
 
 ### ADR-0009 (ayla-knowledge, статус Review)
 
@@ -747,7 +797,7 @@ Glossary»; сам Glossary этим ADR не изменяется (отдель
 
 ## Owner decision required
 
-Draft не канонизируется, пока по каждому пункту нет GO владельца:
+Draft не канонизируется, пока по каждому из 10 пунктов нет GO владельца:
 
 - **OD-1. Зона `diet_type` и `skin_sensitivities`.** ADR-0011 §4.2 относит
   user-stated diet (vegan/keto/allergies) и skin sensitivities к `yellow`;
@@ -768,9 +818,16 @@ Draft не канонизируется, пока по каждому пункт
   Рекомендация draft — (a); решение — владельца.
 - **OD-3. Утверждение enum измерений** (`knowledge_class`, `confidence`,
   `lifetime`, `provenance` и их значений) как канонических — или правки.
-- **OD-4. Утверждение маппинга** Journey-классов и правил backfill
-  (§«Миграция», design candidate), включая реестр методов верификации для
-  `confidence=verified` (пока — только identity-linkage).
+  Рекомендация review: сначала убрать `hypothesis` из `knowledge_class` и
+  добавить честный provenance для inference (`observed_event`/`model_inference`).
+- **OD-4A. Утверждение маппинга** Journey-классов и правил backfill
+  (§«Миграция», design candidate). Backfill должен быть source-aware:
+  `behavioral`/`transactional` → `confidence=inferred`/`provenance=observed_event`,
+  не `declared`.
+- **OD-4B. Реестр методов верификации** для `confidence=verified`: что qualifies
+  (профессиональное подтверждение, документ, системный linkage). До появления
+  утверждённого allowlist `verified` запрещено для данных, введённых только
+  пользователем (например, дата рождения).
 - **OD-5. Числовые TTL** (ephemeral 14–30d, hypothesis 30d, stable 365d —
   кандидаты Journey): утвердить как design candidates для экспериментов или
   отложить до Measurement Framework. Zone caps ADR-0011 остаются единственными
@@ -778,10 +835,17 @@ Draft не канонизируется, пока по каждому пункт
 - **OD-6. Пороги `current_relevance`** (0.3 переспрос / 0.2 подавление):
   утвердить как design candidates; критерий включения decay engine (N-09) —
   подтвердить или изменить.
-- **OD-7. Дополнения Glossary** (§ниже): утвердить список из 9 терминов для
+- **OD-7. Дополнения Glossary** (§ниже): утвердить список терминов для
   отдельного reviewed-батча.
 - **OD-8. Владельцы реализации** (§выше): подтвердить назначения и очередь
-  (после канонизации ADR).
+  (после канонизации ADR). Реализация заблокирована до OD-1–OD-4.
+- **OD-9. Canonical consent-scope registry:** утвердить versioned список
+  purpose-ключей (`provider_selection`, `intent_understanding`,
+  `question_suppression`, `proactive_recommendation` и др.) и владельца registry
+  до начала реализации `consent_scope`.
+- **OD-10. Формат decision record для rejected proposal:** утвердить минимальный
+  набор полей (`topic`/`purpose`, `decision`, `timestamp`, `cooldown`), срок
+  хранения и доступ пользователя к истории отказов (ADR-0011 §8).
 
 ## Open questions
 
@@ -799,37 +863,47 @@ Draft не канонизируется, пока по каждому пункт
 - **OQ-5.** Consent-семантика `imported` (wearables, внешние источники):
   какое согласие покрывает импорт и производные гипотезы — Phase 1+, legal
   review (ADR-0011 §15).
-- **OQ-6.** Ephemeral-записи и зоны: требует ли ephemeral `yellow`-факт
-  полного yellow-consent, или для коротких сроков допустим облегчённый
-  UX — к legal/UX; рабочее допущение draft: consent-правила не зависят от
-  `lifetime`.
+- **OQ-6.** ~~Ephemeral-записи и зоны:~~ Удалён как open question; рабочее
+  правило поднято в норму N-02/N-10: `storage_scope=session` и
+  `lifetime=ephemeral` не ослабляют sensitivity, purpose, access и
+  lawful-basis checks.
 - **OQ-7.** UX-паттерн переспроса (`confirmation_required`): владелец —
   Conversation Design; связь с anti-spam правилами ask-eligibility.
 - **OQ-8.** Подтверждение маппинга safety-наблюдений провайдера (Ст. III.4)
-  на `safety`/`inferred`/`time_bounded`/`observed_signal` — с Safety Owner.
+  на `safety`/`inferred`/`time_bounded`/`observed_event` — с Safety Owner.
 
 ## Предлагаемые дополнения в Glossary
 
 Не применяются этим ADR; отдельный reviewed-батч после OD-7. Формат —
 сокращённые карточки по шаблону Glossary §1.3 (Status: `proposed`, Planned
-source: ADR-0012, Owner: User Context Domain, если не указано иное):
+source: ADR-0012, Owner: User Context Domain, если не указано иное).
+Предложено 11 терминов/уточнений:
 
 - **Knowledge Class** (`knowledge_class`) — измерение Memory Entry: предметная
-  категория знания (`identity`/`safety`/`preference`/`context`/`hypothesis`).
+  категория знания (`identity`/`safety`/`preference`/`context`), плюс
+  техническое `unclassified` для начального proposal без выявленного предмета.
 - **Memory Confidence** — измерение Memory Entry: степень подтверждённости
   записи (`verified`/`declared`/`inferred`). Не равно `Confidence` (надёжность
   структурированного вывода): disambiguation обязательна по Glossary §2.1.
 - **Lifetime (memory)** — измерение Memory Entry: ожидаемый срок актуальности
-  (`persistent`/`time_bounded`/`ephemeral`). Не заменяет Retention Policy
+  (`until_changed`/`time_bounded`/`ephemeral`). Не заменяет Retention Policy
   (зоны).
 - **Provenance Category** — измерение Memory Entry: категория происхождения
-  (`explicit_answer`/`imported`/`observed_signal`/`confirmed_proposal`).
-  Уточняет существующий термин Provenance, не заменяя его.
+  (`explicit_answer`/`imported`/`observed_event`/`model_inference`/
+  `confirmed_proposal`). Уточняет существующий термин Provenance, не заменяя
+  его.
 - **Memory Status** (`memory_status`) — состояние записи в жизненном цикле
-  (`proposed`/`confirmed`/`rejected`/`confirmation_required`/`superseded`).
+  (`proposed`/`confirmed`/`confirmation_required`/`superseded`). Отклонённый
+  proposal не порождает Memory Entry; решение фиксируется Decision Record.
 - **Storage Scope** — область хранения записи (`session`/`persistent`).
 - **Confirmation Required** — состояние записи, при котором использование для
   существенных решений требует переподтверждения. Owner: Safety Owner.
+- **Decision Record** — минимальная audit-запись без персонального значения,
+  фиксирующая отклонение proposal (`topic`/`purpose`, `decision`, `timestamp`,
+  `cooldown`). Owner: User Context Domain + Privacy.
+- **Consent Scope Registry** — versioned реестр purpose-ключей
+  (`consent_scope`), в пределах которых может использоваться запись памяти.
+  Owner: User Context Domain + Privacy.
 - **Current Relevance** — планируемая оценка актуальности записи; числовая
   механика deferred (N-09). Status: `planned`.
 - **Memory Decay** — планируемый механизм затухания актуальности; критерий
@@ -872,6 +946,32 @@ Draft подготовлен по брифу владельца (GO 2026-07-21, 
    этого ADR).
 
 ## Change Log
+
+### v0.2 — 2026-07-21
+
+- Правки по review оркестратора:
+  - `hypothesis` убран из `knowledge_class`; неподтверждённая гипотеза —
+    комбинация `knowledge_class=<предмет>`, `confidence=inferred`,
+    `memory_status=proposed`.
+  - Provenance разведено на `observed_event` (факт) и `model_inference`
+    (вывод); для `model_inference` обязательны `evidence_refs` и
+    `derivation_method`.
+  - Исправлен mapping confidence: `behavioral`/`transactional` → `inferred` +
+    `observed_event`.
+  - `verified_identity` уточнено: `verified` только при наличии утверждённого
+    `verification_method`; просто введённая дата рождения — `declared`.
+  - `lifetime=persistent` переименовано в `until_changed`.
+  - `memory_status=rejected` убран из Memory Entry; отклонённые proposal
+    фиксируются Decision Record без персонального значения.
+  - N-02 уточнено: explicit save request проходит `proposed`, session/ephemeral
+    не ослабляют sensitivity/legal checks.
+  - Consistency review переформулирован: канонизация/реализация заблокированы
+    до OD-1 (legal review) и OD-2 (Privacy/Safety/Legal ruling + amendment
+    ADR-0011).
+  - Добавлены OD-4A/OD-4B, OD-9 (consent-scope registry), OD-10 (decision
+    record формат); OQ-6 удалён как отдельный вопрос.
+  - Glossary proposals обновлены: 11 терминов, включая Decision Record и
+    Consent Scope Registry.
 
 ### v0.1 — 2026-07-21
 
