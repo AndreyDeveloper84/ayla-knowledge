@@ -1,55 +1,55 @@
 ---
 node_id: ayla.strategy.strategic-moat
- title: Ayla Strategic Moat Specification
- type: strategy
- status: review
- activation_status: pending-approval
- version: "0.1"
- owner: Founder / Product Strategy
- priority: P0
- knowledge_area:
-   - strategy
- domain:
-   - user-model
-   - intent
-   - recommendation
-   - provider-network
- concerns:
-   - competitive-advantage
-   - personalization
-   - trust
-   - data-governance
-   - network-effects
-   - ai-architecture
- system_owner:
-   - shared
- source_repository: ayla-knowledge
- created: 2026-07-21
- updated: 2026-07-21
- source_kind: canonical-candidate
- classification: internal
- data_sensitivity: none
- data_categories:
-   - none
- security_sensitivity: medium
- ai_indexing: allowed
- export_policy: summary-only
- tags:
-   - ayla
-   - ayla/strategy
-   - ayla/moat
-   - type/strategy
-   - priority/p0
- implements:
-   - "[[Ayla Constitution]]"
- depends_on:
-   - "[[Ayla Constitution]]"
- related:
-   - "[[Ayla Decision Log]]"
- supersedes: []
- review_cycle: quarterly
- approved_by: null
- approval_date: null
+title: Ayla Strategic Moat Specification
+type: strategy
+status: review
+activation_status: pending-approval
+version: "0.1"
+owner: Founder / Product Strategy
+priority: P0
+knowledge_area:
+  - strategy
+domain:
+  - user-model
+  - intent
+  - recommendation
+  - provider-network
+concerns:
+  - competitive-advantage
+  - personalization
+  - trust
+  - data-governance
+  - network-effects
+  - ai-architecture
+system_owner:
+  - shared
+source_repository: ayla-knowledge
+created: 2026-07-21
+updated: 2026-07-21
+source_kind: canonical-candidate
+classification: internal
+data_sensitivity: none
+data_categories:
+  - none
+security_sensitivity: medium
+ai_indexing: allowed
+export_policy: summary-only
+tags:
+  - ayla
+  - ayla/strategy
+  - ayla/moat
+  - type/strategy
+  - priority/p0
+implements:
+  - "[[Ayla Constitution]]"
+depends_on:
+  - "[[Ayla Constitution]]"
+related:
+  - "[[Ayla Decision Log]]"
+supersedes: []
+review_cycle: quarterly
+approved_by: null
+approval_date: null
 ---
 
 # AYLA STRATEGIC MOAT SPECIFICATION
@@ -750,48 +750,13 @@ Ayla не строит защиту на конкретной LLM. Модели 
 
 ### 12.2. Распределение по системам
 
-**ayla-knowledge** отвечает за:
+**ayla-knowledge** отвечает за Constitution, продуктовую и стратегическую модель, терминологию, policy, канонические спецификации и decision hierarchy.
 
-- Конституцию;
-- продуктовую и стратегическую модель;
-- терминологию;
-- policy;
-- канонические спецификации;
-- decision hierarchy.
+**ayla-ai-core** отвечает за intent primitives, recommendation primitives, orchestration contracts, explainability helpers, evaluation contracts и brand-neutral AI components.
 
-**ayla-ai-core** отвечает за общие механизмы:
+**ai-bot-platform** отвечает за conversations, channels, memory integration, skills and tools, prompt registry, consent, audit, replay, experiments, human handoff и observability.
 
-- intent primitives;
-- recommendation primitives;
-- orchestration contracts;
-- explainability helpers;
-- evaluation contracts;
-- brand-neutral AI components.
-
-**ai-bot-platform** отвечает за runtime:
-
-- conversations;
-- channels;
-- memory integration;
-- skills and tools;
-- prompt registry;
-- consent;
-- audit;
-- replay;
-- experiments;
-- human handoff;
-- observability.
-
-**beautygo_backend** отвечает за доменные факты и исполнение:
-
-- identity;
-- providers;
-- catalog;
-- availability;
-- appointments;
-- payments;
-- reviews;
-- operational contracts.
+**beautygo_backend** отвечает за identity, providers, catalog, availability, appointments, payments, reviews и operational contracts.
 
 ### 12.3. Replay moat
 
@@ -829,25 +794,9 @@ Ayla должна иметь собственную evaluation system, изме�
 
 ### 12.5. Knowledge moat
 
-Knowledge layer должен различать:
+Knowledge layer должен различать общие проверенные знания, локальные сведения провайдера, каталог услуг, нормативные ограничения, пользовательский контекст, профессиональные записи и гипотезы модели.
 
-- общие проверенные знания;
-- локальные сведения провайдера;
-- каталог услуг;
-- нормативные ограничения;
-- пользовательский контекст;
-- профессиональные записи;
-- гипотезы модели.
-
-RAG без governance не считается moat. Качество определяется не количеством документов, а:
-
-- authority;
-- актуальностью;
-- происхождением;
-- domain ownership;
-- разрешением конфликтов;
-- versioning;
-- evaluation использования.
+RAG без governance не считается moat. Качество определяется authority, актуальностью, происхождением, domain ownership, разрешением конфликтов, versioning и evaluation использования.
 
 ### 12.6. Multi-channel continuity
 
@@ -884,18 +833,7 @@ Continuity допускается только при корректной ид�
 7. Evaluation и replay улучшают систему.
 8. Следующее взаимодействие становится полезнее.
 
-Конкуренту необходимо скопировать не интерфейс, а всю петлю одновременно:
-
-- доверие;
-- контекст;
-- intent model;
-- policies;
-- execution network;
-- outcome feedback;
-- evaluation infrastructure;
-- governance.
-
-Именно композиция создаёт устойчивость.
+Конкуренту необходимо скопировать не интерфейс, а всю петлю одновременно: доверие, контекст, intent model, policies, execution network, outcome feedback, evaluation infrastructure и governance.
 
 ---
 
@@ -927,82 +865,25 @@ Continuity допускается только при корректной ид�
 
 ### 15.1. Универсальные AI-ассистенты
 
-Их преимущества:
-
-- широкие знания;
-- низкая стоимость ответа;
-- высокая скорость развития моделей.
-
-Ограничения относительно Ayla:
-
-- отсутствие специализированного action layer;
-- слабая интеграция с локальной сетью специалистов;
-- отсутствие контролируемой долгосрочной модели self-care;
-- недостаточный domain governance;
-- отсутствие outcome loop;
-- отсутствие гарантированной экономической нейтральности в marketplace matching.
+Их преимущества — широкие знания, низкая стоимость ответа и высокая скорость развития моделей. Ограничения относительно Ayla — отсутствие специализированного action layer, локальной сети специалистов, контролируемой долгосрочной модели self-care, outcome loop и гарантированной экономической нейтральности matching.
 
 Ayla не должна конкурировать качеством общего текста. Она должна выигрывать continuity, execution, trust и outcome learning.
 
 ### 15.2. Каталоги и карты
 
-Преимущества:
-
-- большая аудитория;
-- географическое покрытие;
-- отзывы;
-- привычный поиск.
-
-Ограничения:
-
-- поиск начинается с категории;
-- слабое понимание intent;
-- рейтинг не показывает пригодность для конкретного человека;
-- нет непрерывного пути и результата;
-- реклама влияет на видимость.
+Они имеют большую аудиторию, географическое покрытие, отзывы и привычный поиск. Но поиск начинается с категории, рейтинг не показывает пригодность для конкретного человека, нет непрерывного пути и реклама влияет на видимость.
 
 ### 15.3. CRM и сервисы записи
 
-Преимущества:
-
-- сильная операционная инфраструктура;
-- расписание;
-- клиентская база;
-- автоматизация салона.
-
-Ограничения:
-
-- продукт строится вокруг провайдера;
-- пользовательский контекст фрагментирован между организациями;
-- нет независимого персонального AI пользователя;
-- цель — завершить запись, а не координировать путь.
+Они сильны в расписании, клиентской базе и автоматизации салона, но строятся вокруг провайдера. Пользовательский контекст фрагментирован, а целью является завершение записи, не координация пути.
 
 ### 15.4. Wellness trackers
 
-Преимущества:
-
-- частые данные;
-- привычки;
-- визуализация прогресса.
-
-Ограничения:
-
-- трекеры часто не приводят к действию;
-- домены изолированы;
-- пользователь сам интерпретирует данные;
-- слабая связь со специалистами и фактическим исполнением.
+Они собирают частые данные и визуализируют прогресс, но трекеры часто не приводят к действию, домены изолированы, а связь со специалистами и фактическим исполнением слаба.
 
 ### 15.5. Вертикальные медицинские сервисы
 
-Преимущества:
-
-- лицензированная компетенция;
-- клинические процессы;
-- доступ к врачам.
-
-Граница Ayla:
-
-Ayla не должна имитировать медицинский сервис. Её преимущество — координация безопасного self-care и своевременное направление в профессиональный контур.
+Они обладают лицензированной компетенцией и клиническими процессами. Ayla не должна их имитировать. Её преимущество — координация безопасного self-care и своевременное направление в профессиональный контур.
 
 ---
 
@@ -1045,55 +926,19 @@ Ayla не должна имитировать медицинский серви�
 
 ### 17.2. Supporting metrics
 
-**User value:**
+**User value:** time to first helpful action, helpful action completion rate, user-reported helpfulness, closed feedback loop rate, return for next-step rate.
 
-- time to first helpful action;
-- helpful action completion rate;
-- user-reported helpfulness;
-- closed feedback loop rate;
-- return for next-step rate.
+**Personalization:** repeat recommendation improvement, correction rate, context reuse without repeated questions, stale context exclusion rate.
 
-**Personalization:**
+**Trust:** explanation comprehension, consent confidence, privacy incidents, provider neutrality audits.
 
-- repeat recommendation improvement;
-- correction rate;
-- context reuse without repeated questions;
-- stale context exclusion rate.
+**Marketplace:** suitable options density, time to suitable slot, provider reliability, quality-adjusted liquidity.
 
-**Trust:**
-
-- explanation comprehension;
-- consent confidence;
-- privacy incidents;
-- provider neutrality audits.
-
-**Marketplace:**
-
-- suitable options density;
-- time to suitable slot;
-- provider reliability;
-- quality-adjusted liquidity.
-
-**AI operations:**
-
-- evaluation pass rate;
-- replay coverage;
-- policy violation rate;
-- hallucination rate;
-- tool completion rate.
+**AI operations:** evaluation pass rate, replay coverage, policy violation rate, hallucination rate, tool completion rate.
 
 ### 17.3. Guardrail metrics
 
-Рост WCHA не допускается ценой ухудшения:
-
-- safety incident rate;
-- user regret rate;
-- complaint rate;
-- unnecessary data collection;
-- notification opt-out rate;
-- provider concentration;
-- commercial influence audit;
-- adverse outcome rate.
+Рост WCHA не допускается ценой ухудшения safety incident rate, user regret rate, complaint rate, unnecessary data collection, notification opt-out rate, provider concentration, commercial influence audit или adverse outcome rate.
 
 ---
 
@@ -1101,50 +946,33 @@ Ayla не должна имитировать медицинский серви�
 
 ### Stage 0 — Hypothesis
 
-- миссия сформулирована;
-- Constitution утверждена;
-- moat layers описаны;
-- нет доказанного накопительного преимущества.
+Миссия сформулирована, Constitution утверждена, moat layers описаны, но доказанного накопительного преимущества нет.
 
 ### Stage 1 — Assisted Utility
 
-- Ayla помогает пользователю сформулировать intent;
-- предлагает первый полезный шаг;
-- может выполнить ограниченный набор actions;
-- обратная связь собирается вручную или частично.
+Ayla помогает сформулировать intent, предлагает первый полезный шаг, выполняет ограниченный набор actions, а обратная связь собирается вручную или частично.
 
 ### Stage 2 — Personal Continuity
 
-- контекст сохраняется с provenance и consent;
-- следующий диалог использует прошлую историю;
-- пользователь видит улучшение персонализации;
-- работает lifecycle знаний.
+Контекст сохраняется с provenance и consent, следующий диалог использует прошлую историю, пользователь видит улучшение персонализации, работает lifecycle знаний.
 
 ### Stage 3 — Outcome Learning
 
-- значимая доля путей имеет closed loop;
-- recommendation policy калибруется по outcome feedback;
-- replay и evaluation обязательны для релизов.
+Значимая доля путей имеет closed loop, recommendation policy калибруется по outcome feedback, replay и evaluation обязательны для релизов.
 
 ### Stage 4 — Local Network Liquidity
 
-- в выбранной географии имеется достаточная плотность провайдеров;
-- intent-to-provider matching улучшает результат;
-- сильные провайдеры получают органический релевантный спрос.
+В выбранной географии имеется достаточная плотность провайдеров, intent-to-provider matching улучшает результат, сильные провайдеры получают органический релевантный спрос.
 
 ### Stage 5 — Compounding Ecosystem
 
-- user, provider, trust, outcome и technology flywheels работают совместно;
-- новые участники улучшают систему без снижения качества;
-- конкуренту недостаточно скопировать одну функцию.
+User, provider, trust, outcome и technology flywheels работают совместно; новые участники улучшают систему без снижения качества; конкуренту недостаточно скопировать одну функцию.
 
 ---
 
 ## 19. Порядок строительства
 
 ### Phase A. Mission-to-product alignment
-
-Обязательные результаты:
 
 - утвердить Product Thesis;
 - утвердить User Journey;
@@ -1246,15 +1074,7 @@ MVP не обязан реализовать весь moat. Он обязан з
 
 Ограниченный географический кластер с высокой плотностью создаёт больше successful matches, чем широкий запуск с низкой плотностью.
 
-Для каждой гипотезы до реализации должны быть определены:
-
-- сегмент;
-- baseline;
-- success metric;
-- guardrails;
-- срок эксперимента;
-- минимальный sample;
-- решение после результата.
+Для каждой гипотезы до реализации должны быть определены сегмент, baseline, success metric, guardrails, срок эксперимента, минимальный sample и решение после результата.
 
 ---
 
@@ -1276,14 +1096,7 @@ MVP не обязан реализовать весь moat. Он обязан з
 12. Сохраняется ли независимость от конкретной LLM?
 13. Какие flywheel реально работают, а какие существуют только в документах?
 
-Результат review:
-
-- `healthy`;
-- `at-risk`;
-- `not-proven`;
-- `violated`.
-
-Статус `violated` блокирует масштабирование затронутого контура до решения владельца.
+Результат review: `healthy`, `at-risk`, `not-proven` или `violated`. Статус `violated` блокирует масштабирование затронутого контура до решения владельца.
 
 ---
 
