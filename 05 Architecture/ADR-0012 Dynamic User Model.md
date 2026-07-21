@@ -62,17 +62,17 @@ review_cycle: event-driven
 
 ## Статус
 
-**Статус документа:** Draft (pending owner decision)
-**Статус решения:** Proposed — не принято.
+**Статус документа:** Draft (pending legal and cross-functional rulings)
+**Статус решения:** Proposed — owner directions recorded; canonical approval pending.
 **Версия:** 0.2 (2026-07-21)
 
 Этот документ — Draft v0.2, подготовленный Knowledge/Canon Architect (W7) по
-GO владельца от 2026-07-21 и review оркестратора. Он не вводит нормы в
-действие. Канонизация — только после review оркестратором и явного решения
-владельца по разделу «Owner decision required». До канонизации нормативными
-остаются [[Ayla Constitution]] (v2.2), целевые положения
-[[Ayla User Journey Specification]] (v1.2, Review) и действующие контракты
-пилота.
+GO владельца от 2026-07-21 и review оркестратора. Owner rulings по
+OD-1…OD-10 зафиксированы. Канонизация заблокирована до legal review по OD-1,
+совместного Privacy/Safety/Legal решения и amendment ADR-0011 по OD-2. До
+канонизации нормативными остаются [[Ayla Constitution]] (v2.2), целевые
+положения [[Ayla User Journey Specification]] (v1.2, Review) и действующие
+контракты пилота.
 
 **Владельцы документа:**
 
@@ -185,7 +185,7 @@ persistent-фактом.
 |---|---|---|
 | `explicit_answer` | Прямой ответ или сообщение пользователя | `MemoryEntry.source=explicit`; contract sources `explicit`, `conversational` |
 | `imported` | Импорт из внешней или смежной системы на явном основании (устройства, миграции, cross-system import). Основание импорта фиксируется в provenance-метаданных | Резерв для Phase 1+ (wearables, внешние источники — Конституция Ст. VI: подключаются отдельно и добровольно) |
-| `observed_event` | Наблюдаемое событие или паттерн, надёжно зафиксированные системой: запись к специалисту, отмена, поведение в приложении, safety-наблюдение провайдера (Ст. III.4). Само по себе не объясняет мотивов | `MemoryEntry.source=signal`; contract sources `behavioral`, `transactional` |
+| `observed_event` | Наблюдаемое событие, надёжно зафиксированное системой: запись к специалисту, отмена, поведение в приложении, safety-наблюдение провайдера (Ст. III.4). Набор событий может служить `evidence_refs`, но их интерпретация как паттерна/предпочтения — это `model_inference`. Само по себе событие не объясняет мотивов | `MemoryEntry.source=signal`; contract sources `behavioral`, `transactional` |
 | `model_inference` | Вывод Ayla из одного или нескольких `observed_event` с помощью модели/правила. Обязательны ссылки на `evidence_refs` и `derivation_method` | `MemoryEntry.source=inferred` |
 | `confirmed_proposal` | Memory Proposal, подтверждённый пользователем. Исходное provenance сохраняется в истории записи (N-05) | Состояние `confirmed` из Journey Stage 6 |
 
@@ -691,8 +691,8 @@ MemoryEntry, declared prefs, consents). Добавление измерений 
 - Два словаря (`kind`/`source` в коде и измерения в модели) сосуществуют до
   завершения миграции — требуется дисциплина маппинга (N-01 запрещает
   расхождение без ADR).
-- Glossary требует amendments (9 терминов) — отдельный reviewed-батч после
-  OD-7.
+- Glossary требует amendments (11 терминов/уточнений) — отдельный reviewed-батч
+  после OD-7.
 
 ### Риски
 
@@ -769,7 +769,7 @@ provider-specific history — per-tenant, вне Memory Entry). Ownership не
 Конфликтов нет: все использованные термины существуют (User Model, Dynamic
 User Model — planned source: этот ADR; Memory Entry, Memory Source, Memory
 Proposal, Consent, Sensitivity Zone, Hypothesis, Proactive Readiness Gate и
-др.). 9 новых/уточняющих терминов предложены в §«Предлагаемые дополнения в
+др.). 11 терминов/уточнений предложены в §«Предлагаемые дополнения в
 Glossary»; сам Glossary этим ADR не изменяется (отдельный reviewed-батч).
 
 ## Владельцы реализации
@@ -777,11 +777,12 @@ Glossary»; сам Glossary этим ADR не изменяется (отдель
 Назначения — предложение draft; утверждает владелец (OD-8). Пилотные роли
 (W-потоки) — по PILOT_CONTRACTS §6/§8.
 
-1. **`ai-bot-platform` (пилотный W3; system: `ayla-user-context`)** — аддитивное
+1. **`ai-bot-platform` (system: `ayla-user-context`)** — аддитивное
    расширение `MemoryEntry` (`knowledge_class`, `confidence`, `lifetime`,
    `provenance`, `memory_status`, `storage_scope`, `consent_scope`), backfill
    по §«Миграция», обновление `memory_writer`/`memory_reader`, тесты
-   трансформации N-05.
+   трансформации N-05. **Scope:** post-pilot / separate amendment; пилотный W3
+   не меняет frozen схему и контракты.
 2. **`beautygo_backend` (пилотный W2)** — без изменений по frozen-контракту
    v1.0; аддитивная эволюция (A1b MemoryFact, persist измерений) — только
    новой версией контракта с уведомлением оркестратора, post-pilot.
@@ -791,13 +792,17 @@ Glossary»; сам Glossary этим ADR не изменяется (отдель
    актуализация Journey §5 (ссылки на канонизированные нормы) — отдельными
    reviewed-батчами.
 5. **QA / W6** — acceptance-расширения: №7 (состояния proposal,
-   confirmation_required), dual-system smoke по миграции.
+   confirmation_required), dual-system smoke по миграции. **Scope:** post-pilot /
+   separate amendment после канонизации ADR и решений OD-1/OD-2.
 6. **Tech lead (владелец ADR-0011)** — amendments ADR-0011 по исходам
    OD-1/OD-2.
 
 ## Owner decision required
 
-Draft не канонизируется, пока по каждому из 10 пунктов нет GO владельца:
+Решения владельца записаны ниже. Draft остаётся в статусе Proposed до
+завершения legal review по OD-1 и совместного Privacy/Safety/Legal решения с
+amendment ADR-0011 по OD-2. До этих условий канонизация и реализация
+затронутых частей заблокированы.
 
 - **OD-1. Зона `diet_type` и `skin_sensitivities`.** ADR-0011 §4.2 относит
   user-stated diet (vegan/keto/allergies) и skin sensitivities к `yellow`;
@@ -806,8 +811,13 @@ Draft не канонизируется, пока по каждому из 10 п
   принадлежность (спецкатегория 152-ФЗ §10). Варианты: (a) закрепить `green`
   по pivot-решению 2026-07-09 и скорректировать примеры ADR-0011 при ближайшей
   ревизии; (b) расщепить: диета-предпочтение `green`, аллергии/сенситивности
-  `yellow`; (c) иное. Требуется ruling владельца (+ legal в рамках
-  ADR-0011 §15). **В этом ADR не разрешено (стоп-условие брифа).**
+  `yellow`; (c) иное.
+  - **Решение владельца:** утвердить направление **(b)** — расщепить.
+    Обычная диета-предпочтение остаётся `green`; аллергии, health-related diet
+    и `skin_sensitivities` — `yellow`. `halal`/`kosher` нельзя использовать для
+    вывода религиозной принадлежности. **Условие:** окончательное нормативное
+    решение — после legal review по ADR-0011 §15; пилотный frozen-контракт v1.0
+    в рамках пилота не меняется.
 - **OD-2. Red TTL 90 дней vs safety-critical persistence.** Sweep ADR-0011 §5
   удаляет red-записи после 90 дней неиспользования; Конституция Ст. IX и
   Journey `persistent_safety` запрещают удаление safety-critical только по
@@ -815,37 +825,63 @@ Draft не канонизируется, пока по каждому из 10 п
   переход в `confirmation_required` + переспрос вместо молчаливого purge
   (требует amendment ADR-0011); (b) продлённый TTL для safety-kind; (c)
   принять purge как privacy-first с повторным сбором при следующем контакте.
-  Рекомендация draft — (a); решение — владельца.
+  - **Решение владельца:** утвердить направление **(a)** — safety-critical
+    запись на границе TTL переводится в `confirmation_required`, исключается
+    из обычного использования и переподтверждается. **Условие:** требуется
+    amendment ADR-0011; до него действующий red retention не меняется.
 - **OD-3. Утверждение enum измерений** (`knowledge_class`, `confidence`,
   `lifetime`, `provenance` и их значений) как канонических — или правки.
-  Рекомендация review: сначала убрать `hypothesis` из `knowledge_class` и
-  добавить честный provenance для inference (`observed_event`/`model_inference`).
+  Предварительные условия review (убрать `hypothesis` из `knowledge_class`,
+  добавить `observed_event`/`model_inference` в provenance) выполнены в v0.2.
+  - **Решение владельца:** **APPROVE** — enum четырёх измерений утверждается
+    как целевая модель.
 - **OD-4A. Утверждение маппинга** Journey-классов и правил backfill
   (§«Миграция», design candidate). Backfill должен быть source-aware:
   `behavioral`/`transactional` → `confidence=inferred`/`provenance=observed_event`,
   не `declared`.
+  - **Решение владельца:** **APPROVE AS DESIGN CANDIDATE** — source-aware
+    mapping верен; окончательные backfill-правила должны пройти dry-run на
+    реальных данных.
 - **OD-4B. Реестр методов верификации** для `confidence=verified`: что qualifies
   (профессиональное подтверждение, документ, системный linkage). До появления
   утверждённого allowlist `verified` запрещено для данных, введённых только
   пользователем (например, дата рождения).
+  - **Решение владельца:** **APPROVE REQUIREMENT, REGISTRY PENDING** — без
+    allowlist и `verification_method` использовать `verified` запрещено, кроме
+    отдельно уже подтверждённого identity-linkage.
 - **OD-5. Числовые TTL** (ephemeral 14–30d, hypothesis 30d, stable 365d —
   кандидаты Journey): утвердить как design candidates для экспериментов или
   отложить до Measurement Framework. Zone caps ADR-0011 остаются единственными
   действующими числами.
+  - **Решение владельца:** **DEFER** — числовые TTL пока не канонизировать;
+    оставить design candidates до Measurement Framework.
 - **OD-6. Пороги `current_relevance`** (0.3 переспрос / 0.2 подавление):
   утвердить как design candidates; критерий включения decay engine (N-09) —
   подтвердить или изменить.
+  - **Решение владельца:** **DEFER NUMBERS / APPROVE BEHAVIOR** — триггеры
+    переспроса утверждаются, пороги 0.3/0.2 и decay engine — позже.
 - **OD-7. Дополнения Glossary** (§ниже): утвердить список терминов для
   отдельного reviewed-батча.
+  - **Решение владельца:** **APPROVE** — подготовить отдельный Glossary batch
+    после редакционной сверки терминов.
 - **OD-8. Владельцы реализации** (§выше): подтвердить назначения и очередь
   (после канонизации ADR). Реализация заблокирована до OD-1–OD-4.
+  - **Решение владельца:** **APPROVE WITH SCOPE CONDITION** — владельцев
+    подтвердить, но реализацию схемы и backfill не начинать в рамках
+    замороженного пилота без отдельного amendment.
 - **OD-9. Canonical consent-scope registry:** утвердить versioned список
   purpose-ключей (`provider_selection`, `intent_understanding`,
   `question_suppression`, `proactive_recommendation` и др.) и владельца registry
   до начала реализации `consent_scope`.
+  - **Решение владельца:** **APPROVE REQUIREMENT** — нужен отдельный versioned
+    consent-scope registry с владельцем; до него поле нельзя внедрять как
+    рабочий контракт.
 - **OD-10. Формат decision record для rejected proposal:** утвердить минимальный
   набор полей (`topic`/`purpose`, `decision`, `timestamp`, `cooldown`), срок
   хранения и доступ пользователя к истории отказов (ADR-0011 §8).
+  - **Решение владельца:** **APPROVE CONCEPT / SPEC REQUIRED** — Decision
+    Record не содержит отклонённого персонального значения; срок хранения,
+    доступ и чувствительность `topic` определить отдельным контрактом.
 
 ## Open questions
 
@@ -863,13 +899,9 @@ Draft не канонизируется, пока по каждому из 10 п
 - **OQ-5.** Consent-семантика `imported` (wearables, внешние источники):
   какое согласие покрывает импорт и производные гипотезы — Phase 1+, legal
   review (ADR-0011 §15).
-- **OQ-6.** ~~Ephemeral-записи и зоны:~~ Удалён как open question; рабочее
-  правило поднято в норму N-02/N-10: `storage_scope=session` и
-  `lifetime=ephemeral` не ослабляют sensitivity, purpose, access и
-  lawful-basis checks.
-- **OQ-7.** UX-паттерн переспроса (`confirmation_required`): владелец —
+- **OQ-6.** UX-паттерн переспроса (`confirmation_required`): владелец —
   Conversation Design; связь с anti-spam правилами ask-eligibility.
-- **OQ-8.** Подтверждение маппинга safety-наблюдений провайдера (Ст. III.4)
+- **OQ-7.** Подтверждение маппинга safety-наблюдений провайдера (Ст. III.4)
   на `safety`/`inferred`/`time_bounded`/`observed_event` — с Safety Owner.
 
 ## Предлагаемые дополнения в Glossary
@@ -969,9 +1001,16 @@ Draft подготовлен по брифу владельца (GO 2026-07-21, 
     до OD-1 (legal review) и OD-2 (Privacy/Safety/Legal ruling + amendment
     ADR-0011).
   - Добавлены OD-4A/OD-4B, OD-9 (consent-scope registry), OD-10 (decision
-    record формат); OQ-6 удалён как отдельный вопрос.
+    record формат); прежний OQ-6 (ephemeral/согласие) удалён как отдельный
+    вопрос, последующие вопросы перенумерованы.
   - Glossary proposals обновлены: 11 терминов, включая Decision Record и
     Consent Scope Registry.
+- Владельческие решения по OD-1…OD-10 зафиксированы в §«Owner decision
+  required» (2026-07-21). Draft остаётся Proposed до legal review OD-1 и
+  Privacy/Safety/Legal решения с amendment ADR-0011 по OD-2.
+- Редакционные правки: число пунктов приведено к фактическим 11 (OD-1…OD-10
+  с OD-4A/OD-4B), определение `observed_event` уточнено (событие vs паттерн),
+  scope реализации явно помечен post-pilot / separate amendment.
 
 ### v0.1 — 2026-07-21
 
@@ -983,5 +1022,7 @@ Draft подготовлен по брифу владельца (GO 2026-07-21, 
 
 ## Approval
 
-Ожидает решения владельца по разделу «Owner decision required».
+Owner rulings по OD-1…OD-10 зафиксированы 2026-07-21. Канонизация заблокирована
+до legal ruling по OD-1 и совместного Privacy/Safety/Legal решения с amendment
+ADR-0011 по OD-2.
 `approved_by`: — · `approval_date`: —
