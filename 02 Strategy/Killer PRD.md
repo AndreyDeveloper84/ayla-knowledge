@@ -1,10 +1,10 @@
 ---
 node_id: ayla.strategy.killer-prd
-title: Killer PRD v1.3 — Сценарий с памятью в основе
+title: Killer PRD v1.3.1 — Сценарий с памятью в основе
 type: specification
 status: draft
 decision_status: proposed
-version: "1.3"
+version: "1.3.1"
 owner: Product Owner
 priority: P0
 knowledge_area:
@@ -39,10 +39,11 @@ depends_on:
   - "[[Ayla User Journey Specification]]"
   - "[[Ayla Constitution]]"
 required_dependencies:
-  - Consent Scope Registry (User Context Domain Owner + Privacy Owner)
+  - Consent Scope Registry (User Context Domain Owner + Privacy Owner) — blocks implementation and pilot
+  - Operational handling contract for ranking_economic_neutrality_alert — blocks pilot/production traffic
 ---
 
-# Killer PRD v1.3 — Сценарий с памятью в основе
+# Killer PRD v1.3.1 — Сценарий с памятью в основе
 
 > Product Requirements Document. Переработка `PRD_Ayla_Killer_Scenario_v1.0.md` в соответствии с AYLA-DEC-0002.
 
@@ -50,10 +51,11 @@ required_dependencies:
 |---|---|
 | **Статус** | Draft (ожидает cross-functional review) |
 | **Статус решения** | Proposed — направление владельца зафиксировано; canonical approval ожидается |
-| **Версия** | 1.3 |
+| **Версия** | 1.3.1 |
 | **Владелец** | Product Owner / W7 (Canon Architect) |
 | **Заинтересованные стороны** | Recommendation Engine Owner, Privacy/Safety Owner, Conversation Design Owner |
-| **Блокеры канонизации** | ADR-0012 OD-1 (legal ruling о разделении чувствительности данных о диете/религии) и OD-2 (решение Privacy/Safety/Legal + amendment ADR-0011 по хранению safety-critical данных) должны быть закрыты до канонизации или реализации. |
+| **Блокеры канонизации** | ADR-0012 OD-1, OD-2; отсутствие утверждённого Consent Scope Registry (OD-K9). |
+| **Блокеры pilot / production** | OD-1, OD-2, OD-K9, OD-K10 (operational handling contract для economic-neutrality alerts). |
 
 > **Примечание о `source_kind`:** схема `.knowledge/schema.yaml` требует значения `canonical` для внутренних нормативных документов, но не предоставляет отдельного значения для `canonical candidate`. Поэтому документ зарегистрирован как `canonical` со статусом `Draft / Proposed`, что семантически означает *canonical candidate*. Требуется amendment схемы: добавить `source_kind: canonical-candidate` (или `proposal`) для Draft-нормативных документов. До этого момента интерпретация `canonical` + `status: draft` зафиксирована в данном примечании.
 
@@ -98,7 +100,7 @@ Ayla работает на рынке, где сама по себе запис�
 | **Killer moment** | Формальное атрибутированное событие, в рамках которого Ayla выдаёт одну **основную** рекомендацию с использованием разрешённой сохранённой памяти, показывает пользователю применённый контекст, а пользователь выполняет `qualified_action` в пределах применимого `attribution_window`. Альтернатива, сформированная после уточнения причины отказа и повторно прошедшая все gates, получает собственный `recommendation_id` и может породить отдельный `killer_moment`. Исходная отклонённая рекомендация не считается источником `qualified_action`. |
 | **Active user** | Пользователь, у которого было хотя бы одно содержательное взаимодействие с Ayla за скользящие 7 дней, предшествующие событию. Незначительные взаимодействия (например, единственное проигнорированное приветствие) не учитываются. |
 | **Intent action** | Пользовательская реакция на рекомендацию, которая ещё не доказывает полученную ценность: открыть, сохранить на потом, запросить альтернативу, уточнить детали. |
-| **Qualified action** | Инициированный пользователем и подтверждаемый полезный результат, связанный с рекомендацией: подтверждённая запись, принятая и начатая инструкция/план, подтверждённое выполнение первого шага, принятая безопасная альтернатива. Простые клики, просмотры и `save for later` не являются `qualified_action`. |
+| **Qualified action** | Инициированный пользователем и подтверждаемый полезный результат, связанный с рекомендацией: подтверждённая запись по primary или alternative recommendation, принятая и начатая инструкция/план, подтверждённое выполнение определённого первого полезного шага. Само принятие альтернативы является `intent_action`, а не `qualified_action`. Простые клики, просмотры и `save for later` не являются `qualified_action`. |
 | **Completed outcome** | Завершённый цикл ценности: запись состоялась, guidance выполнен, пользователь подтвердил пользу. |
 | **Attribution window** | Допустимый период между показом рекомендации и связанным с ней `qualified_action`. Зависит от `scenario_type` и типа атрибуции (`direct` / `assisted`). Время само по себе не доказывает attribution; необходима связь с `recommendation_id`. |
 | **Direct attribution** | `qualified_action` совершён внутри прямого окна для данного `scenario_type` и связан с `recommendation_id`. |
@@ -107,7 +109,7 @@ Ayla работает на рынке, где сама по себе запис�
 | **Recommendation role** | Роль рекомендации в диалоге: `primary` — основная, выбранная системой; `alternative` — сформированная после уточнения причины отказа от primary или по запросу пользователя. |
 | **Parent recommendation** | Для `alternative` — `recommendation_id` рекомендации, которая предшествовала ей и привела к rerank. |
 | **Rerank reason** | Причина, по которой primary recommendation не подошла: цена, время, мастер, локация, стиль услуги, другое. Используется для повторного прохождения Composer с уточнённым constraint. |
-| **Substantial Recommendation** | Рекомендация, которая существенно влияет на выбор пользователя, его здоровье, безопасность, privacy или расходы. Для неё необходимы **одновременно** (а) контекст уровня `declared` или `verified`, используемый в рамках действующего `consent_scope`, и (б) разрешённая цель обработки (lawful basis). Inferred/signal memory сама по себе не может служить достаточным основанием независимо от наличия consent. |
+| **Substantial Recommendation** | Рекомендация, которая существенно влияет на выбор пользователя, его здоровье, безопасность, privacy или расходы. Для неё необходимы **одновременно**: (а) контекст уровня `declared` или `verified`; (б) допустимость конкретной цели использования согласно действующему `consent_scope`; (в) применимый `lawful basis`. Inferred/signal memory сама по себе не может служить достаточным основанием независимо от разрешения на их обработку. |
 | **Useful memory coverage** | Доля active users, имеющих минимально необходимый разрешённый контекст для конкретного сценария, среди active users, **потенциально подходящих** для этого сценария. Пользователи, сознательно выбравшие session-only режим, не считаются «неполными». Измеряет готовность, а не созданную ценность. |
 | **Memory fact count** | Диагностическое количество сохранённых записей памяти. Не должно использоваться как цель оптимизации или командный KPI. |
 
@@ -131,10 +133,12 @@ Food→beauty — **один из четырёх равноправных trigge
 
 **Принцип:** food scan не является самостоятельным основанием для beauty-рекомендации. Сначала Ayla отвечает на непосредственный food intent. Cross-domain влияние допустимо только при наличии явной пользовательской цели, подтверждённого правила или иной объяснимой связи. Простое совпадение по времени не считается релевантностью.
 
-**Пример 1 — явное пользовательское правило:**
+**Пример 1 — явное пользовательское правило с подтверждением inference:**
 - Пользователь ранее задал правило: «После поздних плотных ужинов не предлагай мне ранние утренние процедуры».
-- Пользователь сканирует поздний плотный ужин.
-- Ayla: «Ты просила учитывать поздние плотные ужины при планировании утренних процедур. Поэтому я не предлагаю ранний слот. Хочешь, подберу подходящее время после 12:00?»
+- Пользователь сканирует поздний ужин.
+- Ayla: «Похоже, ужин получился плотным. Применить правило «не ранние утренние процедуры после плотного ужина»?»
+- Пользователь подтверждает: «Да».
+- Ayla: «Тогда я не предлагаю ранний слот. Хочешь, подберу подходящее время после 12:00?»
 - Пользователь соглашается и записывается.
 
 **Пример 2 — сначала food intent:**
@@ -149,6 +153,8 @@ Food→beauty — **один из четырёх равноправных trigge
 **Пример:**
 - Пользователь говорит: «Опять устала после работы».
 - Ayla: «Раньше тебе помогал массаж шеи и спины. Рядом есть окно у Анны сегодня в 19:00. Записать?»
+
+> **Safety/Legal note:** если пользователь сообщает о боли (например, «болит спина»), Ayla сначала проходит boundary check: уточняет признаки, исключает необходимость медицинской помощи и только после этого предлагает немедицинскую wellness-процедуру. Точная формулировка и критерии escalation в S8 должны быть утверждены Safety/Legal до пилота.
 
 ### 4.3 Подготовка к событию → расписание процедур
 
@@ -242,9 +248,9 @@ Recommendation Composer — нормативный decision pipeline для лю
 | `recovery_wellness` | 72 часа | до 7 дней | `recommendation_shown_at + 72h` |
 | `event_preparation` | до даты события, но не более 14 дней | до даты события | `min(recommendation_shown_at + 14 days, event_at)` |
 
-**Правило `save_for_later`:** `save_for_later` — это не `scenario_type`, а механизм assisted attribution. Если пользователь явно сохранил рекомендацию, действие по ней может атрибутироваться как `assisted` в течение 7–14 дней после сохранения при сохранении связи с `recommendation_id`.
+**Правило `save_for_later`:** `save_for_later` — это не `scenario_type`, а механизм assisted attribution. Он позволяет квалифицировать последующее действие как `assisted`, но **не изменяет** начало и предел attribution window. Предел рассчитывается от `recommendation_shown_at` согласно `scenario_type`. Для `event_preparation` общий максимальный предел assisted attribution — `event_at`, но не более 90 дней от `recommendation_shown_at`.
 
-Действие за пределами direct window может учитываться как `assisted` attribution, только если сохраняется подтверждаемая связь с `recommendation_id`. Временная близость без такой связи недостаточна для attribution. Для `event_preparation` общий максимальный предел assisted attribution — `event_at`, но не более 90 дней от `recommendation_shown_at`.
+Действие за пределами direct window может учитываться как `assisted` attribution, только если сохраняется подтверждаемая связь с `recommendation_id`. Временная близость без такой связи недостаточна для attribution.
 
 ### 6.4 Повторные killer moments
 
@@ -273,14 +279,16 @@ Recommendation Composer — нормативный decision pipeline для лю
 
 ### 7.2 Guardrails для killer outcome metric
 
-Цель ≥25% не должна достигаться за счёт доверия. Обязательные guardrail-метрики:
+Цель ≥25% не должна достигаться за счёт доверия. Обязательные guardrail-метрики (Measurement Framework должен детализировать numerator, denominator, eligibility population, event source, deduplication и measurement window):
 
-- `recommendation_dismissal_rate` — доля отклонённых рекомендаций;
-- `memory_disable_rate` — доля пользователей, отключающих персонализацию;
-- `incorrect_context_rate` — доля рекомендаций, использовавших память, по которым пользователь указал, что контекст применён неверно (correction flow, явная жалоба, отклонение с пометкой «контекст неверен»);
-- `safety_escalation_rate` — частота переходов в S8 Boundary Handling вскоре после показа рекомендации;
-- `post_recommendation_cancellation_rate` — доля подтверждённых записей, совершённых после attributed recommendation, которые были отменены пользователем;
-- `why_explanation_dissatisfaction_rate` — доля обращений «почему ты это предложила?», по которым пользователь явно выразил недовольство объяснением (negative reaction, повторный вопрос, жалоба).
+| Метрика | Numerator | Denominator |
+|---|---|---|
+| `recommendation_dismissal_rate` | Рекомендации, явно отклонённые пользователем | Все показанные рекомендации, использовавшие persistent memory |
+| `memory_disable_rate` | Пользователи, отключившие персонализацию за окно | Active users, у которых была включена персонализация в начале окна |
+| `incorrect_context_rate` | Рекомендации с указанием пользователя, что контекст применён неверно | Все показанные рекомендации, использовавшие persistent memory |
+| `safety_escalation_rate` | Переходы в S8 Boundary Handling в течение 1 часа после показа рекомендации | Все показанные рекомендации, использовавшие persistent memory |
+| `post_recommendation_cancellation_rate` | Подтверждённые записи, отменённые пользователем | Все записи, совершённые после attributed recommendation |
+| `why_explanation_dissatisfaction_rate` | Обращения «почему?», по которым пользователь явно выразил недовольство | Все обращения «почему?» по рекомендациям, использовавшим persistent memory |
 
 Если любой guardrail показывает ухудшение, рост killer outcome metric не считается успехом.
 
@@ -432,7 +440,7 @@ Recommendation Composer — нормативный decision pipeline для лю
 
 ### 11.6 Вывод
 
-Новых неразрешённых конфликтов, кроме перечисленных блокеров (OD-1, OD-2, OD-K9 и ограничения schema по `source_kind`), не обнаружено. Канонизация и реализация остаются заблокированными до закрытия этих блокеров.
+Новых неразрешённых конфликтов, кроме перечисленных блокеров, не обнаружено. Канонизация PRD заблокирована до закрытия OD-1, OD-2 и утверждения Consent Scope Registry (OD-K9). Реализация и pilot дополнительно заблокированы до утверждения operational handling contract для economic-neutrality alerts (OD-K10).
 
 ---
 
@@ -448,11 +456,11 @@ Recommendation Composer — нормативный decision pipeline для лю
 | OD-K6 | Медицинские/health inference из пищевых сигналов находятся вне scope | ✅ Да | Нет |
 | OD-K7 | Primary recommendation ≠ единственная; альтернативы по запросу/причине отказа | ✅ Да | Нет |
 | OD-K8 | Scenario-dependent attribution window (direct/assisted) | ✅ Да | Нет |
-| OD-K9 | Consent Scope Registry — required dependency до использования persistent context | ✅ Да | **Да** |
-| OD-K10 | Operational handling contract для `ranking_economic_neutrality_alert` — required before pilot | ✅ Да | **Да** |
+| OD-K9 | Consent Scope Registry — required dependency до использования persistent context | ✅ Да | **Да (канонизация + реализация + pilot)** |
+| OD-K10 | Operational handling contract для `ranking_economic_neutrality_alert` — required before pilot | ✅ Да | **Да (только pilot / production traffic)** |
 | OD-K11 | Amendment `.knowledge/schema.yaml` для `source_kind: canonical-candidate` | ✅ Да | Нет |
-| OD-1 (ADR-0012) | Legal ruling о разделении чувствительности данных о диете/религии | ⏳ Ожидает legal review | **Да** |
-| OD-2 (ADR-0012) | Решение Privacy/Safety/Legal + amendment ADR-0011 по хранению safety-critical данных | ⏳ Ожидает cross-functional ruling | **Да** |
+| OD-1 (ADR-0012) | Legal ruling о разделении чувствительности данных о диете/религии | ⏳ Ожидает legal review | **Да (канонизация + реализация)** |
+| OD-2 (ADR-0012) | Решение Privacy/Safety/Legal + amendment ADR-0011 по хранению safety-critical данных | ⏳ Ожидает cross-functional ruling | **Да (канонизация + реализация)** |
 
 ### 12.1 Required dependency: Consent Scope Registry
 
@@ -507,6 +515,17 @@ Recommendation Engine не допускается к production/pilot traffic д
 
 ## 14. Change Log
 
+### v1.3.1 — 2026-07-22
+
+- Удалено «принятая безопасная альтернатива» из `qualified_action`; принятие альтернативы — `intent_action`, killer moment требует квалифицированного действия по альтернативе.
+- Уточнена формула Substantial Recommendation: `declared`/`verified` AND valid processing purpose AND applicable `lawful basis`.
+- Исправлен food-trigger: inference о «плотном ужине» подтверждается пользователем перед применением правила.
+- Уточнено правило `save_for_later`: оно не продлевает attribution window; предел рассчитывается от `recommendation_shown_at` по `scenario_type`.
+- Согласованы статусы блокеров во frontmatter, §11.6 и §12: OD-K9 — канонизация + реализация + pilot; OD-K10 — только pilot/production; OD-K11 — не блокер.
+- Guardrail-метрики дополнены таблицей numerator/denominator.
+- Добавлен Safety/Legal note к примеру с болью/массажем.
+- Обновлены traceability и change log.
+
 ### v1.3 — 2026-07-22
 
 - Устранено противоречие вокруг альтернатив: альтернатива, сформированная после уточнения причины отказа и повторно прошедшая все gates, получает собственный `recommendation_id` и может породить отдельный `killer_moment`.
@@ -555,4 +574,4 @@ Recommendation Engine не допускается к production/pilot traffic д
 
 ---
 
-**Конец документа — Killer PRD v1.3**
+**Конец документа — Killer PRD v1.3.1**
