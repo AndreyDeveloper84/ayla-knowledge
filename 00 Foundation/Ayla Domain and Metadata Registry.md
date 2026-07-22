@@ -42,7 +42,7 @@ migration_source:
   imported: 2026-07-19
 generated_from:
   path: .knowledge/schema.yaml
-  schema_version: "1.10"
+  schema_version: "1.11"
   command: python scripts/render_domain_registry.py
 ---
 
@@ -56,7 +56,7 @@ generated_from:
 
 Документ предоставляет авторам и reviewers человекочитаемое представление
 машинного metadata-контракта Ayla. Он не создаёт независимый набор enum:
-таблицы ниже детерминированно сгенерированы из schema v1.10.
+таблицы ниже детерминированно сгенерированы из schema v1.11.
 
 ## 2. Source of truth
 
@@ -79,7 +79,8 @@ registry считается устаревшим, CI завершается ош
 |---|---|
 | `status` | `idea`<br>`draft`<br>`review`<br>`approved`<br>`approved-with-amendments`<br>`implemented`<br>`planned`<br>`scheduled`<br>`in-progress`<br>`blocked`<br>`delivered`<br>`cancelled`<br>`deprecated`<br>`superseded`<br>`archived` |
 | `activation_status` | `pending-infrastructure`<br>`active`<br>`suspended` |
-| `source_kind` | `canonical`<br>`mirror`<br>`external` |
+| `source_kind` | `canonical`<br>`mirror`<br>`external`<br>`product-requirements` |
+| `canonical_status` | `draft`<br>`candidate`<br>`approved`<br>`deprecated` |
 | `knowledge_area` | `foundation`<br>`product`<br>`strategy`<br>`ai-system`<br>`domain-model`<br>`architecture`<br>`safety-governance`<br>`design`<br>`business`<br>`research`<br>`operations`<br>`sources` |
 | `system_owner` | `ayla-platform`<br>`ayla-ai-core`<br>`ayla-conversation`<br>`ayla-user-context`<br>`ayla-recommendation`<br>`ayla-booking`<br>`ayla-provider-platform`<br>`ayla-mobile`<br>`ayla-mini-app`<br>`ayla-knowledge`<br>`shared`<br>`external`<br>`to-be-confirmed` |
 | `source_repository` | `beautygo_backend`<br>`ai-bot-platform`<br>`ayla-knowledge`<br>`ayla-ai-core`<br>`external` |

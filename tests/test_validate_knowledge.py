@@ -163,6 +163,125 @@ class KnowledgeValidatorTests(unittest.TestCase):
                 f"expected missing-section error for {section!r}",
             )
 
+    def test_canonical_status_candidate_is_allowed(self) -> None:
+        node = Node(
+            path=ROOT / "02 Strategy" / "Killer PRD.md",
+            metadata={
+                "node_id": "ayla.example",
+                "title": "Example",
+                "type": "specification",
+                "source_kind": "canonical",
+                "canonical_status": "candidate",
+                "system_owner": ["ayla-knowledge"],
+            },
+            body="",
+        )
+        reporter = Reporter()
+
+        check_metadata(node, self.schema, reporter)
+
+        self.assertFalse(
+            any("canonical_status" in error for error in reporter.errors),
+            reporter.errors,
+        )
+
+    def test_unknown_canonical_status_is_rejected(self) -> None:
+        node = Node(
+            path=ROOT / "02 Strategy" / "Killer PRD.md",
+            metadata={
+                "node_id": "ayla.example",
+                "title": "Example",
+                "type": "specification",
+                "source_kind": "canonical",
+                "canonical_status": "almost-canonical",
+                "system_owner": ["ayla-knowledge"],
+            },
+            body="",
+        )
+        reporter = Reporter()
+
+        check_metadata(node, self.schema, reporter)
+
+        self.assertTrue(
+            any("canonical_status contains unsupported value" in error for error in reporter.errors)
+        )
+
+    def test_canonical_status_approved_conflicts_with_status_draft(self) -> None:
+        node = Node(
+            path=ROOT / "02 Strategy" / "Killer PRD.md",
+            metadata={
+                "node_id": "ayla.example",
+                "title": "Example",
+                "type": "specification",
+                "status": "draft",
+                "source_kind": "canonical",
+                "canonical_status": "approved",
+                "system_owner": ["ayla-knowledge"],
+            },
+            body="",
+        )
+        reporter = Reporter()
+
+        check_metadata(node, self.schema, reporter)
+
+        self.assertTrue(
+            any("canonical_status approved conflicts with status draft" in error for error in reporter.errors)
+        )
+
+    def test_canonical_status_approved_conflicts_with_decision_proposed(self) -> None:
+        node = Node(
+            path=ROOT / "02 Strategy" / "Killer PRD.md",
+            metadata={
+                "node_id": "ayla.example",
+                "title": "Example",
+                "type": "specification",
+                "status": "review",
+                "decision_status": "proposed",
+                "source_kind": "canonical",
+                "canonical_status": "approved",
+                "system_owner": ["ayla-knowledge"],
+            },
+            body="",
+        )
+        reporter = Reporter()
+
+        check_metadata(node, self.schema, reporter)
+
+        self.assertTrue(
+            any("canonical_status approved conflicts with decision_status proposed" in error for error in reporter.errors)
+        )
+
+    def test_product_requirements_source_kind_is_allowed(self) -> None:
+        node = Node(
+            path=ROOT / "02 Strategy" / "Killer PRD.md",
+            metadata={
+                "node_id": "ayla.example",
+                "title": "Example",
+                "type": "specification",
+                "source_kind": "product-requirements",
+                "canonical_status": "candidate",
+                "system_owner": ["ayla-knowledge"],
+            },
+            body="",
+        )
+        reporter = Reporter()
+
+        check_metadata(node, self.schema, reporter)
+
+        self.assertFalse(
+            any("source_kind contains unsupported value" in error for error in reporter.errors),
+            reporter.errors,
+        )
+
+    def test_killer_prd_v1_4_has_no_new_warnings(self) -> None:
+        path = ROOT / "02 Strategy" / "Killer PRD.md"
+        body = path.read_text(encoding="utf-8")
+
+        # The document must declare canonical_status: candidate and use source_kind canonical
+        # until the schema amendment migrates source_kind to product-requirements.
+        self.assertIn("canonical_status: candidate", body)
+        self.assertIn("source_kind: canonical", body)
+
     def test_generated_domain_registry_matches_schema(self) -> None:
         from scripts.render_domain_registry import OUTPUT_PATH, render_registry
 

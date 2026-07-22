@@ -1,7 +1,10 @@
-schema_version: "1.10"
+schema_version: "1.11"
 specification: "../00 Foundation/Ayla Knowledge Architecture Specification.md"
 
 schema_changes:
+  "1.11":
+    - introduce canonical_status to separate source kind from canonical maturity
+    - add product-requirements source_kind value
   "1.10":
     - distinguish user-initiated recommendation and proactive readiness gates
   "1.9":
@@ -82,6 +85,12 @@ enums:
     - canonical
     - mirror
     - external
+    - product-requirements
+  canonical_status:
+    - draft
+    - candidate
+    - approved
+    - deprecated
   knowledge_area:
     - foundation
     - product
@@ -192,6 +201,12 @@ enums:
     - yearly
     - before-major-change
     - event-driven
+
+defaults:
+  # Documents that do not explicitly declare canonical_status are treated as
+  # draft maturity. This avoids implicitly claiming approval for legacy nodes
+  # before they are backfilled and reviewed.
+  canonical_status: draft
 
 conditional_rules:
   domain_context:

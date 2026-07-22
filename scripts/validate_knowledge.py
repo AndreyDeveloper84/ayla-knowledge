@@ -224,6 +224,20 @@ def check_metadata(
         if VERSIONED_NODE_ID_RE.search(node_id):
             reporter.error(node.label, "node_id must not contain a version suffix")
 
+    canonical_status = metadata.get(
+        "canonical_status", schema.get("defaults", {}).get("canonical_status")
+    )
+    if canonical_status == "approved":
+        if metadata.get("status") == "draft":
+            reporter.error(
+                node.label, "canonical_status approved conflicts with status draft"
+            )
+        if metadata.get("decision_status") == "proposed":
+            reporter.error(
+                node.label,
+                "canonical_status approved conflicts with decision_status proposed",
+            )
+
     if metadata.get("source_kind") == "canonical":
         if VERSIONED_FILENAME_RE.search(node.path.stem):
             reporter.error(

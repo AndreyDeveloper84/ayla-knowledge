@@ -4,7 +4,7 @@ title: Ayla Knowledge Architecture Specification
 type: knowledge-architecture-specification
 status: review
 activation_status: pending-infrastructure
-version: "1.3"
+version: "1.4"
 owner: Product Architecture
 priority: P0
 knowledge_area:
@@ -17,8 +17,9 @@ system_owner:
   - ayla-knowledge
 source_repository: ayla-knowledge
 created: 2026-07-17
-updated: 2026-07-18
+updated: 2026-07-22
 source_kind: canonical
+canonical_status: candidate
 classification: internal
 data_sensitivity: none
 data_categories:
@@ -231,6 +232,7 @@ domain:
 system_owner:
   - ayla-booking
 source_kind: canonical
+canonical_status: candidate
 classification: internal
 data_sensitivity: none
 security_sensitivity: low
@@ -261,6 +263,27 @@ foundation-документа.
 Tags используются для навигации, но не заменяют typed metadata и relationships.
 Обязательные семейства tags определяются schema и validator, а не локальными
 копиями правил в документах.
+
+### 5.4. `source_kind` и `canonical_status`
+
+`source_kind` и `canonical_status` — независимые характеристики документа:
+
+| Поле | Что описывает | Примеры |
+|---|---|---|
+| `source_kind` | Природу источника: канонический документ, зеркало, внешняя ссылка или тип документа. | `canonical`, `mirror`, `external`, `product-requirements` |
+| `canonical_status` | Степень канонической зрелости: черновик, кандидат, утверждённый источник истины, устаревший. | `draft`, `candidate`, `approved`, `deprecated` |
+
+`source_kind: canonical` означает, что документ создан внутри канонического
+репозитория `ayla-knowledge`, а не что он уже утверждён как действующая норма.
+Документ может быть `source_kind: canonical` и одновременно
+`canonical_status: candidate` — это типичное состояние Draft-нормативного
+документа, прошедшего содержательное ревью, но не закрывшего все approval gates
+(например, Killer PRD v1.4).
+
+`canonical_status: approved` совместим только со статусами, отличными от
+`draft`, и с `decision_status`, отличным от `proposed`. Validator проверяет эти
+конфликты. При отсутствии `canonical_status` документ считается `draft` до
+явного backfill.
 
 ## 6. Статусы и lifecycle
 
@@ -541,6 +564,13 @@ activation_status: active
 4. Когда будут выданы credentials для automated mirrors?
 
 ## Change Log
+
+### v1.4 — 2026-07-22
+
+- введено поле `canonical_status`, независимое от `source_kind`;
+- расширен `source_kind` значением `product-requirements`;
+- добавлена §5.4 о различии `source_kind` и `canonical_status`;
+- validator проверяет enum `canonical_status` и конфликты `approved × draft/proposed`.
 
 ### v1.3 — 2026-07-18
 
