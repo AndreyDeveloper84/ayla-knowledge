@@ -1,10 +1,10 @@
 ---
 node_id: ayla.strategy.killer-prd
-title: Killer PRD v1.3.1 — Сценарий с памятью в основе
+title: Killer PRD v1.4 — Сценарий с памятью в основе
 type: specification
 status: draft
 decision_status: proposed
-version: "1.3.1"
+version: "1.4"
 owner: Product Owner
 priority: P0
 knowledge_area:
@@ -22,6 +22,7 @@ system_owner:
   - ayla-user-context
   - ayla-conversation
 source_kind: canonical
+canonical_status: candidate
 classification: internal
 data_sensitivity: high
 data_categories:
@@ -41,9 +42,12 @@ depends_on:
 required_dependencies:
   - Consent Scope Registry (User Context Domain Owner + Privacy Owner) — blocks implementation and pilot
   - Operational handling contract for ranking_economic_neutrality_alert — blocks pilot/production traffic
+  - ADR-0012 OD-1 Legal ruling on diet/religion/skin sensitivity classification — blocks canonical approval and implementation
+  - ADR-0012 OD-2 Privacy/Safety/Legal ruling + ADR-0011 amendment on safety-critical retention — blocks canonical approval and implementation
+  - .knowledge/schema.yaml amendment adding canonical_status — blocks canonical registration (OD-K11)
 ---
 
-# Killer PRD v1.3.1 — Сценарий с памятью в основе
+# Killer PRD v1.4 — Сценарий с памятью в основе
 
 > Product Requirements Document. Переработка `PRD_Ayla_Killer_Scenario_v1.0.md` в соответствии с AYLA-DEC-0002.
 
@@ -51,13 +55,13 @@ required_dependencies:
 |---|---|
 | **Статус** | Draft (ожидает cross-functional review) |
 | **Статус решения** | Proposed — направление владельца зафиксировано; canonical approval ожидается |
-| **Версия** | 1.3.1 |
+| **Версия** | 1.4 |
 | **Владелец** | Product Owner / W7 (Canon Architect) |
 | **Заинтересованные стороны** | Recommendation Engine Owner, Privacy/Safety Owner, Conversation Design Owner |
-| **Блокеры канонизации** | ADR-0012 OD-1, OD-2; отсутствие утверждённого Consent Scope Registry (OD-K9). |
+| **Блокеры канонизации** | ADR-0012 OD-1, OD-2; отсутствие утверждённого Consent Scope Registry (OD-K9); отсутствие `canonical_status` в `.knowledge/schema.yaml` (OD-K11). |
 | **Блокеры pilot / production** | OD-1, OD-2, OD-K9, OD-K10 (operational handling contract для economic-neutrality alerts). |
 
-> **Примечание о `source_kind`:** схема `.knowledge/schema.yaml` требует значения `canonical` для внутренних нормативных документов, но не предоставляет отдельного значения для `canonical candidate`. Поэтому документ зарегистрирован как `canonical` со статусом `Draft / Proposed`, что семантически означает *canonical candidate*. Требуется amendment схемы: добавить `source_kind: canonical-candidate` (или `proposal`) для Draft-нормативных документов. До этого момента интерпретация `canonical` + `status: draft` зафиксирована в данном примечании.
+> **Примечание о `source_kind` и `canonical_status`:** согласно OD-K11, тип источника (`source_kind`) и степень канонизации (`canonical_status`) — независимые характеристики. До amendment `.knowledge/schema.yaml`, который введёт `canonical_status` и расширит `source_kind` значениями типа `product-requirements`, документ зарегистрирован как `source_kind: canonical` с дополнительным полем `canonical_status: candidate`. Статус `candidate` означает: документ прошёл содержательное ревью, но не предоставляет production authority и не закрывает перечисленные blocking decisions.
 
 ---
 
@@ -132,6 +136,32 @@ Food→beauty — **один из четырёх равноправных trigge
 **Что может использовать Ayla:** явно предоставленные диетические предпочтения, подтверждённые аллергии, недавний контекст food scan, переданный Ayla для рекомендаций по питанию, а также явно заданные пользовательские правила, связывающие питание и планирование процедур.
 
 **Принцип:** food scan не является самостоятельным основанием для beauty-рекомендации. Сначала Ayla отвечает на непосредственный food intent. Cross-domain влияние допустимо только при наличии явной пользовательской цели, подтверждённого правила или иной объяснимой связи. Простое совпадение по времени не считается релевантностью.
+
+**Границы использования food-сигнала (OD-K6):**
+
+- Food-сигнал не используется для диагностики заболевания, дефицита, аллергии, непереносимости, противопоказания, состояния организма, причины симптома либо необходимости медицинской, косметологической или wellness-процедуры.
+- Запрещены производные признаки: `suspected_inflammation`, `likely_vitamin_deficiency`, `metabolic_risk`, `probable_food_intolerance`, `edema_probability`, `skin_risk_from_diet`, `detox_need`, `hormonal_imbalance_probability` и аналогичные.
+- Запрет действует на всех уровнях: prompt, feature extraction, memory schema, embeddings, derived profiles, Recommendation Composer, ranking, analytics, объяснение рекомендации, данные, доступные салону или мастеру.
+- Подтверждённые пользователем health-факты (например, аллергия) не считаются inference, но являются чувствительным контекстом и могут использоваться только после прохождения provenance, consent, purpose, sensitivity, retention и safety gates. Они не автоматически расширяются на связанные состояния.
+- Явно сообщённый пользователем срочный симптом (например, «После еды мне стало трудно дышать») активирует утверждённый safety-routing flow: Ayla не ставит диагноз, не предлагает beauty-процедуру и направляет к медицинской помощи согласно утверждённому тексту.
+- Food- и wellness-контекст не передаётся салону или мастеру без отдельного разрешённого контракта.
+
+**Pipeline gate:** перед записью food-сигнала в persistent memory и до передачи в Recommendation Composer выполняется классификация:
+
+```
+food signal
+→ immediate food intent
+→ inference classification
+→ medical/health inference detected?
+    → block persistence and recommendation use
+→ explicit user rule or permitted declared fact?
+    → consent + provenance + sensitivity gate
+→ permitted non-medical action
+```
+
+Допустимые значения `food_context_use_status`: `food_intent_only`, `explicit_user_rule`, `declared_health_fact_requires_gate`, `urgent_self_reported_symptom`, `prohibited_health_inference`, `insufficient_evidence`. Значение `insufficient_evidence` означает отсутствие основания для cross-domain действия, а не «осторожное использование».
+
+**Counterfactual test:** при фиксированных остальных данных изменение только food-сигнала не должно изменять primary beauty recommendation, если отсутствует явно подтверждённое пользовательское правило или другой разрешённый cross-domain contract.
 
 **Пример 1 — явное пользовательское правило с подтверждением inference:**
 - Пользователь ранее задал правило: «После поздних плотных ужинов не предлагай мне ранние утренние процедуры».
@@ -210,9 +240,18 @@ Recommendation Composer — нормативный decision pipeline для лю
 
 **Observability:** Если изменение или удаление экономического параметра меняет organic primary recommendation, система генерирует событие `ranking_economic_neutrality_alert` в observability-контур, определённый ADR-0009. Событие содержит `recommendation_id`, `ranking_model_version`, идентификаторы сравниваемых кандидатов, redacted score breakdown, изменившийся параметр и результаты обоих прогонов. Sensitive user context в событие не включается.
 
-**Operational handling contract (required before pilot):** До запуска pilot должны быть утверждены: severity alert (минимум SEV-1/P0), получатели и SLA подтверждения, разрешённый fallback, механизм приостановки ranking model version, критерии восстановления и обязательный regression test. Recommendation Engine не допускается к production/pilot traffic до утверждения этого контракта.
+**Operational handling contract (required before pilot):** До запуска pilot должен быть утверждён и технически реализован operational handling contract для `ranking_economic_neutrality_alert`.
 
-**Реакция:** Если расхождение обнаружено до показа рекомендации, выдача блокируется и применяется нейтральный fallback. Если влияние обнаружено после показа, инцидент классифицируется как блокирующий для соответствующей версии ranking model; её дальнейшее использование приостанавливается до разбора Architecture Owner и Safety Owner.
+- **Состояния alert:** `suspected` — проверка не завершена или недостаточно данных; `confirmed` — воспроизводимый случай, в котором изменение только экономического параметра меняет organic primary, порядок alternatives, reranking или proactive recommendation. `confirmed` классифицируется как P0/SEV-1. Ошибка detector не доказывает нарушение, но не разрешает показывать результат, для которого обязательная проверка не завершилась.
+- **Scope блокировки:** при подтверждённом нарушении затронутая ranking release (model version + feature schema version + ranking policy version + config version) автоматически переводится в `quarantined`. Platform-wide quarantine применяется по умолчанию; tenant-only остановка — только при доказанной изолированной причине.
+- **Fallback:** текущий запрос и последующий трафик переводятся на заранее утверждённую last-known-good release. При её недоступности — на детерминированный rules-based ranking, входной контракт которого не содержит экономических параметров. Если безопасный ranking невозможен — Ayla сохраняет обычный поиск и запись, но не выдаёт персонализированную primary recommendation. Запрещены: случайный provider, provider с максимальной комиссией, sponsored placement вместо organic primary, закэшированный результат quarantined release.
+- **Incident response:** alert доставляется в защищённый incident channel; on-call подтверждает P0 в течение 5 минут; containment — в течение 15 минут; первичная оценка exposure — в течение 60 минут; решение о внешней коммуникации — до 4 часов; предварительный report — до 24 часов; полный postmortem — до 5 рабочих дней. Система не ждёт ручного подтверждения, чтобы остановить доказанно biased release.
+- **Alert schema:** событие содержит `alert_id`, `detected_at`, `detector_mode` (online/shadow/replay/ci), `detector_version`, `status`, `recommendation_id`, `scenario_type`, `tenant_id_hash`, `ranking_release_id`, `experiment_id`, `changed_parameter_type`, `affected_candidate_ids`, `original_primary_id`, `counterfactual_primary_id`, `redacted_score_diff`, `display_status`, `fallback_applied`, `incident_id`, `trace_id`. Sensitive user context, memory facts, food/sleep/health context, `context_used`, имена пользователей и открытые ID в событие не включаются.
+- **Deduplication:** первое подтверждённое событие создаёт incident и quarantines release; последующие события с тем же fingerprint прикрепляются к incident, увеличивают affected count, но не создают новый pager alert.
+- **Post-display:** если нарушение обнаружено после показа, определяется exposure cohort. Активные и сохранённые рекомендации affected release получают `integrity_invalidated`, не могут продолжать recommendation-derived flow и исключаются из killer-moment metrics. Уже созданную запись нельзя автоматически отменять; затронутые billing events направляются на отдельный review.
+- **Recovery:** возврат release из `quarantined` разрешается только после root-cause analysis, исправления, обязательного regression test, counterfactual replay, shadow/canary проверки и одобрения Architecture Owner и Safety/Trust Owner. Коммерческие показатели не могут быть основанием для обхода quarantine.
+
+**Реакция:** Если расхождение обнаружено до показа рекомендации, выдача блокируется и применяется нейтральный fallback. Если влияние обнаружено после показа, инцидент классифицируется как блокирующий для соответствующей ranking release; её дальнейшее использование приостанавливается до разбора Architecture Owner и Safety Owner.
 
 ---
 
@@ -248,9 +287,17 @@ Recommendation Composer — нормативный decision pipeline для лю
 | `recovery_wellness` | 72 часа | до 7 дней | `recommendation_shown_at + 72h` |
 | `event_preparation` | до даты события, но не более 14 дней | до даты события | `min(recommendation_shown_at + 14 days, event_at)` |
 
-**Правило `save_for_later`:** `save_for_later` — это не `scenario_type`, а механизм assisted attribution. Он позволяет квалифицировать последующее действие как `assisted`, но **не изменяет** начало и предел attribution window. Предел рассчитывается от `recommendation_shown_at` согласно `scenario_type`. Для `event_preparation` общий максимальный предел assisted attribution — `event_at`, но не более 90 дней от `recommendation_shown_at`.
+**Правило `save_for_later`:** `save_for_later` — это не `scenario_type`, а механизм assisted attribution. Он позволяет квалифицировать последующее действие как `assisted`, но **не изменяет** начало и предел attribution window. Предел рассчитывается от `recommendation_shown_at` согласно `scenario_type`. Для `event_preparation` общий максимальный предел assisted attribution — `event_at`, но не более 90 дней от `recommendation_shown_at`. Повторное сохранение или открытие не сдвигают `expires_at`.
 
-Действие за пределами direct window может учитываться как `assisted` attribution, только если сохраняется подтверждаемая связь с `recommendation_id`. Временная близость без такой связи недостаточна для attribution.
+Действие за пределами direct window может учитываться как `assisted` attribution, только если сохраняется подтверждаемая связь с `recommendation_id`. Допустимые linkage_type: `inline_accept`, `recommendation_deeplink`, `derived_booking_draft`, `saved_recommendation_return`, `explicit_recall`, `alternative_accept`. `same_service`, `same_provider` и `temporal_proximity` не являются достаточной связью.
+
+**Versioned Attribution Window Registry:** окна не должны быть разрозненными константами. Для pilot используется registry с версией, сохраняемой в каждом attribution-событии. Изменения registry применяются перспективно к новым рекомендациям и не переклассифицируют исторические события.
+
+**Single-winner attribution:** один `qualified_action` имеет не более одной winning recommendation. При нескольких касаниях приоритет имеет явная origin-связь действия; alternative атрибутируется только по собственному `recommendation_id`. При неоднозначности результат — `unattributed`, а не ближайшая по времени рекомендация. Отклонённая или invalidated recommendation не получает атрибуцию.
+
+**Time semantics:** timestamps хранятся в UTC; сравнение выполняется backend-сервисом; tenant timezone используется только для отображения. Окно включает точку начала и исключает точку окончания: `shown_at <= action_at < expires_at`. Часы считаются как elapsed duration; переходы летнего времени не меняют длительность.
+
+**Отмена записи:** подтверждённая запись может считаться `qualified_action` в момент создания killer moment. Последующая отмена не удаляет историческое событие; фиксируется `post_recommendation_cancellation=true` и учитывается в guardrail `post_recommendation_cancellation_rate`.
 
 ### 6.4 Повторные killer moments
 
@@ -323,15 +370,56 @@ Recommendation Composer — нормативный decision pipeline для лю
 | Backups / logs | Обезличенное/audit-хранение согласно retention policy; логи, содержащие sensitive value, подлежат срокам очистки | Согласно отдельному retention policy |
 | Legally retained data | Сохраняется только если это требуется законом или audit obligations | Согласно legal retention |
 
+**Privacy Center:** минимальная структура интерфейса включает шесть разделов:
+
+1. **Моя память** — что известно, источник, статус, актуальность, последнее использование.
+2. **Как Ayla использует данные** — цели, scopes, типы рекомендаций и связанные компоненты.
+3. **Разрешения** — включение и отзыв отдельных целей обработки.
+4. **Исправления и удаления** — исправить, не использовать, удалить факт или категорию.
+5. **История действий** — когда получено согласие, изменена настройка или выполнено удаление.
+6. **Запрос данных и помощь** — экспорт, официальный запрос, контакты оператора и порядок обжалования.
+
+Для pilot интерфейс может быть сокращён, но нельзя убрать базовые действия: просмотр, источник, цель, исправление, запрет использования, удаление и управление scopes.
+
+**Экспорт и официальный запрос:** пользователю доступен self-service экспорт «Скачать мои данные», включая профиль, сохранённую память, источники и provenance, consent history, категории целей, историю исправлений, активные запреты, записи об отказах и связанные Decision Records. Экспорт не раскрывает данные других людей, внутренние security-секреты, закрытые antifraud-признаки и персональные данные мастеров сверх доступного пользователю объёма. Self-service не отменяет официальный канал обращения по ст. 14 152-ФЗ.
+
+**Запрещённые dark patterns:** согласие, включённое по умолчанию; одна кнопка «Принять всё» со скрытой настройкой отказа; отключение памяти через длинную цепочку экранов; запугивание потерей аккаунта; повторные уговоры после отказа; связывание необязательной персонализации с доступом к базовой записи; расплывчатое «для улучшения сервиса» вместо конкретной цели; автоматическое включение нового scope после обновления продукта; удаление только интерфейсной карточки без удаления backend-данных; объединение consent для сервиса, проактивных рекомендаций и маркетинга.
+
+**Safety-critical red-данные и карантин (OD-2):** подтверждённая safety-critical red-запись при достижении активного retention boundary не удаляется молча, а переводится в `memory_status=confirmation_required` и состояние `restricted_quarantine`. В карантине запись исключена из рекомендаций, ranking, marketing, analytics, передачи провайдерам и стандартного LLM memory context; доступ допускается только для защищённого переподтверждения пользователем. Для quarantine устанавливается отдельный конечный grace period и обязательный `delete_at`. Молчание пользователя, системные чтения, фоновые проверки и prompt inclusion не обновляют retention. Если пользователь не подтвердил запись до `delete_at`, sensitive payload и его производные уничтожаются; в аудите остаётся минимальный факт удаления без чувствительного значения. До amendment ADR-0011 действует текущий 90-дневный purge ADR-0011.
+
 Пользовательский UX обещает «удалить одной командой» использование и active-memory запись. Технические ограничения backups/legally retained data объясняются прозрачно, но не используются как отказ от удаления.
 
 ### 8.2 Совместимость с ADR-0012 v0.2
 
 | Правило ADR-0012 | Следствие для PRD |
 |---|---|
-| `consent_scope` из versioned registry | Каждая рекомендация должна проверять `consent_scope` (например, `provider_selection`, `intent_understanding`, `question_suppression`, `proactive_recommendation`). Произвольные строки scope запрещены. |
+| `consent_scope` из versioned registry | Каждая рекомендация должна получать исполняемое authorization decision из Consent Scope Registry. Initial scopes: `intent_understanding`, `provider_selection`, `proactive_recommendation`, `cross_domain_personalization`, `recommendation_explanation`, `recommendation_measurement`. Произвольные строки scope запрещены. |
 | Inferred/signal memory не является основанием для Substantial Recommendation | Рекомендация food scan → beauty должна формулироваться как мягкое предложение, а не как медицинский или косметологический вывод. |
-| Отклонённые предложения создают Decision Record | Отклонение сохраняется как `ProposalDecision` с ограниченным набором полей (topic/purpose, decision, timestamp, cooldown), без восстановления исходного sensitive value. Decision Record сам по себе является персональным данным и подпадает под retention/access/deletion policy. |
+| Отклонённые предложения создают Decision Record | Отклонение сохраняется как `ProposalDecision` с ограниченным набором полей (`recommendation_id`, `decision_type`, `reason_code`, `purpose`, `created_at`, `session_only`, `cooldown_until`), без восстановления исходного sensitive value. Decision Record сам по себе является персональным данным и подпадает под retention/access/deletion policy. |
+
+**Authorization decision (OD-K9):** каждое использование persistent context должно быть разрешено по сочетанию `purpose + data_category + operation + consumer + sensitivity + provenance + действующий consent receipt` либо иного утверждённого lawful basis. Результат — единый машинно проверяемый объект:
+
+```yaml
+authorization_decision:
+  decision_id: AD-456
+  outcome: allow | deny | session_only | reconsent_required
+  reason_code: scope_missing | scope_expired | scope_revoked | purpose_not_granted |
+               data_category_not_granted | operation_not_allowed | consumer_not_allowed |
+               sensitivity_blocked | provenance_insufficient | reconsent_required | legal_basis_missing
+  scope_id:
+  scope_version:
+  registry_version:
+  consent_receipt_id:
+  permitted_data_categories:
+  permitted_operations:
+  expires_at:
+```
+
+Незарегистрированный scope, категория или операция, а также отсутствующее, истёкшее или отозванное разрешение обрабатываются fail-closed. Consent не легитимизирует запрещённый health inference и не повышает inferred context до уровня declared или verified. Расширение цели, добавление категории данных, consumer или операции требует новой совместимой версии и, если расширяются права обработки, повторного подтверждения пользователя.
+
+**Session-only fallback:** при `deny` Ayla использует session-only или неперсонализированный fallback. Session-only означает: контекст используется только в текущем flow, не записывается в persistent memory, не создаёт будущую preference, не используется в proactive recommendation, не попадает в learning dataset, удаляется после короткого TTL, может войти только в минимизированный security/audit event без исходного значения.
+
+**Отзыв consent:** отзыв scope немедленно прекращает новое использование соответствующего контекста, инвалидирует связанные активные рекомендации, отменяет proactive jobs и удаляет данные из active memory. Производные факты, embeddings, caches и downstream representations инвалидируются или пересчитываются. Soft-delete период не разрешает продолжение обработки.
 
 ### 8.3 Правило безопасности для наблюдений о еде
 
@@ -402,6 +490,15 @@ Recommendation Composer — нормативный decision pipeline для лю
 | Personal payload удаляется/уничтожается; tombstone без исходного значения | Ревью v1.2 | Privacy review; deletion test |
 | Decision Record — personal data с retention/access/deletion | Ревью v1.2 | Privacy audit |
 | Типология отказов и разные cooldown/consequences | Ревью v1.2 | Conversation design; QA scenarios |
+| Food signal pipeline gate и запрещённые health-derived признаки | OD-K6 | Red-team; feature extraction audit; memory schema review |
+| Versioned Attribution Window Registry | OD-K8 | Analytics schema; Measurement Framework |
+| Single-winner attribution и linkage_type | OD-K8 | Event schema; analytics implementation |
+| Operational handling contract: suspected/confirmed, quarantine, fallback, recovery | OD-K10 | Operational Playbook; incident response drill |
+| Privacy Center, экспорт, dark patterns | OD-K5 | UX review; privacy audit; deletion test |
+| Safety-critical quarantine (confirmation_required / restricted_quarantine) | OD-K2 | ADR-0011 amendment; deletion workflow test |
+| Authorization decision по purpose/data_category/consumer/operation | OD-K9 | Consent Scope Registry implementation; Composer integration test |
+| `canonical_status` в `.knowledge/schema.yaml` | OD-K11 | Schema amendment; validator update |
+| Декомпозиция diet_type/skin_sensitivities и запрет religion inference | OD-1 | Schema/contract amendment; Legal review |
 
 ---
 
@@ -440,7 +537,7 @@ Recommendation Composer — нормативный decision pipeline для лю
 
 ### 11.6 Вывод
 
-Новых неразрешённых конфликтов, кроме перечисленных блокеров, не обнаружено. Канонизация PRD заблокирована до закрытия OD-1, OD-2 и утверждения Consent Scope Registry (OD-K9). Реализация и pilot дополнительно заблокированы до утверждения operational handling contract для economic-neutrality alerts (OD-K10).
+Новых неразрешённых конфликтов, кроме перечисленных блокеров, не обнаружено. Канонизация PRD заблокирована до закрытия OD-1, OD-2, утверждения Consent Scope Registry (OD-K9) и amendment `.knowledge/schema.yaml` для `canonical_status` (OD-K11). Реализация и pilot дополнительно заблокированы до утверждения operational handling contract для economic-neutrality alerts (OD-K10).
 
 ---
 
@@ -458,7 +555,7 @@ Recommendation Composer — нормативный decision pipeline для лю
 | OD-K8 | Scenario-dependent attribution window (direct/assisted) | ✅ Да | Нет |
 | OD-K9 | Consent Scope Registry — required dependency до использования persistent context | ✅ Да | **Да (канонизация + реализация + pilot)** |
 | OD-K10 | Operational handling contract для `ranking_economic_neutrality_alert` — required before pilot | ✅ Да | **Да (только pilot / production traffic)** |
-| OD-K11 | Amendment `.knowledge/schema.yaml` для `source_kind: canonical-candidate` | ✅ Да | Нет |
+| OD-K11 | Amendment `.knowledge/schema.yaml`: ввести `canonical_status` и не добавлять `canonical-candidate` в `source_kind` | ✅ Да | **Да (канонизация + регистрация как candidate)** |
 | OD-1 (ADR-0012) | Legal ruling о разделении чувствительности данных о диете/религии | ⏳ Ожидает legal review | **Да (канонизация + реализация)** |
 | OD-2 (ADR-0012) | Решение Privacy/Safety/Legal + amendment ADR-0011 по хранению safety-critical данных | ⏳ Ожидает cross-functional ruling | **Да (канонизация + реализация)** |
 
@@ -468,9 +565,12 @@ Recommendation Composer — нормативный decision pipeline для лю
 
 Initial registry должен как минимум определить scopes для:
 
-- `provider_selection`;
-- `proactive_recommendation`;
-- `intent_understanding`.
+- `intent_understanding` — использовать разрешённую память для понимания текущего запроса;
+- `provider_selection` — учитывать память при выборе услуги, мастера, времени или локации;
+- `proactive_recommendation` — инициировать предложение без текущего прямого запроса;
+- `cross_domain_personalization` — связывать контекст разных доменов, например food/wellness и beauty;
+- `recommendation_explanation` — показывать пользователю, какой контекст был применён;
+- `recommendation_measurement` — хранить минимальную связь контекста с результатом для killer attribution.
 
 Для каждого scope должны быть определены:
 
@@ -486,7 +586,9 @@ Initial registry должен как минимум определить scopes 
 - audit events;
 - владелец scope.
 
-Recommendation Composer не может использовать persistent user context, если требуемый scope отсутствует в утверждённой версии registry, отозван, истёк либо не покрывает конкретную цель обработки. В таком случае применяется session-only или no-personalization fallback.
+Примерные категории данных для initial registry: `booking_history`, `provider_preference`, `time_preference`, `location_preference`, `budget_preference`, `service_preference`, `event_context`, `food_declared`, `food_observation`, `allergy_declared`, `wellness_sleep`, `wellness_mood`, `wellness_body`, `safety_critical`, `persistent_suppression`, `conversation_derived`, `inferred_signal`. Незарегистрированная категория не может использоваться Recommendation Composer.
+
+Recommendation Composer не может использовать persistent user context, если требуемый scope отсутствует в утверждённой версии registry, отозван, истёк либо не покрывает конкретную цель обработки. В таком случае применяется session-only или no-personalization fallback. Недоступность registry не приводит к permissive fallback.
 
 ### 12.2 Required dependency: Operational handling contract for economic-neutrality alerts
 
@@ -500,7 +602,34 @@ Recommendation Composer не может использовать persistent user
 - обязательный regression test после исправления;
 - владельца закрытия инцидента.
 
-Recommendation Engine не допускается к production/pilot traffic до утверждения этого контракта.
+Recommendation Engine не допускается к production/pilot traffic до утверждения этого контракта. Детальные требования к обработке alert, quarantine, fallback, incident response, deduplication и recovery приведены в §5.3.
+
+### 12.3 ADR-0012 OD-1: diet_type, skin_sensitivities и специальные категории данных
+
+**Направление владельца:** принято с обязательной legal и schema clarification.
+
+Универсальная классификация `diet_type` и `skin_sensitivities` как green отклоняется. Обычные пищевые и косметические предпочтения могут обрабатываться как green только при условии, что они не содержат и не подразумевают сведения о здоровье, религиозных убеждениях либо иные специальные категории персональных данных.
+
+- Аллергии, непереносимости, health-related diet и skin safety constraints выделяются в отдельные структурированные записи с зоной не ниже yellow, запретом автоматического медицинского вывода и отдельным lawful-basis/consent gate.
+- Значения `halal`/`kosher` могут сохраняться только как прямо заявленные пользователем практические ограничения. Ayla запрещено выводить из них религиозную принадлежность, создавать религиозный профиль или использовать их для marketing segmentation и organic provider ranking.
+- Поля `diet_type` и `skin_sensitivities` должны быть структурно декомпозированы до persistent storage. Если изменение frozen-контракта невозможно до пилота, чувствительные и неоднозначные значения исключаются из persistent memory и recommendation inputs до завершения Legal review.
+- До Legal approval должны быть определены оператор данных, применимое основание обработки, надлежащая форма согласия, цели, получатели, сроки хранения, правила отзыва и минимально необходимый объём передачи салону/мастеру.
+
+OD-1 блокирует persistent processing и recommendation use затронутых полей, но не блокирует обычный поиск, каталог и запись.
+
+### 12.4 ADR-0012 OD-2: safety-critical red-данные и карантин
+
+**Направление владельца:** принято с обязательным bounded-quarantine и legal-retention clarification.
+
+Подтверждённая safety-critical red-запись при достижении активного retention boundary не удаляется молча, а переводится в `memory_status=confirmation_required` и состояние `restricted_quarantine`.
+
+- Quarantine не продлевает полномочия записи и не разрешает её обычное использование. Запись исключается из рекомендаций, ranking, marketing, analytics, передачи провайдерам и стандартного LLM memory context.
+- Доступ допускается только для защищённого переподтверждения пользователем.
+- Для quarantine устанавливается отдельный конечный grace period и обязательный `delete_at`. Молчание пользователя, системные чтения, фоновые проверки, prompt inclusion и технические операции не обновляют retention.
+- Если пользователь не подтвердил запись до `delete_at`, sensitive payload и его производные уничтожаются; в аудите остаётся только минимальный факт удаления без чувствительного значения.
+- Явный отзыв согласия, требование удаления, утрата цели или отсутствие законного основания имеют приоритет и не переводят запись в quarantine, если иное прямо не разрешено применимым правовым основанием.
+- Отсутствие или удаление persistent safety memory не означает отсутствие противопоказаний. Для substantial recommendation и рискованных процедур применяется независимый transactional safety gate с актуальной проверкой.
+- Активный TTL, quarantine grace period, допустимое число запросов, lawful basis, правила уничтожения и события, способные обновить срок, утверждаются совместно Privacy, Safety и Legal в amendment ADR-0011. До вступления amendment в силу действует текущий red retention ADR-0011, включая 90-дневный purge.
 
 ---
 
@@ -509,11 +638,24 @@ Recommendation Engine не допускается к production/pilot traffic д
 1. **Baseline-значения pilot:** каковы baseline для `useful_memory_coverage_by_scenario`, `proposal_conversion_rate` и доли killer moments до установки числовых целей? *(Отложено до получения данных pilot и Measurement Framework.)*
 2. **Таксономия scenario type:** следует ли уже сейчас формализовать trigger-сценарии как enum в analytics schema или отложить это до Recommendation Engine Specification? *(Предложение: определить enum в analytics schema, сохранив возможность уточнения.)*
 3. **Граница sponsored placement:** если sponsored placement появится после pilot, какой документ будет владеть правилом, запрещающим ему заменять organic primary recommendation? *(Предложение: отдельный Commercial Policy ADR.)*
-4. **`source_kind` для Draft-нормативных документов:** требуется amendment `.knowledge/schema.yaml`, чтобы добавить значение `canonical-candidate` (или `proposal`) и разрешить машинно проверяемое различие между действующим каноном и Draft-кандадатом. *(Owner: Knowledge Architecture / W7.)*
+4. **`canonical_status` в `.knowledge/schema.yaml`:** требуется amendment схемы, чтобы ввести отдельное поле `canonical_status` (draft/proposed/candidate/canonical/superseded/rejected/archived) и расширить `source_kind` типами документов (product-requirements, architecture-decision, policy, specification, engineering-handoff). Значение `canonical-candidate` в `source_kind` не добавляется. *(Owner: Knowledge Architecture / W7.)*
 
 ---
 
 ## 14. Change Log
+
+### v1.4 — 2026-07-22
+
+- Встроены owner-ответы OD-K5–OD-K11, OD-1 и OD-2 из `OD-answers.md`.
+- Добавлено поле `canonical_status: candidate` во frontmatter; обновлено примечание о `source_kind` с учётом OD-K11.
+- Усилены границы food→beauty (§4.1): запрещённые health inference, производные признаки, pipeline gate, counterfactual test (OD-K6).
+- Расширен operational handling contract для `ranking_economic_neutrality_alert` (§5.3): suspected/confirmed, ranking release quarantine, fallback, incident response, SLA, alert schema, deduplication, recovery (OD-K10).
+- Уточнены правила attribution window (§6.3): versioned registry, single-winner attribution, time semantics, post-cancellation rule (OD-K8).
+- Расширен раздел прозрачности по 152-ФЗ (§8.1): Privacy Center, экспорт, dark patterns, safety-critical quarantine (OD-K5, OD-2).
+- Расширена совместимость с ADR-0012 (§8.2): authorization decision, session-only fallback, отзыв consent, initial scopes и data categories (OD-K9).
+- Переработан раздел Owner Decisions (§12): OD-K11 отмечен как блокер канонизации/регистрации candidate; добавлены §12.3 (OD-1) и §12.4 (OD-2).
+- Обновлены блокеры канонизации и pilot во frontmatter, §11.6 и §12.
+- Обновлены traceability и open questions.
 
 ### v1.3.1 — 2026-07-22
 
