@@ -1,10 +1,10 @@
 ---
 node_id: ayla.strategy.killer-prd
-title: Killer PRD v1.2 — Сценарий с памятью в основе
+title: Killer PRD v1.3 — Сценарий с памятью в основе
 type: specification
 status: draft
 decision_status: proposed
-version: "1.2"
+version: "1.3"
 owner: Product Owner
 priority: P0
 knowledge_area:
@@ -31,7 +31,7 @@ security_sensitivity: medium
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-21
-updated: 2026-07-21
+updated: 2026-07-22
 review_cycle: before-major-change
 depends_on:
   - "[[Ayla Decision Log]]"
@@ -42,7 +42,7 @@ required_dependencies:
   - Consent Scope Registry (User Context Domain Owner + Privacy Owner)
 ---
 
-# Killer PRD v1.2 — Сценарий с памятью в основе
+# Killer PRD v1.3 — Сценарий с памятью в основе
 
 > Product Requirements Document. Переработка `PRD_Ayla_Killer_Scenario_v1.0.md` в соответствии с AYLA-DEC-0002.
 
@@ -50,12 +50,12 @@ required_dependencies:
 |---|---|
 | **Статус** | Draft (ожидает cross-functional review) |
 | **Статус решения** | Proposed — направление владельца зафиксировано; canonical approval ожидается |
-| **Версия** | 1.2 |
+| **Версия** | 1.3 |
 | **Владелец** | Product Owner / W7 (Canon Architect) |
 | **Заинтересованные стороны** | Recommendation Engine Owner, Privacy/Safety Owner, Conversation Design Owner |
 | **Блокеры канонизации** | ADR-0012 OD-1 (legal ruling о разделении чувствительности данных о диете/религии) и OD-2 (решение Privacy/Safety/Legal + amendment ADR-0011 по хранению safety-critical данных) должны быть закрыты до канонизации или реализации. |
 
-> **Примечание о `source_kind`:** документ зарегистрирован как `canonical` по схеме `ayla-knowledge`, но статус `Draft / Proposed` означает, что это *canonical candidate*. Утверждение в качестве действующего канона возможно только после закрытия блокеров и финального review.
+> **Примечание о `source_kind`:** схема `.knowledge/schema.yaml` требует значения `canonical` для внутренних нормативных документов, но не предоставляет отдельного значения для `canonical candidate`. Поэтому документ зарегистрирован как `canonical` со статусом `Draft / Proposed`, что семантически означает *canonical candidate*. Требуется amendment схемы: добавить `source_kind: canonical-candidate` (или `proposal`) для Draft-нормативных документов. До этого момента интерпретация `canonical` + `status: draft` зафиксирована в данном примечании.
 
 ---
 
@@ -95,7 +95,7 @@ Ayla работает на рынке, где сама по себе запис�
 
 | Термин | Определение |
 |---|---|
-| **Killer moment** | Формальное атрибутированное событие, в рамках которого Ayla выдаёт одну **основную** рекомендацию с использованием разрешённой сохранённой памяти, показывает пользователю применённый контекст, а пользователь выполняет `qualified_action` в пределах применимого `attribution_window`. Альтернативы допустимы по запросу пользователя или после уточнения причины отказа, но не учитываются при атрибуции killer moment. |
+| **Killer moment** | Формальное атрибутированное событие, в рамках которого Ayla выдаёт одну **основную** рекомендацию с использованием разрешённой сохранённой памяти, показывает пользователю применённый контекст, а пользователь выполняет `qualified_action` в пределах применимого `attribution_window`. Альтернатива, сформированная после уточнения причины отказа и повторно прошедшая все gates, получает собственный `recommendation_id` и может породить отдельный `killer_moment`. Исходная отклонённая рекомендация не считается источником `qualified_action`. |
 | **Active user** | Пользователь, у которого было хотя бы одно содержательное взаимодействие с Ayla за скользящие 7 дней, предшествующие событию. Незначительные взаимодействия (например, единственное проигнорированное приветствие) не учитываются. |
 | **Intent action** | Пользовательская реакция на рекомендацию, которая ещё не доказывает полученную ценность: открыть, сохранить на потом, запросить альтернативу, уточнить детали. |
 | **Qualified action** | Инициированный пользователем и подтверждаемый полезный результат, связанный с рекомендацией: подтверждённая запись, принятая и начатая инструкция/план, подтверждённое выполнение первого шага, принятая безопасная альтернатива. Простые клики, просмотры и `save for later` не являются `qualified_action`. |
@@ -104,7 +104,10 @@ Ayla работает на рынке, где сама по себе запис�
 | **Direct attribution** | `qualified_action` совершён внутри прямого окна для данного `scenario_type` и связан с `recommendation_id`. |
 | **Assisted attribution** | `qualified_action` совершён позже прямого окна, но пользователь явно вернулся к сохранённой рекомендации (`save_for_later`, повторный показ карточки, переход по ссылке), и связь с `recommendation_id` подтверждена. |
 | **Unattributed action** | Действие произошло без связи с `recommendation_id`; не является killer moment. |
-| **Substantial Recommendation** | Рекомендация, которая существенно влияет на выбор пользователя, его здоровье, безопасность, privacy или расходы. Для неё необходимы verified/declared memory либо подтверждённое consent пользователя; inferred/signal memory сама по себе не является достаточным основанием. |
+| **Recommendation role** | Роль рекомендации в диалоге: `primary` — основная, выбранная системой; `alternative` — сформированная после уточнения причины отказа от primary или по запросу пользователя. |
+| **Parent recommendation** | Для `alternative` — `recommendation_id` рекомендации, которая предшествовала ей и привела к rerank. |
+| **Rerank reason** | Причина, по которой primary recommendation не подошла: цена, время, мастер, локация, стиль услуги, другое. Используется для повторного прохождения Composer с уточнённым constraint. |
+| **Substantial Recommendation** | Рекомендация, которая существенно влияет на выбор пользователя, его здоровье, безопасность, privacy или расходы. Для неё необходимы **одновременно** (а) контекст уровня `declared` или `verified`, используемый в рамках действующего `consent_scope`, и (б) разрешённая цель обработки (lawful basis). Inferred/signal memory сама по себе не может служить достаточным основанием независимо от наличия consent. |
 | **Useful memory coverage** | Доля active users, имеющих минимально необходимый разрешённый контекст для конкретного сценария, среди active users, **потенциально подходящих** для этого сценария. Пользователи, сознательно выбравшие session-only режим, не считаются «неполными». Измеряет готовность, а не созданную ценность. |
 | **Memory fact count** | Диагностическое количество сохранённых записей памяти. Не должно использоваться как цель оптимизации или командный KPI. |
 
@@ -112,7 +115,7 @@ Ayla работает на рынке, где сама по себе запис�
 
 - ✅ «Пользователь явно сохранил предпочтение вечерних слотов → Ayla предлагает вечернее окно и объясняет, почему».
 - ⛔ «Ayla накопила 50 фактов о пользователе за неделю → это считается успехом продукта».
-- ✅ «Пользователь отсканировал завтрак; Ayla сначала отвечает на food intent, а затем, при наличии отдельного подтверждённого контекста, предлагает wellness-опцию как мягкую гипотезу с объяснением и возможностью отказа».
+- ✅ «Пользователь задал правило о поздних ужинах; Ayla использует это правило для планирования времени процедуры, не делая медицинских выводов».
 - ⛔ «Ayla вывела дефицит витамина D из фото еды → автоматически рекомендует косметолога без объяснения и без возможности отказа».
 - ⛔ «Пользователь отклонил Top-1; Ayla автоматически показывает Top-2 без уточнения причины отказа».
 
@@ -122,17 +125,22 @@ Ayla работает на рынке, где сама по себе запис�
 
 Food→beauty — **один из четырёх равноправных trigger-сценариев**. В маркетинге и onboarding он может демонстрироваться первым, поскольку является ярким и неожиданным; в архитектуре и реализации он не имеет приоритета перед остальными.
 
-### 4.1 Контекст питания → рекомендация в сфере beauty/wellness
+### 4.1 Food interaction с допустимым переходом к отдельному wellness-контексту
 
-**Что может использовать Ayla:** явно предоставленные диетические предпочтения, подтверждённые аллергии, недавний контекст food scan, переданный Ayla для рекомендаций по питанию.
+**Что может использовать Ayla:** явно предоставленные диетические предпочтения, подтверждённые аллергии, недавний контекст food scan, переданный Ayla для рекомендаций по питанию, а также явно заданные пользовательские правила, связывающие питание и планирование процедур.
 
-**Принцип:** food scan не является самостоятельным основанием для beauty-рекомендации. Сначала Ayla отвечает на непосредственный food intent. Cross-domain предложение допустимо только при наличии явной пользовательской цели, подтверждённого правила или иной объяснимой связи. Простое совпадение по времени не считается релевантностью.
+**Принцип:** food scan не является самостоятельным основанием для beauty-рекомендации. Сначала Ayla отвечает на непосредственный food intent. Cross-domain влияние допустимо только при наличии явной пользовательской цели, подтверждённого правила или иной объяснимой связи. Простое совпадение по времени не считается релевантностью.
 
-**Пример:**
-- Пользователь сканирует плотный ужин вечером.
-- Ayla: «Ужин получился довольно плотным. Хочешь, я сохраню его или помогу подобрать более лёгкий завтрак?  
-  И отдельно: ты вчера упоминал напряжение в спине. Если оно всё ещё беспокоит, могу подобрать расслабляющую процедуру на завтра.»
-- Пользователь выбирает, какой контекст развивать.
+**Пример 1 — явное пользовательское правило:**
+- Пользователь ранее задал правило: «После поздних плотных ужинов не предлагай мне ранние утренние процедуры».
+- Пользователь сканирует поздний плотный ужин.
+- Ayla: «Ты просила учитывать поздние плотные ужины при планировании утренних процедур. Поэтому я не предлагаю ранний слот. Хочешь, подберу подходящее время после 12:00?»
+- Пользователь соглашается и записывается.
+
+**Пример 2 — сначала food intent:**
+- Пользователь сканирует ужин.
+- Ayla: «Я сохранила этот ужин. Хочешь посмотреть состав или подобрать более лёгкий завтрак на завтра?»
+- Только если пользователь явно переключается на wellness-контекст, Ayla может использовать разрешённую память для подбора процедуры.
 
 ### 4.2 Контекст усталости/восстановления → подходящий уход
 
@@ -172,7 +180,7 @@ Recommendation Composer — нормативный decision pipeline для лю
 4. **Relevance** — соответствует ли candidate текущему intent и контексту? Если нет — исключить.
 5. **Preference boost** — применить подтверждённые предпочтения (время, мастер, стиль услуги). Предпочтение не должно возвращать candidate, уже исключённый по safety, eligibility или relevance.
 6. **Economic-neutrality check** — убедиться, что organic ranking не зависит от коммерческой выгоды Ayla.
-7. **Primary output** — выбрать и объяснить **одну основную** рекомендацию. Система может сохранить не более двух прошедших все gates альтернатив, доступных по запросу пользователя или после уточнения причины отказа. Альтернативы не показываются как равноправный каталог по умолчанию.
+7. **Primary output** — выбрать и объяснить **одну основную** рекомендацию. Если пользователь отклоняет primary или запрашивает альтернативу, Ayla фиксирует `rerank_reason`, повторно проходит Composer с уточнённым constraint и формирует `alternative` recommendation с собственным `recommendation_id` и ссылкой на `parent_recommendation`. Система не показывает альтернативы как равноправный каталог по умолчанию; одновременно доступна не более одной primary и до двух alternative рекомендаций.
 
 ### 5.2 Примеры исключения на каждом этапе
 
@@ -190,11 +198,13 @@ Recommendation Composer — нормативный decision pipeline для лю
 - Комиссия, маржа, расходы на рекламу или коммерческий статус provider **не должны влиять** на organic recommendation score, порядок кандидатов или выбор primary recommendation.
 - Sponsored placement, если оно будет введено позднее, рассчитывается отдельно, явно маркируется и **не заменяет** organic primary recommendation.
 - Цена может показываться и использоваться как пользовательский budget filter, но не как скрытый коммерческий ranking signal.
-- При равенстве основных оценок применяется заранее заданный нейтральный tie-breaker (например, близость по времени, расстояние, лучшее соответствие подтверждённым предпочтениям, стабильный технический идентификатор).
+- При равенстве основных оценок применяется утверждённый нейтральный tie-breaker в фиксированном порядке: (1) лучшее соответствие подтверждённым предпочтениям; (2) ближайшее подходящее время; (3) меньшее расстояние; (4) стабильный технический идентификатор provider. Tie-breaker должен быть задокументирован в Recommendation Engine Specification и не должен зависеть от экономических параметров Ayla.
 
-**Counterfactual acceptance test:** Для каждой рекомендации система должна поддерживать воспроизводимый economic-neutrality check: ranking рассчитывается при одинаковом наборе допустимых кандидатов и неизменных пользовательских сигналах дважды — с экономическими параметрами и без них. Изменение только экономического параметра не должно менять organic primary recommendation.
+**Counterfactual acceptance test:** Система должна поддерживать воспроизводимый economic-neutrality check: при одинаковом наборе допустимых кандидатов и неизменных пользовательских сигналах изменение только экономического параметра (комиссия, маржа, рекламная оплата, коммерческий статус) не должно менять organic primary recommendation. Проверка может выполняться через online deterministic assertion, shadow evaluation, sampled counterfactual checks или полный прогон в CI / pre-release audit. Двойной синхронный прогон для каждого production-запроса не является обязательным требованием.
 
 **Observability:** Если изменение или удаление экономического параметра меняет organic primary recommendation, система генерирует событие `ranking_economic_neutrality_alert` в observability-контур, определённый ADR-0009. Событие содержит `recommendation_id`, `ranking_model_version`, идентификаторы сравниваемых кандидатов, redacted score breakdown, изменившийся параметр и результаты обоих прогонов. Sensitive user context в событие не включается.
+
+**Operational handling contract (required before pilot):** До запуска pilot должны быть утверждены: severity alert (минимум SEV-1/P0), получатели и SLA подтверждения, разрешённый fallback, механизм приостановки ranking model version, критерии восстановления и обязательный regression test. Recommendation Engine не допускается к production/pilot traffic до утверждения этого контракта.
 
 **Реакция:** Если расхождение обнаружено до показа рекомендации, выдача блокируется и применяется нейтральный fallback. Если влияние обнаружено после показа, инцидент классифицируется как блокирующий для соответствующей версии ranking model; её дальнейшее использование приостанавливается до разбора Architecture Owner и Safety Owner.
 
@@ -210,7 +220,7 @@ Recommendation Composer — нормативный decision pipeline для лю
 2. Рекомендация использует **разрешённую сохранённую память/контекст** в рамках применимого `consent_scope`.
 3. Ayla **показывает пользователю, какой контекст был применён** (явное объяснение или inline attribution).
 4. Пользователь выполняет связанный с рекомендацией `qualified_action`.
-5. Действие совершается в пределах применимого `attribution_window`, связано с конкретным `recommendation_id` и классифицируется как `direct` или `assisted` attribution.
+5. Действие совершается в пределах применимого `attribution_window`, связано с конкретным `recommendation_id` и классифицируется как `direct` или `assisted` attribution. Для `alternative` рекомендаций событие дополнительно содержит `parent_recommendation_id`, `recommendation_role=alternative` и `rerank_reason`.
 
 ### 6.2 Правила атрибуции
 
@@ -226,14 +236,15 @@ Recommendation Composer — нормативный decision pipeline для лю
 
 Начальные значения для pilot (гипотезы, уточняются в Measurement Framework):
 
-| Сценарий | Direct window | Assisted window |
-|---|---|---|
-| Свободный слот / повторная запись | 24 часа | до 7 дней |
-| Recovery / wellness | 48–72 часа | до 7 дней |
-| Подготовка к событию | до даты события, но не более 14 дней | до даты события |
-| Save for later | не завершённый killer moment | до 7–14 дней после сохранения |
+| `scenario_type` | Direct window | Assisted limit | Формула direct window |
+|---|---|---|---|
+| `immediate_slot` / `repeat_booking` | 24 часа | до 7 дней | `recommendation_shown_at + 24h` |
+| `recovery_wellness` | 72 часа | до 7 дней | `recommendation_shown_at + 72h` |
+| `event_preparation` | до даты события, но не более 14 дней | до даты события | `min(recommendation_shown_at + 14 days, event_at)` |
 
-Действие за пределами direct window может учитываться как assisted attribution, только если сохраняется подтверждаемая связь с `recommendation_id`. Временная близость без такой связи недостаточна для attribution.
+**Правило `save_for_later`:** `save_for_later` — это не `scenario_type`, а механизм assisted attribution. Если пользователь явно сохранил рекомендацию, действие по ней может атрибутироваться как `assisted` в течение 7–14 дней после сохранения при сохранении связи с `recommendation_id`.
+
+Действие за пределами direct window может учитываться как `assisted` attribution, только если сохраняется подтверждаемая связь с `recommendation_id`. Временная близость без такой связи недостаточна для attribution. Для `event_preparation` общий максимальный предел assisted attribution — `event_at`, но не более 90 дней от `recommendation_shown_at`.
 
 ### 6.4 Повторные killer moments
 
@@ -243,7 +254,7 @@ Recommendation Composer — нормативный decision pipeline для лю
 
 - Ayla: «Ты упоминала, что предпочитаешь вечер, и раньше довольна была расслабляющим массажем у Марии. У неё есть окно сегодня в 19:00. Записать?»
 - Пользователь: «Да» → запись подтверждена в течение 24 часов.
-- Зарегистрировано событие `killer_moment` с `recommendation_id`, `scenario_type=visit_history`, `context_used=[preferred_time, favorite_master, service_type]`, `attribution_type=direct`.
+- Зарегистрировано событие `killer_moment` с `recommendation_id`, `scenario_type=repeat_booking`, `context_used=[preferred_time, favorite_master, service_type]`, `attribution_type=direct`.
 
 ---
 
@@ -266,10 +277,10 @@ Recommendation Composer — нормативный decision pipeline для лю
 
 - `recommendation_dismissal_rate` — доля отклонённых рекомендаций;
 - `memory_disable_rate` — доля пользователей, отключающих персонализацию;
-- `incorrect_context_rate` — доля случаев, когда пользователь указывает, что контекст применён неверно;
-- `safety_escalation_rate` — частота переходов в S8 после рекомендации;
-- `post_recommendation_cancellation_rate` — доля отмен записей, совершённых после attributed recommendation;
-- `why_explanation_dissatisfaction_rate` — доля случаев, когда пользователь спросил «почему?» и остался недоволен ответом.
+- `incorrect_context_rate` — доля рекомендаций, использовавших память, по которым пользователь указал, что контекст применён неверно (correction flow, явная жалоба, отклонение с пометкой «контекст неверен»);
+- `safety_escalation_rate` — частота переходов в S8 Boundary Handling вскоре после показа рекомендации;
+- `post_recommendation_cancellation_rate` — доля подтверждённых записей, совершённых после attributed recommendation, которые были отменены пользователем;
+- `why_explanation_dissatisfaction_rate` — доля обращений «почему ты это предложила?», по которым пользователь явно выразил недовольство объяснением (negative reaction, повторный вопрос, жалоба).
 
 Если любой guardrail показывает ухудшение, рост killer outcome metric не считается успехом.
 
@@ -300,8 +311,8 @@ Recommendation Composer — нормативный decision pipeline для лю
 | Уровень | Что происходит | Срок |
 |---|---|---|
 | Немедленное прекращение использования | Контекст исключается из recommendation pipeline | Мгновенно |
-| Удаление из active memory | Запись помечается как удалённая и не возвращается | В рамках policy active memory |
-| Backups / logs | Обезличенное/audit-хранение согласно retention policy | Согласно отдельному retention policy |
+| Удаление из active memory | Personal payload удаляется или криптографически уничтожается в соответствии с active-memory deletion policy. Допускается хранение минимального tombstone без исходного значения, если он необходим для предотвращения восстановления, повторного импорта или воспроизведения audit trail. | В рамках policy active memory |
+| Backups / logs | Обезличенное/audit-хранение согласно retention policy; логи, содержащие sensitive value, подлежат срокам очистки | Согласно отдельному retention policy |
 | Legally retained data | Сохраняется только если это требуется законом или audit obligations | Согласно legal retention |
 
 Пользовательский UX обещает «удалить одной командой» использование и active-memory запись. Технические ограничения backups/legally retained data объясняются прозрачно, но не используются как отказ от удаления.
@@ -373,6 +384,16 @@ Recommendation Composer — нормативный decision pipeline для лю
 | `consent_scope` из registry | ADR-0012 OD-9 | Consent-scope registry существует до release функции |
 | Прозрачность по 152-ФЗ как видимая функция | Constitution Ст. VI, VII; сводка исследований | Review UX-макета; тест удаления одной командой |
 | Правило безопасности наблюдений о еде | Решение владельца; Constitution Ст. VIII, XII | Red-team cases; medical/safety review |
+| Альтернатива получает собственный `recommendation_id` и может породить killer moment | Ревью v1.2 | Event schema; UX flow; acceptance test |
+| Substantial Recommendation требует declared/verified AND consent/lawful basis | Ревью v1.2 | Ranking audit; QA red-team |
+| Food interaction — отдельный wellness-контекст или явное пользовательское правило | Ревью v1.2 | Conversation QA; red-team |
+| `save_for_later` — механизм assisted attribution, не scenario_type | Ревью v1.2 | Event taxonomy; analytics contract |
+| Формула `event_preparation` direct window: `min(recommendation_shown_at + 14 days, event_at)` | Ревью v1.2 | Analytics implementation; pilot validation |
+| Утверждённый нейтральный tie-breaker | Ревью v1.2 | Recommendation Engine Specification |
+| Operational handling contract для economic-neutrality alerts | Ревью v1.2 | Operational Playbook; pre-pilot checklist |
+| Personal payload удаляется/уничтожается; tombstone без исходного значения | Ревью v1.2 | Privacy review; deletion test |
+| Decision Record — personal data с retention/access/deletion | Ревью v1.2 | Privacy audit |
+| Типология отказов и разные cooldown/consequences | Ревью v1.2 | Conversation design; QA scenarios |
 
 ---
 
@@ -411,7 +432,7 @@ Recommendation Composer — нормативный decision pipeline для лю
 
 ### 11.6 Вывод
 
-Конфликтов, требующих остановки работы, не обнаружено. Канонизация и реализация остаются заблокированными до закрытия ADR-0012 OD-1 и OD-2.
+Новых неразрешённых конфликтов, кроме перечисленных блокеров (OD-1, OD-2, OD-K9 и ограничения schema по `source_kind`), не обнаружено. Канонизация и реализация остаются заблокированными до закрытия этих блокеров.
 
 ---
 
@@ -428,6 +449,8 @@ Recommendation Composer — нормативный decision pipeline для лю
 | OD-K7 | Primary recommendation ≠ единственная; альтернативы по запросу/причине отказа | ✅ Да | Нет |
 | OD-K8 | Scenario-dependent attribution window (direct/assisted) | ✅ Да | Нет |
 | OD-K9 | Consent Scope Registry — required dependency до использования persistent context | ✅ Да | **Да** |
+| OD-K10 | Operational handling contract для `ranking_economic_neutrality_alert` — required before pilot | ✅ Да | **Да** |
+| OD-K11 | Amendment `.knowledge/schema.yaml` для `source_kind: canonical-candidate` | ✅ Да | Нет |
 | OD-1 (ADR-0012) | Legal ruling о разделении чувствительности данных о диете/религии | ⏳ Ожидает legal review | **Да** |
 | OD-2 (ADR-0012) | Решение Privacy/Safety/Legal + amendment ADR-0011 по хранению safety-critical данных | ⏳ Ожидает cross-functional ruling | **Да** |
 
@@ -457,18 +480,47 @@ Initial registry должен как минимум определить scopes 
 
 Recommendation Composer не может использовать persistent user context, если требуемый scope отсутствует в утверждённой версии registry, отозван, истёк либо не покрывает конкретную цель обработки. В таком случае применяется session-only или no-personalization fallback.
 
+### 12.2 Required dependency: Operational handling contract for economic-neutrality alerts
+
+До запуска pilot **Recommendation Engine Owner совместно with Architecture Owner и Safety Owner** должны утвердить operational handling contract для `ranking_economic_neutrality_alert`, включающий:
+
+- severity (минимум SEV-1/P0);
+- получателей alert и канал доставки;
+- SLA подтверждения и разбора;
+- разрешённый fallback при блокировке выдачи;
+- механизм приостановки и восстановления ranking model version;
+- обязательный regression test после исправления;
+- владельца закрытия инцидента.
+
+Recommendation Engine не допускается к production/pilot traffic до утверждения этого контракта.
+
 ---
 
 ## 13. Открытые вопросы
 
 1. **Baseline-значения pilot:** каковы baseline для `useful_memory_coverage_by_scenario`, `proposal_conversion_rate` и доли killer moments до установки числовых целей? *(Отложено до получения данных pilot и Measurement Framework.)*
-2. **Таксономия scenario type:** следует ли уже сейчас формализовать четыре trigger-сценария как enum в analytics schema или отложить это до Recommendation Engine Specification? *(Предложение: определить enum в analytics schema, сохранив возможность уточнения.)*
+2. **Таксономия scenario type:** следует ли уже сейчас формализовать trigger-сценарии как enum в analytics schema или отложить это до Recommendation Engine Specification? *(Предложение: определить enum в analytics schema, сохранив возможность уточнения.)*
 3. **Граница sponsored placement:** если sponsored placement появится после pilot, какой документ будет владеть правилом, запрещающим ему заменять organic primary recommendation? *(Предложение: отдельный Commercial Policy ADR.)*
-4. **Severity и SLA для `ranking_economic_neutrality_alert`:** какой severity (SEV-1/P0), SLA подтверждения, fallback и владелец закрытия инцидента? *(Предложение: определить в Operational Playbook для Recommendation Engine.)*
+4. **`source_kind` для Draft-нормативных документов:** требуется amendment `.knowledge/schema.yaml`, чтобы добавить значение `canonical-candidate` (или `proposal`) и разрешить машинно проверяемое различие между действующим каноном и Draft-кандадатом. *(Owner: Knowledge Architecture / W7.)*
 
 ---
 
 ## 14. Change Log
+
+### v1.3 — 2026-07-22
+
+- Устранено противоречие вокруг альтернатив: альтернатива, сформированная после уточнения причины отказа и повторно прошедшая все gates, получает собственный `recommendation_id` и может породить отдельный `killer_moment`.
+- Введены поля `recommendation_role`, `parent_recommendation_id`, `rerank_reason`.
+- Исправлено условие Substantial Recommendation: требуется `declared`/`verified` контекст **AND** действующий `consent_scope`/lawful basis; consent сам по себе не легитимизирует inferred memory.
+- Переименован сценарий §4.1 и исправлены примеры: food scan не является основанием для beauty-рекомендации; cross-domain влияние допустимо только через явное пользовательское правило.
+- Разделены `scenario_type` и `save_for_later`: `save_for_later` — механизм assisted attribution, а не сценарий.
+- Добавлена вычислимая формула для `event_preparation` attribution window.
+- Уточнён tie-breaker: фиксированный утверждённый порядок вместо примеров.
+- Economic-neutrality check дополнен operational handling contract как required dependency before pilot.
+- Уточнено удаление из active memory: personal payload удаляется/уничтожается, допускается tombstone без исходного значения.
+- Уточнены guardrail-метрики: знаменатели и измеримые сигналы.
+- Добавлены OD-K10 и OD-K11; source_kind schema conflict зафиксирован как требующий amendment схемы.
+- Обновлены traceability, acceptance checks, open questions и consistency review.
 
 ### v1.2 — 2026-07-21
 
@@ -503,4 +555,4 @@ Recommendation Composer не может использовать persistent user
 
 ---
 
-**Конец документа — Killer PRD v1.2**
+**Конец документа — Killer PRD v1.3**
