@@ -12,9 +12,9 @@ decision_status: proposed
 implementation_status: blocked
 enforcement_status: not_effective
 effective_from: null
-version: "0.6"
+version: "0.7"
 canonical_status: draft
-review_status: pending_owner_approval
+review_status: pending_technical_re_review
 owner: Chief Product Architect
 priority: P0
 knowledge_area:
@@ -77,12 +77,13 @@ review_cycle: event-driven
 | Implementation status | Blocked |
 | Enforcement status | Not effective |
 | Effective from | null |
-| Version | 0.6 (2026-07-23) |
-| Review status | pending_owner_approval |
+| Version | 0.7 (2026-07-23) |
+| Review status | pending_technical_re_review |
 
 **Owner ruling:** Режим 2+ — двухступенчатая канонизация. Настоящий документ
-подготовлен для повторного owner review. Самостоятельный перевод в
-Canonical/Accepted запрещён.
+подготовлен для повторного технического ревью. Перевод в structured owner
+decision review, final owner approval, Canonical/Accepted или operational
+activation до прохождения технического ревью запрещён.
 
 **What this document IS:** нормативный контракт self-service экспорта и
 удаления (forget) данных, входящих в утверждённый Personal Context pilot scope,
@@ -258,12 +259,31 @@ enforcement.
   удаления выполняется.
 - `partially_completed` — **внутреннее состояние**: каскад завершён с одним
   или более failed steps; retryable. Во внешнем ответе это состояние
-  отображается как `status: "partial"`.
+  отображается как `status: "partial"`. Barrier остаётся активным; automatic
+  release запрещён.
 - `completed` — каскад завершён успешно; все included-классы обработаны.
-- `failed` — каскад завершён с не-retryable ошибкой; terminal state.
+  Barrier может быть снят, т.к. per-class lifecycle (soft-delete → purge,
+  withdrawal → retention) продолжается под контролем отдельных state machines.
+- `failed` — каскад завершён с не-retryable ошибкой; terminal operation state.
+  **Barrier НЕ снимается автоматически.** Система обязана либо достичь
+  `deletion_converged`, либо создать `recovery_purge_operation`, либо установить
+  `subject_suppression` до снятия barrier.
 - `aborted` — операция прервана авторизованным break-glass, relink или
-  неисправимым сбоем; terminal state. Barrier снимается только после
-  достижения terminal state и записи incident/audit.
+  неисправимым сбоем; terminal operation state. **Barrier НЕ снимается
+  автоматически.** Применяются те же convergence/recovery/suppression правила,
+  что и для `failed`.
+- `deletion_converged` — **внутреннее состояние достижения безопасности**:
+  для каждого included-класса подтверждено, что он находится в целевом
+  терминальном per-class состоянии (`deleted`, `primary_purged`, `withdrawn`)
+  либо явно перечислен в `retained[]` с корректным `decision_status`. Это
+  состояние является предварительным для безопасного снятия barrier.
+- `recovery_purge_operation` — **внутреннее состояние**: создана новая
+  операция, которая продолжает удаление остаточных данных. Barrier
+  сохраняется; новые записи остаются заблокированными до завершения recovery.
+- `subject_suppression` — **внутреннее состояние**: установлена persistent
+  subject-level tombstone, которая блокирует создание новых included-записей
+  для данного субъекта до достижения `deletion_converged`. Может использоваться
+  как временная мера, если recovery операция не может быть запущена немедленно.
 
 **State-to-response mapping:**
 
@@ -275,6 +295,7 @@ enforcement.
 | `completed` | `completed` | 200 |
 | `failed` | `failed` | 502/504/500 |
 | `aborted` | `failed` or `aborted`* | 502/500 |
+| `converging` / `recovery_purge_operation` / `subject_suppression` | `failed` or `aborted` | 502/500 |
 
 `*` `aborted` may be exposed as a dedicated external `status` only after owner
 approval of the break-glass/relink semantics. Until then, external responses use
@@ -285,9 +306,18 @@ are created in a single database transaction. If the transaction fails, the
 client receives an error and no `operation_id`. There is no externally
 observable window between `operation_id` issuance and barrier activation.
 
-**Barrier release rule:** barrier is released only when the operation reaches a
-terminal state (`completed`, `failed`, or `aborted`). Automatic release after a
-partial or unrecoverable failure without terminal state is prohibited.
+**Barrier release rule:**
+
+- Barrier снимается только после достижения **безопасного исхода**.
+- Для `completed` безопасный исход наступает сразу (per-class lifecycle
+  управляется отдельно).
+- Для `failed`/`aborted` безопасный исход требует одного из:
+  1. `deletion_converged` — инвентаризация подтвердила отсутствие остатков;
+  2. создана и доведена до `completed`/`failed` `recovery_purge_operation`;
+  3. установлена `subject_suppression` tombstone и запущен recovery с
+     отслеживаемым deadline.
+- Automatic release after partial or unrecoverable failure without convergence
+  is prohibited.
 
 ### 3.2 Per-class state
 
@@ -341,22 +371,39 @@ blocked  ← first externally observable state; barrier active
   ▼
 processing  ← каскад выполняется
   │
-  ├──► partially_completed  ← есть failed steps; retryable
+  ├──► partially_completed  ← есть failed steps; retryable; barrier active
   │      │
   │      ├──► retry  → processing
   │      │
-  │      └──► max retries / unrecoverable → failed  (terminal)
+  │      └──► max retries / unrecoverable → failed  (terminal operation)
   │
-  ├──► completed  ← все шаги успешны (terminal)
+  ├──► completed  ← все шаги успешны (terminal operation)
   │         │
   │         └──► per-class lifecycle продолжается независимо:
   │                UserPersonalContext: deleted → backup_expired
   │                MemoryEntry: soft_deleted → primary_purged → backup_expired
   │                ConsentRecord: withdrawn → retained_under_other_basis
+  │         │
+  │         └──► barrier released (safe outcome for completed)
   │
-  └──► aborted  ← break-glass / relink / authorized terminal abort (terminal)
+  └──► aborted  ← break-glass / relink / authorized terminal abort
+            │     (terminal operation; barrier stays)
+            ▼
+      convergence gate (barrier still active)
+            │
+            ├──► deletion_converged ──► barrier released
+            │
+            ├──► recovery_purge_operation ──► processing ──► completed/failed
+            │                                     │
+            │                                     └──► convergence gate
+            │
+            └──► subject_suppression tombstone ──► recovery_purge_operation
+                                                   ──► convergence gate
 
-Barrier is released only after a terminal state is persisted.
+Barrier is released only after a safe outcome:
+- completed, or
+- failed/aborted followed by deletion_converged / completed recovery /
+  active subject_suppression with tracked recovery deadline.
 ```
 
 ### 3.6 Break-glass and terminal abort
@@ -374,12 +421,24 @@ Abort procedure:
 
 - Record reason code, operator identities, incident ticket, and audit event
   `privacy.delete_aborted`.
-- Move operation to `aborted` **before** releasing the barrier.
+- Move operation to `aborted` **without releasing the barrier**.
 - Do **not** auto-retry an `aborted` operation; the client must start a new
   delete operation with a new `idempotency_key` after the incident is resolved.
 - Preserve evidence of completed steps; already-deleted classes remain deleted.
-- After abort, perform a fresh inventory sweep before any new operation on the
-  same `scope_hash`.
+- Immediately enter the **convergence gate** (§3.1):
+  - Run an inventory sweep of all included classes and derived stores.
+  - If no residual personal-context data is found, transition to
+    `deletion_converged` and release the barrier.
+  - If residual data is found, create a `recovery_purge_operation` with the
+    same `scope_hash` and a new `operation_id`; keep the barrier until the
+    recovery operation reaches a safe outcome.
+  - If recovery cannot start immediately, install a `subject_suppression`
+    tombstone that blocks new writes of included classes for the subject and
+    schedule recovery with a tracked deadline.
+- After abort and before barrier release, **no new write** of any included
+  class for the subject is permitted.
+- A fresh inventory sweep is mandatory before any new operation on the same
+  `scope_hash`.
 
 ---
 
@@ -400,12 +459,43 @@ Abort procedure:
 
 `scope_hash` определяет активную операцию. Компоненты:
 
-- `subject_ref` — псевдонимизированный или HMAC-дайджест `ayla_user_id`/`bot_user_id`;
-- `tenant_ref` — tenant identifier;
-- `operation_type` — `export` или `delete`;
-- `included_classes` — canonical class list for this contract version;
-- `contract_version` — AMD-020 version (e.g., `0.4`);
-- `link_generation` — версия связи BotUser ↔ Ayla User, чтобы отслеживать relink; формируется из `BotUser.ayla_link_generation` (или аналогичного поля) и включается в `scope_hash`, чтобы операция, начатая до relink, не применялась к новому субъекту.
+- `subject_ref` — HMAC-SHA-256 дайджест пары (`ayla_user_id`, `bot_user_id`) с
+  использованием текущего `hmac_key_version`;
+- `tenant_ref` — канонический строковый идентификатор tenant (UUID или slug);
+- `operation_type` — строка `"export"` или `"delete"`;
+- `included_classes` — массив canonical class names, отсортированный лексикографически;
+- `contract_version` — строка версии AMD-020 (например, `"0.7"`);
+- `link_generation` — монотонно возрастающее целое число, версия связи
+  BotUser ↔ Ayla User. `link_generation` инкрементируется при каждом relink;
+  предыдущие значения никогда не переиспользуются и не восстанавливаются.
+
+**Canonical serialization:**
+
+```json
+{
+  "subject_ref": "<hmac_hex>",
+  "tenant_ref": "<tenant_id>",
+  "operation_type": "delete",
+  "included_classes": ["ConsentRecord", "MemoryEntry_green", "UserPersonalContext"],
+  "contract_version": "0.7",
+  "link_generation": 3
+}
+```
+
+**Hash algorithm:**
+
+- Serialize the canonical JSON object above with keys sorted lexicographically,
+  UTF-8 encoding, no whitespace.
+- Compute `SHA-256(serialized_bytes)`.
+- Represent the hash as lowercase hexadecimal.
+
+**Key management:**
+
+- `hmac_key_version` is a separate versioned secret managed by W3 Security.
+- Rotation of the HMAC key produces a new `subject_ref` and therefore a new
+  `scope_hash`; idempotency records must be keyed by `(scope_hash, idempotency_key)`
+  and are not portable across key versions.
+- The HMAC key must not be derivable from `scope_hash` or audit logs.
 
 ### 4.3 Idempotency rules
 
@@ -427,28 +517,50 @@ Abort procedure:
 
 ### 4.4 Relink lifecycle
 
-`scope_hash` включает `link_generation`. Если связь BotUser ↔ Ayla User
-меняется во время активной операции:
+`scope_hash` включает `link_generation`. `link_generation` — **монотонно
+возрастающее** целое число; при каждом relink оно увеличивается. Предыдущие
+значения `link_generation` и прежние `scope_hash` никогда не
+восстанавливаются, даже если пользователь позже relink'ается обратно на тот
+же `Ayla User`. Это предотвращает replay, ошибочное присоединение к старой
+операции и смешение idempotency records.
+
+Если связь BotUser ↔ Ayla User меняется во время активной операции:
 
 1. Текущая операция немедленно переходит в terminal state `aborted`.
 2. Внешний ответ: `failed` (или `aborted` после owner approval) с
    `error.code: subject_mismatch`.
 3. Уже выполненные шаги остаются выполненными; незавершённые шаги отменяются.
-4. Barrier снимается только после достижения `aborted` и записи audit/incident.
+4. Barrier **не снимается** автоматически. Система входит в convergence gate
+   (§3.1): для старой persona должна быть доказана `deletion_converged`, либо
+   создана `recovery_purge_operation`, либо установлена `subject_suppression`
+   tombstone.
 5. Клиент должен инициировать **новую** операцию с новым `idempotency_key`;
-   новый `scope_hash` будет содержать новое `link_generation`.
+   новый `scope_hash` будет содержать новое (большее) `link_generation`.
 
 **Fate of the old persona:**
 
 - Старая persona (`BotUser` + связанный `Ayla User`) продолжает существовать в
   системе со своей историей согласий, памяти и аудита.
-- Пользователь не теряет прав на экспорт/удаление данных старой persona;
-  доступ к старой persona осуществляется через OP6 / account-deletion track или
-  через отдельный owner-approved flow связывания persona.
+- Пользователь **не теряет** прав на экспорт/удаление данных старой persona.
+- Доступ к старой persona и её операциям осуществляется без необходимости
+  relink'аться обратно: W3 предоставляет endpoint `/privacy/v1/old-persona/{old_scope_hash}`
+  (имя — иллюстративное; exact path за W3), авторизованный для аутентифицированного
+  владельца. Доступ через OP6 / account-deletion track — дополнительная
+  альтернатива, а не единственный путь.
 - `ConsentRecord`, `MemoryEntry` и `UserPersonalContext` старой persona не
   мигрируют к новой persona автоматически.
-- Повторный relink обратно на старый `Ayla User` восстанавливает прежний
-  `scope_hash` и позволяет продолжить операции над старой persona.
+- Если старая persona имеет активное или частично выполненное delete-операцию,
+  она **обязана** завершиться до безопасного исхода (§3.1). Orphaned partially
+  deleted persona недопустима.
+
+**Relink at each destructive step:**
+
+- `link_generation` проверяется **перед каждым destructive шагом** (ayla_delete,
+  memory_delete, consent_withdraw) и **перед каждой derived-write блокировкой**.
+- Mismatch на любом шаге немедленно переводит операцию в `aborted` и
+  convergence gate.
+- Уже выполненные шаги фиксируются в `per_step_results`; незавершённые
+  отменяются.
 
 **Export after relink:**
 
@@ -457,6 +569,8 @@ Abort procedure:
 - Export, созданный до relink, привязан к старому `scope_hash` и содержит
   данные старой persona.
 - Новый export возвращает данные только для текущей persona.
+- Старый export artifact не обновляется и не пересоздаётся автоматически;
+  retention / deletion старых artifacts определяется отдельной policy.
 
 ---
 
@@ -489,6 +603,7 @@ Abort procedure:
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ayla.knowledge/architecture/amd020/schemas/export-success/1.0",
   "$defs": {
     "subject": {
       "type": "object",
@@ -855,7 +970,11 @@ Abort procedure:
           "recipients",
           "term",
           "lawful_basis",
-          "identification_method"
+          "identification_method",
+          "legacy_record",
+          "schema_complete",
+          "semantic_complete",
+          "legal_validity_status"
         ],
         "properties": {
           "consent_type": {
@@ -918,6 +1037,23 @@ Abort procedure:
           },
           "identification_method": {
             "type": "string"
+          },
+          "legacy_record": {
+            "type": "boolean",
+            "description": "true if this record was backfilled from pre-AMD020 storage and may carry sentinel values"
+          },
+          "schema_complete": {
+            "type": "boolean",
+            "description": "true if all schema-required fields are populated with non-sentinel values"
+          },
+          "semantic_complete": {
+            "type": "boolean",
+            "description": "true if the record's values reflect actual captured consent metadata, not sentinels"
+          },
+          "legal_validity_status": {
+            "type": "string",
+            "enum": ["approved", "owner_decision_required", "legacy_unknown"],
+            "description": "Legal review status of the consent record; schema-completeness does not imply legal validity"
           }
         }
       }
@@ -932,6 +1068,7 @@ Abort procedure:
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ayla.knowledge/architecture/amd020/schemas/export-failure/1.0",
   "$defs": {
     "subject": {
       "type": "object",
@@ -1197,6 +1334,7 @@ Abort procedure:
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ayla.knowledge/architecture/amd020/schemas/delete-success/1.0",
   "$defs": {
     "subject": {
       "type": "object",
@@ -1482,6 +1620,7 @@ Abort procedure:
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ayla.knowledge/architecture/amd020/schemas/delete-partial/1.0",
   "$defs": {
     "subject": {
       "type": "object",
@@ -1802,6 +1941,7 @@ Abort procedure:
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ayla.knowledge/architecture/amd020/schemas/delete-failure/1.0",
   "$defs": {
     "subject": {
       "type": "object",
@@ -2093,37 +2233,49 @@ machine-readable `code`, и запрещено раскрытие внешнем
   currently returns HTTP 404 with body `{"code":"NOT_FOUND","message":"User not found."}`
   (`users/personal_data_api.py:53-58`).
 - **Proposed norm:** after amendment W2 must return HTTP 404 with the closed body
-  below when the subject is missing or soft-deleted:
+  below when the subject is missing or soft-deleted.
+
+W2 is authoritative for `AylaUser`, but it is **not** authoritative for
+`BotUser`. Therefore the `subject_gone` response must not require W2 to return
+`bot_user_id`; doing so would create a contract that W2 cannot reliably
+implement. W3 already knows the requested `bot_user_id` from authentication and
+validates correlation.
 
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ayla.knowledge/architecture/amd020/schemas/subject-gone/1.0",
   "type": "object",
   "additionalProperties": false,
-  "required": ["code", "subject"],
+  "required": ["code", "format_version", "subject"],
   "properties": {
     "code": {"type": "string", "enum": ["subject_gone"]},
+    "format_version": {"type": "string", "enum": ["1.0"]},
     "subject": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["ayla_user_id", "bot_user_id"],
+      "required": ["ayla_user_id"],
       "properties": {
-        "ayla_user_id": {"oneOf": [{"type": "string", "format": "uuid"}, {"type": "null"}]},
-        "bot_user_id": {"type": "string", "format": "uuid"}
+        "ayla_user_id": {"oneOf": [{"type": "string", "format": "uuid"}, {"type": "null"}]}
       }
-    }
+    },
+    "correlation_id": {"type": "string"},
+    "retryable": {"type": "boolean", "enum": [false]}
   }
 }
 ```
 
 - `subject_gone` is a **semantic success code**, not an `error.code`. It means the
   subject has no personal context to delete.
+- `operation_id` is intentionally **not** present: the upstream W2 call is one
+  step of a W3-managed operation; `operation_id` is assigned and validated by W3.
 - W3 maps `subject_gone` to `per_step_results.ayla_delete.ok=true` with
   `detail="subject_gone"` and returns a completed delete response with empty
   `deleted[]`.
 - A bare HTTP 404 is **not** treated as semantic success. It is classified as
   `upstream_error` / `contract_violation` and remains retryable.
-- W3 validates `subject` correlation before treating the response as gone.
+- W3 validates `subject.ayla_user_id` correlation before treating the response as
+  gone; mismatch returns `subject_mismatch` / `contract_violation`.
 - `subject_gone` is idempotent: repeated requests return the same code.
 - Implementation delta: AMD020-DEL-005.
 
@@ -2242,22 +2394,26 @@ misconfigured, destructive endpoint недоступен. Запрещён fallb
 
 ### 8.6 Export authentication policy
 
-Export is privacy-sensitive but **not destructive**. Therefore the required
-authentication assurance is lower than for delete:
+Export is privacy-sensitive but **not destructive**. The default pilot policy
+below is a **proposed technical clarification**, not an approved security
+ruling. The final decision (step-up required or not) is `owner_decision_required`
+and blocks activation until recorded.
 
-| Control | Export | Delete |
+| Control | Export (proposed) | Delete |
 |---|---|---|
 | `MaxInitData` freshness | required | required |
 | Session/device binding | required | required |
 | Cross-user/cross-tenant checks | required | required |
-| Step-up confirmation challenge | **not required** by default | required |
+| Step-up confirmation challenge | **owner_decision_required** | required |
 | Destructive nonce | not applicable | required |
 | Rate limit | required (separate value) | required |
 
 - First export and repeated exports both require fresh `MaxInitData` and a valid
   session; the operation is authorized for the authenticated subject only.
-- An owner MAY configure step-up for export via feature flag, but this is not
-  the default pilot behavior.
+- The default pilot behavior **proposes** no step-up for export, but Security/Owner
+  must approve this before activation. If approval is denied, export requires the
+  same step-up challenge as delete and the export endpoint remains blocked until
+  the control is implemented.
 - Export after a completed delete must return empty personal-context data
   (`ayla.personal_context: null`, `memory: []`).
 
@@ -2328,6 +2484,10 @@ written before activation of AMD-020 v0.6.
 | `lawful_basis` | implementation_delta | not present |
 | `document_version` | implemented_fact | present |
 | `identification_method` | implementation_delta | not present |
+| `legacy_record` | implementation_delta | not present |
+| `schema_complete` | implementation_delta | computed |
+| `semantic_complete` | implementation_delta | computed |
+| `legal_validity_status` | owner_decision_required | computed |
 
 **Legacy record policy:** Before activation, every existing `ConsentRecord` row
 must be backfilled with the expanded fields. If source data is unavailable, use
@@ -2343,10 +2503,25 @@ sentinel values:
 | `lawful_basis` | `null` |
 | `identification_method` | `"unknown"` |
 
-A boolean `legacy_record` flag may be stored to distinguish pre-amendment rows.
-`enforcement_status: Effective` is blocked until the backfill migration is
-verified and the export schema's `required` fields are satisfied for 100% of
-rows. W6 scenario 39 validates the backfill.
+The boolean `legacy_record` flag is **required** for every exported consent
+row. It is set to `true` for pre-amendment rows and `false` for rows captured
+after activation. `schema_complete: true` means all schema-required fields are
+populated with non-sentinel values. `semantic_complete: true` means the values
+reflect actual captured consent metadata, not sentinels. `legal_validity_status`
+is one of `approved`, `owner_decision_required`, `legacy_unknown` and is set by
+Legal/Privacy review, not derived from schema completeness.
+
+`schema_complete: true` does **not** imply legal validity. A legacy row with
+sentinel values satisfies the export schema but remains `legacy_record: true`,
+`semantic_complete: false`, `legal_validity_status: legacy_unknown`.
+
+`enforcement_status: Effective` is blocked until:
+
+1. The backfill migration is verified;
+2. The export schema's `required` fields are satisfied for 100% of rows;
+3. A Legal/Privacy review report classifies every row by `legal_validity_status`.
+
+W6 scenario 39 validates the backfill and completeness flags.
 
 ### 10.3 ConsentRecord delete semantics (AMD020-CONSENT-001)
 
@@ -2382,7 +2557,7 @@ lawful basis and cleanup of legacy rows require Legal/Privacy/Security decisions
 ## 12. Implementation Readiness Gate
 
 До `enforcement_status: Effective` запрещено заявлять соответствие endpoint
-требованиям AMD-020 v0.6.
+требованиям AMD-020 v0.7.
 
 | # | Gate item | Normative status | Implementation status | Evidence owner | Activation blocker |
 |---|---|---|---|---|---|
@@ -2424,62 +2599,55 @@ Effective разрешается только после:
 
 ## 13. W6 Acceptance Battery
 
-**Status definitions:**
+| # | Test ID | Scenario | Preconditions | Action | Expected HTTP result | Expected persisted state | Expected barrier state | Expected audit event | Retryability | Privacy/security invariant | Evidence type | Status |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | AMD020-W6-001 | Concurrent delete joins active operation | Active delete operation exists for the subject; second request arrives with different idempotency_key but equivalent scope_hash. | Send second delete request. | 202 Accepted (or current operation status). | Single operation record; both requests recorded under same operation_id; execution_attempt unchanged. | Active and unchanged; no second destructive execution created. | `privacy.operation_joined` with correlation_id of second request linked to existing operation_id. | yes (idempotent replay) | No concurrent destructive execution for the same scope_hash. | HTTP trace + operation-state query | SPECIFIED |
+| 2 | AMD020-W6-002 | Retry after lost success-response | Delete operation completed successfully; client did not receive success response. | Repeat request with same idempotency_key and scope_hash. | 200 OK with status `completed`; no new execution_attempt. | operation state remains `completed`; execution_attempt not incremented. | Released (operation reached safe outcome `completed`). | Idempotency replay logged; no new `privacy.personal_data_deleted` event. | yes | Identical idempotency_key + scope_hash never triggers second destructive execution. | Replay request + operation log | SPECIFIED |
+| 3 | AMD020-W6-003 | W2 ayla_delete step failure | Delete operation in `processing`; W2 ayla_delete step fails with upstream 5xx. | Process deletion cascade. | 502 Bad Gateway, status `partial`. | Operation internal state `partially_completed`; failed_steps=[`ayla_delete`]; completed_steps=[`memory_delete`,`consent_withdraw`] (continue-on-error policy: remaining independent steps may complete). | Active; operation is retryable. | `privacy.personal_data_deleted` partial event; per-step error code logged. | yes (transient upstream failure) | Partial failure does not release barrier; already-completed steps remain completed. | HTTP response + operation-state query + per-step audit | SPECIFIED |
+| 4 | AMD020-W6-004 | Overall deadline between steps | Delete operation in `processing`; overall deadline expires before all steps complete. | Process deletion cascade until deadline. | 504 Gateway Timeout, `error.code: upstream_timeout`; no partial body returned. | Operation transitions to terminal `failed`; any completed steps recorded; uncompleted steps marked failed. | Remains active; convergence gate entered (recovery purge or subject suppression required before release). | `privacy.personal_data_deleted` failed event with `upstream_timeout`. | yes (after upstream recovery / recovery purge) | Deadline expiry does not leave subject unprotected; barrier stays until safe outcome. | HTTP response + operation-state query + barrier probe | SPECIFIED |
+| 5 | AMD020-W6-005 | Schema mismatch | Producer generates response violating contract schema. | Return producer response through W3 validation layer. | 500 Internal Server Error, `error.code: schema_mismatch`. | Operation terminal `failed`; no partial success persisted to client. | Remains active; convergence gate entered. | `privacy.schema_mismatch` event. | no | Malformed contract response is never exposed to client as success. | Producer output + W3 validation log | SPECIFIED |
+| 6 | AMD020-W6-006 | Malformed upstream response | W2 returns non-JSON or missing required fields. | W3 parses upstream response. | 502 Bad Gateway, `error.code: upstream_malformed`. | Operation terminal `failed` (or `partially_completed` if other steps completed). | Active; convergence gate entered if terminal failed. | `privacy.upstream_malformed` event. | yes (after upstream fix) | Upstream contract violation is not treated as semantic success. | Upstream raw body + error log | SPECIFIED |
+| 7 | AMD020-W6-007 | Relinking during deletion | Delete operation in `processing`; BotUser relinks to different AylaUser mid-flight. | System detects link_generation change. | 502/500, `error.code: subject_mismatch` (external status `failed`/`aborted`). | Operation terminal `aborted`; completed steps remain; uncompleted steps cancelled; new link_generation recorded. | Remains active for old scope_hash until convergence gate resolves old persona. | `privacy.delete_aborted` with reason `relink`; old persona marked for mandatory purge/resolution. | no for old operation; new operation required with new scope_hash. | Old persona cannot be orphaned in partially-deleted state; new persona cannot inherit old data. | Operation log + old-persona state query + barrier probe | SPECIFIED |
+| 8 | AMD020-W6-008 | Cross-tenant access | Authenticated subject belongs to tenant A; request targets tenant B subject. | Send export/delete request. | 403 Forbidden, `error.code: cross_tenant_violation`. | No operation record created. | Not created. | `privacy.cross_tenant_violation` event. | no | Tenant boundary cannot be crossed by personal-context operations. | HTTP response + audit log | SPECIFIED |
+| 9 | AMD020-W6-009 | Write UserPersonalContext after barrier | Delete operation active; barrier set for subject. | Attempt to create/update UserPersonalContext row for subject. | 409 Conflict or 503 Service Unavailable (W2/W3 internal rejection). | No new/modified UserPersonalContext row. | Active; write rejected. | `privacy.write_blocked_by_barrier` event. | yes (after operation completes) | Personal context cannot be recreated while deletion is in flight. | Write attempt + database query + barrier metric | SPECIFIED |
+| 10 | AMD020-W6-010 | Write MemoryEntry after barrier | Delete operation active; barrier set for subject. | Attempt to create green MemoryEntry for subject. | 409/503 rejection. | No new MemoryEntry row. | Active; write rejected. | `privacy.write_blocked_by_barrier` event. | yes (after operation completes) | Memory cannot be recreated while deletion is in flight. | Write attempt + memory table query + barrier metric | SPECIFIED |
+| 11 | AMD020-W6-011 | Create ConsentRecord after barrier | Delete operation active; barrier set for subject. | Attempt to create ConsentRecord for subject. | 409/503 rejection. | No new ConsentRecord row. | Active; write rejected. | `privacy.write_blocked_by_barrier` event. | yes (after operation completes) | Consent cannot be recreated while deletion is in flight. | Write attempt + consent table query + barrier metric | SPECIFIED |
+| 12 | AMD020-W6-012 | Inference job after barrier | Delete operation active; inference job would create green MemoryEntry. | Trigger inference job. | N/A (background job rejected). | No inferred MemoryEntry created. | Active; inference blocked. | `privacy.inference_blocked_by_barrier` event. | yes (after operation completes) | Inferred memory cannot bypass deletion barrier. | Celery/job log + memory table query | SPECIFIED |
+| 13 | AMD020-W6-013 | Hard purge MemoryEntry | Green MemoryEntry row soft-deleted at time T; `soft_delete_retention` elapsed. | Run daily purge job. | N/A. | Row physically removed from primary store; audit `memory.purged_rows`. | N/A (operation already completed). | `memory.purge_run` with row count. | yes (cron is idempotent) | Soft-deleted memory is physically purged after approved retention. | Cron log + database query before/after | BLOCKED |
+| 14 | AMD020-W6-014 | Physical wipe UserPersonalContext | Delete operation reaches ayla_delete step. | Execute W2 physical delete. | N/A (internal step). | UserPersonalContext row removed from W2 primary store; per_step_results.ayla_delete.ok=true. | Active during step; retained for operation duration. | `privacy.ayla_upc_deleted`. | yes (transient upstream failure) | Primary UPC data is removed on delete if physical wipe is canonical. | Database query + per_step_results + audit | BLOCKED |
+| 15 | AMD020-W6-015 | ConsentRecord withdrawal and retention | Active ConsentRecord exists for subject. | Execute consent_withdraw step. | N/A. | `withdrawn_at` timestamp set; row retained as audit trail; pseudonymization applied if configured. | Active during step. | `privacy.consent_withdrawn`. | yes | Consent withdrawal is recorded and retained only under approved lawful basis/retention. | Database query + audit log | BLOCKED |
+| 16 | AMD020-W6-016 | Redis cleanup | Pilot scope includes only Postgres-backed classes. | Inspect Redis/cache read/write paths for included classes. | N/A. | No Redis keys for included classes. | N/A. | Inventory report. | N/A | No persistent derived cache of included classes exists outside Postgres in pilot. | Repository grep + SHA + command output | NOT_APPLICABLE |
+| 17 | AMD020-W6-017 | Derived/cache/index cleanup | Memory entries deleted; in-memory prompt block may still surface deleted facts. | Query memory through read-gate / prompt block builder. | N/A. | Deleted facts not returned. | N/A. | Read-gate log. | N/A | Derived in-memory representations cannot resurrect deleted primary data. | Read-gate test + prompt block inspection | SPECIFIED |
+| 18 | AMD020-W6-018 | Retained manifest | Delete operation completed. | Inspect delete response retained[]. | 200 OK. | retained[] lists every retained item with category, reason, decision_status, owner, deletion_trigger. | Released (safe outcome `completed`). | `privacy.personal_data_deleted` includes retained count. | N/A | User receives transparent list of retained data and legal basis. | Response body + audit payload | SPECIFIED |
+| 19 | AMD020-W6-019 | Audit correlation | Delete/export operation executed. | Collect all audit events for the operation. | N/A. | All audit rows share operation_id and correlation_id. | N/A. | Correlated events: created, barrier_set, per-step results, completion/failure. | N/A | Full audit trail is reconstructible by operation_id. | Audit store query by operation_id | SPECIFIED |
+| 20 | AMD020-W6-020 | PII in URL/logs/metrics/traces | Operation executed; sinks inspected. | Search access logs, traces, metrics, query strings for plaintext identifiers/values. | N/A. | No plaintext ayla_user_id, bot_user_id, phone, email, name, MemoryEntry.content, export body in sinks. | N/A. | Security audit sample. | N/A | PII is not leaked to observability sinks; internal URL PII gap (DEL-009) must be closed before activation. | Log/metric/trace queries + sanitization config | SPECIFIED |
+| 21 | AMD020-W6-021 | Export of another user | Authenticated subject A; request targets subject B. | Send export request for subject B. | 403 Forbidden, `error.code: subject_mismatch`. | No export operation created. | Not created. | `privacy.subject_mismatch` event. | no | Cross-user export is impossible. | HTTP response + audit log | SPECIFIED |
+| 22 | AMD020-W6-022 | Stale initData | MaxInitData older than `max_init_data_age`. | Send export/delete request. | 401 Unauthorized, `error.code: init_data_expired`. | No operation created. | Not created. | `privacy.init_data_expired` event. | yes (with fresh initData) | Stale authentication cannot authorize privacy operations. | HTTP response + auth log | SPECIFIED |
+| 23 | AMD020-W6-023 | Expired confirmation challenge | Delete step-up challenge issued; TTL elapsed. | Submit delete confirmation with expired challenge. | 403 Forbidden, `error.code: confirmation_expired`. | No operation created or operation rejected. | Not created. | `privacy.confirmation_expired` event. | yes (new challenge) | Expired destructive confirmation cannot be replayed. | HTTP response + challenge store query | SPECIFIED |
+| 24 | AMD020-W6-024 | Nonce reuse | Delete confirmation nonce already consumed. | Submit same nonce again. | 409 Conflict, `error.code: replay_detected`. | No second destructive execution. | Unchanged if operation exists. | `privacy.replay_detected` event. | no (nonce is one-time) | Destructive nonce cannot be reused. | HTTP response + nonce store query | SPECIFIED |
+| 25 | AMD020-W6-025 | Export after delete | Delete operation completed for subject. | Send export request for same subject. | 200 OK. | Export operation `completed`; ayla.personal_context=null; memory=[]; consents contain only withdrawn history. | Released (delete reached safe outcome). | `privacy.personal_data_exported` after delete. | yes (idempotent) | Post-delete export cannot resurrect deleted primary data. | Export response + primary-store query | SPECIFIED |
+| 26 | AMD020-W6-026 | Repeat delete after completion | Delete operation already completed. | Send new delete request (new idempotency_key). | 200 OK, status `completed`; empty deleted[]; retained[] lists audit/consent items; per_step_results show already_deleted/withdrawn. | New operation record `completed`; no new destructive execution of already-deleted classes. | Released immediately for new operation (safe outcome). | `privacy.personal_data_deleted` idempotent repeat event. | yes | Repeat delete is safe and does not corrupt state. | HTTP response + state query + audit | SPECIFIED |
+| 27 | AMD020-W6-027 | Partial recovery | Operation in `partially_completed`; upstream failure resolved. | Retry operation (same idempotency_key). | 200 OK, status `completed` after all steps succeed. | Operation transitions to `completed`; all steps recorded ok. | Released after `completed`. | Retry and completion events logged. | yes | Transient partial state is recoverable without data loss or recreation. | Retry request + final state query | SPECIFIED |
+| 28 | AMD020-W6-028 | Backup expiry | Primary data deleted; `backup_expiry` elapsed. | Verify backup contents no longer contain deleted primary data. | N/A. | Backup lifecycle state `backup_expired`. | N/A. | Backup retention report. | N/A | Deleted primary data does not survive backup retention window. | Backup scan report | BLOCKED |
+| 029a | AMD020-W6-029a | Process crash — resumable | Operation in `processing`; worker process crashes. | Restart worker; client performs status read with operation_id. | Status read returns current state; operation resumes and eventually `completed`. | Operation state recovered from durable store; execution_attempt incremented on resume. | Active throughout; not released during crash. | `privacy.operation_resumed` event. | yes | Process crash does not lose operation state or release barrier. | Crash injection + status read + final state | SPECIFIED |
+| 029b | AMD020-W6-029b | Process crash — unrecoverable | Operation in `processing`; worker process crashes and cannot resume safely. | Incident commander records terminal abort; system enters convergence gate. | Status read returns `failed`; barrier remains active until convergence/recovery. | Operation terminal `failed`; convergence gate entered; recovery_purge_operation created or subject_suppression installed. | Remains active until deletion_converged / recovery completed / suppression active. | `privacy.delete_aborted` + `privacy.recovery_purge_created` or `privacy.subject_suppression_set`. | no for old operation; new operation after convergence with new idempotency_key. | Unrecoverable crash does not auto-release barrier; subject remains protected. | Crash injection + status reads + barrier probe + convergence log | SPECIFIED |
+| 31 | AMD020-W6-030 | Stuck operation — authorized terminal abort | Operation stuck in `partially_completed` and cannot resume. | Two authorized operators approve abort with reason code and incident ticket. | Operation status becomes `aborted` (externally `failed`/`aborted`). | Operation terminal `aborted`; convergence gate entered; recovery_purge_operation or subject_suppression created. | Remains active until convergence/recovery/suppression. | `privacy.delete_aborted` with operator identities, reason, incident ticket. | no for old operation; new operation only after convergence. | Manual abort cannot leave subject unprotected; new writes blocked until safe outcome. | Abort action + operation log + barrier probe + recovery audit | SPECIFIED |
+| 32 | AMD020-W6-031 | Scope mismatch with same idempotency key | Previous request used idempotency_key K with scope_hash S1. | Send new request with same K but different scope_hash S2. | 409 Conflict, `error.code: replay_detected`. | No new operation; idempotency record unchanged. | Unchanged. | `privacy.replay_detected` event. | no (new idempotency_key required) | Idempotency key cannot be reused across different scopes. | HTTP response + idempotency store query | SPECIFIED |
+| 33 | AMD020-W6-032 | Different idempotency keys for same active operation | Active operation with scope_hash S. | Send two requests with different idempotency_keys but same S. | Both join same operation (202/200 with same operation_id). | Single operation record; both idempotency_keys mapped to same operation_id. | Active; no second execution. | Two `privacy.operation_joined` events. | yes | Concurrent deletes for same scope do not create parallel executions. | Two requests + operation-state query | SPECIFIED |
+| 34 | AMD020-W6-033 | Export delivery headers | Export operation completed at UTC date D. | Send export request. | 200 OK; Content-Disposition: attachment; filename="ayla-personal-data-YYYY-MM-DD.json" where YYYY-MM-DD equals D in UTC; regex validated. | Export operation `completed`; no persistent download URL. | N/A. | `privacy.personal_data_exported` with filename and format_version. | yes | Export filename contains only date, no subject identifier; no persistent URL. | HTTP headers + regex check + URL persistence check | SPECIFIED |
+| 35 | AMD020-W6-034 | No subject ID in access logs | Operation executed. | Inspect access logs/traces/metrics. | N/A. | No plaintext ayla_user_id/bot_user_id/phone/email/name in sinks. | N/A. | Sanitization config audit. | N/A | Subject identifiers are pseudonymized in observability sinks. | Log/metric/trace queries + HMAC digest verification | SPECIFIED |
+| 36 | AMD020-W6-035 | Export schema versioning — producer | Producer generates response with unknown top-level field for format_version 1.0. | W3 validates response against closed schema. | 500 Internal Server Error, `error.code: schema_mismatch`. | Operation terminal `failed`; no malformed response sent to client. | N/A for export. | `privacy.schema_mismatch` event. | no | Producer cannot extend closed schema without version bump. | Producer output + validation log | SPECIFIED |
+| 37 | AMD020-W6-036 | Partial export failure | Export operation in progress; upstream unavailable. | Process export. | 502 Bad Gateway, `error.code: upstream_unavailable`; no partial JSON body. | Operation terminal `failed`. | N/A for export. | `privacy.export.failed.upstream_unavailable` event. | yes (transient upstream) | Partial export result is never returned to client. | HTTP response + body inspection | SPECIFIED |
+| 38 | AMD020-W6-037 | Fail-closed step-up unavailable | Step-up provider misconfigured or unavailable. | Send delete request. | 500 Internal Server Error, `error.code: internal_error`; no fallback to MaxInitData-only auth. | No operation created; internal security incident recorded. | Not created. | `security_incident.internal_credential_failure` with severity and alert; `privacy.step_up_unavailable`. | no until step-up restored; endpoint may be disabled via circuit breaker. | Misconfigured step-up cannot weaken authentication; client receives no config details. | HTTP response + security incident + alert log | BLOCKED |
+| 038a | AMD020-W6-038a | Legacy audit cleanup — dry-run | Audit table contains expired, held, and non-expired rows. | Run retention cleanup job with `dry_run=true`. | N/A. | No rows deleted; report lists rows that would be deleted and held rows preserved. | N/A. | `audit.retention_cleanup.dry_run` report. | yes | Dry-run must not mutate data. | Report + table row counts before/after | BLOCKED |
+| 038b | AMD020-W6-038b | Legacy audit cleanup — execution | Legal/Privacy approved dry-run report. | Run retention cleanup job with `dry_run=false`. | N/A. | Expired rows deleted; held rows preserved; non-expired rows retained; idempotent re-run deletes no additional rows. | N/A. | `audit.retention_cleanup.executed` with counts. | yes (idempotent) | Statutory holds are honored; deletion is bounded and resumable. | Execution report + table query + re-run verification | BLOCKED |
+| 41 | AMD020-W6-039 | Expanded consent history in export | Backfill migration completed; legacy and new rows exist. | Send export request. | 200 OK. | Every consents[] row contains required expanded fields; legacy rows carry sentinel values and flags: legacy_record=true, schema_complete, semantic_complete, legal_validity_status. | N/A. | `privacy.personal_data_exported`. | yes | Schema completeness is distinguishable from legal validity; legacy rows are explicitly flagged. | Export response + database query for flags | BLOCKED |
+| 42 | AMD020-W6-040 | Green MemoryEntry delete step failure | Delete operation in `processing`; memory_delete step fails. | Process cascade. | 502 Bad Gateway, status `partial`; failed_steps=[`memory_delete`]. | Operation `partially_completed`; ayla_delete and consent_withdraw completed if independent. | Active; retryable. | Partial event with memory_delete error. | yes | Per-step failure is isolated; barrier prevents recreation. | HTTP response + per_step_results + audit | SPECIFIED |
+| 43 | AMD020-W6-041 | ConsentRecord withdraw step failure | Delete operation in `processing`; consent_withdraw step fails. | Process cascade. | 502 Bad Gateway, status `partial`; failed_steps=[`consent_withdraw`]. | Operation `partially_completed`; ayla_delete and memory_delete completed if independent. | Active; retryable. | Partial event with consent_withdraw error. | yes | Per-step failure is isolated; barrier prevents recreation. | HTTP response + per_step_results + audit | SPECIFIED |
+| 44 | AMD020-W6-042 | Mandatory recovery after terminal abort | Operation terminal `failed`/`aborted` with completed and uncompleted steps. | System enters convergence gate. | Status read returns `failed`/`aborted`; barrier remains active. | recovery_purge_operation created OR subject_suppression tombstone installed; old operation linked to recovery. | Active until recovery reaches safe outcome. | `privacy.recovery_purge_created` or `privacy.subject_suppression_set`. | yes for recovery operation | Terminal failure does not leave subject unprotected; new writes blocked until convergence. | Abort + status reads + recovery audit + barrier probe | SPECIFIED |
+| 45 | AMD020-W6-043 | Old scope_hash cannot be restored after double relink | Subject relinked from AylaUser1 to AylaUser2; then back to AylaUser1. | Attempt operations using old scope_hash from first link_generation. | 409 Conflict, `error.code: replay_detected` or `subject_mismatch`. | Idempotency records keyed by old scope_hash remain linked to old operation; new operations use strictly greater link_generation. | Old barrier managed by old operation lifecycle; new operations use new scope_hash. | `privacy.replay_detected` for old scope_hash reuse attempt. | no | link_generation is monotonic; previous scope_hash values are never reused. | Relink sequence + idempotency store + operation logs | SPECIFIED |
 
-- `SPECIFIED` — test case documented, preconditions/action/expected result are unambiguous, but implementation and execution are pending.
-- `IMPLEMENTED` — test automation exists, but has not been executed against the current build.
-- `EXECUTED_PASS` — test executed and passed.
-- `EXECUTED_FAIL` — test executed and failed.
-- `BLOCKED` — test cannot be implemented/executed until an external decision (owner/Legal/Privacy/Security) or a code delta is available.
-- `NOT_APPLICABLE` — test does not apply to the current pilot scope; reason recorded.
-
-| # | Test ID | Scenario | Expected result | Evidence owner | Status | Blocker / note |
-|---|---|---|---|---|---|---|
-| 1 | AMD020-W6-001 | Concurrent delete | Second request joins the active operation and receives the same `operation_id`; no second destructive execution is created | W6 | SPECIFIED | — |
-| 2 | AMD020-W6-002 | Retry after lost success-response | Repeat with same `idempotency_key` returns the final completed/partial status without a new `execution_attempt` | W6 | SPECIFIED | — |
-| 3 | AMD020-W6-003 | W2 ayla_delete step failure | HTTP 502 with `status: partial`; `failed_steps` contains `ayla_delete`; `memory_delete` and `consent_withdraw` completed | W6 | SPECIFIED | — |
-| 4 | AMD020-W6-004 | Overall deadline between steps | HTTP 504 with `error.code: upstream_timeout`; no partial success returned to client | W6 | SPECIFIED | — |
-| 5 | AMD020-W6-005 | Schema mismatch | HTTP 500 with `error.code: schema_mismatch` | W6 | SPECIFIED | — |
-| 6 | AMD020-W6-006 | Malformed upstream response | HTTP 502 with `error.code: upstream_malformed` | W6 | SPECIFIED | — |
-| 7 | AMD020-W6-007 | Relinking during deletion | Operation is aborted with `error.code: subject_mismatch`; a new operation is required after relink | W6 | SPECIFIED | — |
-| 8 | AMD020-W6-008 | Cross-tenant access | HTTP 403 with `error.code: cross_tenant_violation` | W6 | SPECIFIED | — |
-| 9 | AMD020-W6-009 | Write UserPersonalContext after barrier | New W2 `UserPersonalContext` row is rejected while the delete operation is active | W6 | SPECIFIED | — |
-| 10 | AMD020-W6-010 | Write MemoryEntry after barrier | New green `MemoryEntry` is rejected while the delete operation is active | W6 | SPECIFIED | — |
-| 11 | AMD020-W6-011 | Create ConsentRecord after barrier | New `ConsentRecord` is rejected while the delete operation is active | W6 | SPECIFIED | — |
-| 12 | AMD020-W6-012 | Inference job after barrier | Inference job that would create green `MemoryEntry` is blocked while the delete operation is active | W6 | SPECIFIED | — |
-| 13 | AMD020-W6-013 | Hard purge MemoryEntry | Soft-deleted `MemoryEntry` row is physically removed after `soft_delete_retention` | W6 | BLOCKED | Legal/Privacy must confirm `soft_delete_retention` and hard-delete deadline |
-| 14 | AMD020-W6-014 | Physical wipe UserPersonalContext | `UserPersonalContext` row is removed from W2 primary store immediately on delete | W6 | BLOCKED | Owner/Legal must confirm physical wipe as canonical semantics |
-| 15 | AMD020-W6-015 | ConsentRecord withdrawal and retention | Active consents receive `withdrawn_at`; rows remain as audit trail | W6 | BLOCKED | Legal/Privacy must confirm retention period, lawful basis, and pseudonymization method |
-| 16 | AMD020-W6-016 | Redis cleanup | No Redis keys for included classes are found in read/write path; Redis inventory is documented | W6 | NOT_APPLICABLE | No Redis usage in included-class read/write path per §2.1 inventory |
-| 17 | AMD020-W6-017 | Derived/cache/index cleanup | In-memory prompt block no longer surfaces deleted facts | W6 | SPECIFIED | — |
-| 18 | AMD020-W6-018 | Retained manifest | Delete response `retained[]` lists every retained category with reason and `decision_status` | W6 | SPECIFIED | — |
-| 19 | AMD020-W6-019 | Audit correlation | All audit rows for the operation share `operation_id` and `correlation_id` | W6 | SPECIFIED | — |
-| 20 | AMD020-W6-020 | PII in URL/logs/metrics/traces | No plaintext `ayla_user_id`, `bot_user_id`, phone, email, name, `MemoryEntry.content`, or export body in inspected sinks | W6 | SPECIFIED | Internal W3→W2 URL decision (AMD020-DEL-009) may affect evidence |
-| 21 | AMD020-W6-021 | Export of another user | HTTP 403 with `error.code: subject_mismatch` | W6 | SPECIFIED | — |
-| 22 | AMD020-W6-022 | Stale initData | HTTP 401 with `error.code: init_data_expired` | W6 | SPECIFIED | — |
-| 23 | AMD020-W6-023 | Expired confirmation challenge | HTTP 403 with `error.code: confirmation_expired` | W6 | SPECIFIED | — |
-| 24 | AMD020-W6-024 | Nonce reuse | HTTP 409 with `error.code: replay_detected` | W6 | SPECIFIED | — |
-| 25 | AMD020-W6-025 | Export after delete | Export returns `ayla.personal_context: null` and `memory: []`; `consents` contains only withdrawn history | W6 | SPECIFIED | — |
-| 26 | AMD020-W6-026 | Repeat delete after completion | HTTP 200 delete success response with `status: completed`, empty `deleted[]`, `retained[]` listing audit/consent items, and `per_step_results` showing `already_deleted` / `already_withdrawn` detail codes | W6 | SPECIFIED | — |
-| 27 | AMD020-W6-027 | Partial recovery | Retry after upstream recovery completes all remaining steps and returns HTTP 200 `status: completed` | W6 | SPECIFIED | — |
-| 28 | AMD020-W6-028 | Backup expiry | After `backup_expiry`, backups no longer contain deleted primary data | W6 | BLOCKED | SRE/Legal must confirm backup retention SLA |
-| 29a | AMD020-W6-029a | Operation recovery after process crash — resumable | Operation resumes from last persisted state and completes all remaining steps | W6 | SPECIFIED | — |
-| 29b | AMD020-W6-029b | Operation recovery after process crash — unrecoverable | Operation transitions to terminal `failed` state; barrier is released only after terminal state and incident record; subsequent idempotent request returns HTTP 502 `status: failed` with `failed_steps` listing incomplete steps | W6 | SPECIFIED | — |
-| 30 | AMD020-W6-030 | Stuck operation — authorized terminal abort | Two authorized operators (W3 on-call + Security) approve abort with reason code and incident ticket; operation moves to terminal `aborted`; barrier released only after terminal state; audit event `privacy.delete_aborted` is written | W6 | SPECIFIED | — |
-| 31 | AMD020-W6-031 | Scope mismatch with same idempotency key | HTTP 409 with `error.code: replay_detected` | W6 | SPECIFIED | — |
-| 32 | AMD020-W6-032 | Different idempotency keys for same active operation | Both requests join the same `operation_id`; no second destructive execution | W6 | SPECIFIED | — |
-| 33 | AMD020-W6-033 | Export delivery headers | HTTP 200 with `Content-Disposition: attachment; filename="ayla-personal-data-YYYY-MM-DD.json"` where `YYYY-MM-DD` is the generation date in UTC; no persistent URL | W6 | SPECIFIED | — |
-| 34 | AMD020-W6-034 | No subject ID in access logs | No plaintext `ayla_user_id`, `bot_user_id`, phone, email, or name in access logs, traces, or metrics for the operation; pseudonymization uses HMAC digest if present | W6 | SPECIFIED | Internal W3→W2 URL decision (AMD020-DEL-009) may affect evidence |
-| 35 | AMD020-W6-035 | Export schema versioning — producer | W3 rejects a response that contains unknown top-level fields for `format_version: "1.0"` | W6 | SPECIFIED | — |
-| 36 | AMD020-W6-036 | Partial export failure | HTTP 502 with `error.code: upstream_unavailable`; no partial JSON body is returned | W6 | SPECIFIED | — |
-| 37 | AMD020-W6-037 | Fail-closed step-up unavailable | Delete is rejected with HTTP 500 `error.code: internal_error`; no fallback to MaxInitData-only auth | W6 | BLOCKED | Security/owner must confirm fail-closed policy and alert severity before execution |
-| 38a | AMD020-W6-038a | Legacy audit cleanup — dry-run | Retention cleanup job in `dry_run=true` mode reports expired rows that would be deleted and held rows preserved; no rows are deleted | W6 | BLOCKED | Legal/Privacy must approve dry-run report format and retention schedule |
-| 38b | AMD020-W6-038b | Legacy audit cleanup — execution | After Legal/Privacy approval, retention cleanup job deletes expired rows and preserves rows under statutory hold; idempotent re-run deletes no additional rows | W6 | BLOCKED | Legal/Privacy written approval required before execution |
-| 39 | AMD020-W6-039 | Expanded consent history in export | After backfill, export `consents[]` includes `purpose`, `data_categories`, `operator`, `recipients`, `term`, `lawful_basis`, and `identification_method` for every record; legacy rows use sentinel values defined in §10.2 | W6 | BLOCKED | Legal must approve consent text/lawful basis; W3 must verify backfill before execution |
-| 40 | AMD020-W6-040 | Green MemoryEntry delete step failure | HTTP 502 with `status: partial`; `failed_steps` contains `memory_delete`; `ayla_delete` and `consent_withdraw` completed | W6 | SPECIFIED | — |
-| 41 | AMD020-W6-041 | ConsentRecord withdraw step failure | HTTP 502 with `status: partial`; `failed_steps` contains `consent_withdraw`; `ayla_delete` and `memory_delete` completed | W6 | SPECIFIED | — |
-
-**Battery summary:** 43 scenario rows; 0 implemented; 0 executed; 7 blocked; 1 not applicable; 35 specified. No scenario is claimed as passing.
+**Battery summary:** 45 scenario rows; 0 implemented; 0 executed; 8 blocked; 1 not applicable; 36 specified. No scenario is claimed as passing.
 
 ---
 
@@ -2497,7 +2665,8 @@ Effective разрешается только после:
 | Backup expiry | P0.4 | depends on backup policy | `owner_decision_required` | SRE/Legal | backup retention SLA | no | yes |
 | Timeout values | v0.1 §3.8 | 10s/25s design candidates | `owner_decision_required` | W3/SRE | confirm timeouts | no | yes |
 | Consent history fields | P1.7 | purpose/recipients/term/etc. | `implementation_delta` | W3/Legal | schema + lawful basis text | no | yes |
-| Step-up/auth values | P0.6 | max_init_data_age, challenge TTL, rate limits | `owner_decision_required` | W4/W3/Security | confirm values; fail-closed policy | no | yes |
+| Step-up/auth values (delete) | P0.6 | max_init_data_age, challenge TTL, rate limits | `owner_decision_required` | W4/W3/Security | confirm values; fail-closed policy | no | yes |
+| Step-up/auth values (export) | v0.7 review | whether export requires step-up challenge | `owner_decision_required` | Security/Owner | approve export step-up policy before activation | no | yes |
 | HMAC/pseudonymization method | Owner feedback v0.3 | audit subject references | `implementation_delta` | W3/Security | choose HMAC/key management | no | yes |
 | Internal W3→W2 URL with ayla_user_id | Owner feedback v0.3 | PII in URL | `implementation_delta` | W2/W3 | AMD020-DEL-009: opaque token or sanitization | no | yes |
 | Handoff scope conflicts | 16 handoff files (§1.4) | OP6 / account-deletion promises exceed AMD-020 pilot boundary | `owner_decision_required` | Owner / Product / Legal / OP6 track | Reconcile customer-facing «delete all my data» copy with narrow AMD-020 scope | yes | no |
@@ -2581,7 +2750,7 @@ Effective разрешается только после:
 | B2 Portability ≠ formal response | PASS | Explicit distinction | §0, §1.2 | — |
 | B3 Оператор/обработчик | **FAIL** | Left as owner decision | §14 | Legal must designate before canonicalization |
 | B4 Retained-классы | PARTIAL | Retention manifest + audit table; several `retention_until: null` pending Legal | §7, §9 | Legal/Privacy must approve retention periods |
-| C1 Auth/replay/step-up | **BLOCKED** | Fail-closed rule added, but numerical values and production readiness require Security/owner decision | §8.2 | Security/owner must confirm step-up is fail-closed and values |
+| C1 Auth/replay/step-up | **BLOCKED** | Delete fail-closed rule added; export step-up now marked `owner_decision_required` instead of assumed default; numerical values and production readiness require Security/owner decision | §8.2, §8.6 | Security/owner must confirm delete step-up values and export step-up policy |
 | C2 Error taxonomy | PASS | Machine codes; security incident internal; `init_data_expired` separated from `auth_invalid` | §5.6, §5.8 | — |
 | C3 ПД в URL/logs/metrics/traces | PARTIAL | Safe-logging rule + PII-in-URL rule; internal W3→W2 URL still an implementation gap | §8.3, §8.4 | DEL-009: choose opaque token or sanitization |
 | C4 404 ≠ semantic success | **PASS** | `subject_gone` code defined; generic 404 is treated as `upstream_error`/`contract_violation` in both AMD-020 §6 and Amendment §3/DEL-005 | §6; Amendment DEL-005 | — |
@@ -2589,24 +2758,54 @@ Effective разрешается только после:
 | D2 Идемпотентность механика | PASS | scope_hash, request/execution attempt, replay read | §4 | — |
 | D3 Полный lifecycle | **BLOCKED** | UPC physical wipe and ConsentRecord retention are `proposed_norm_pending_owner_confirmation` | §3.2, §3.4, §10.3 | Owner/Legal must confirm UPC wipe and consent retention |
 | D4 Retention manifest | PASS | `retained[]` with `decision_status` | §7 | — |
-| E1 Closed schemas | **PASS** | Schemas use `$defs`; recursive `$ref` fixed; failure enum matches taxonomy; `personal_context` and `MemoryEntry.content` are intentionally declared `opaque_payload`; producer/consumer contract is explicit | §5.1, §5.3 | — |
+| E1 Closed schemas | **PASS** | All root schemas now have `$id`; `$defs` duplicated per schema; recursive `$ref` fixed; failure enum matches taxonomy; `personal_context` and `MemoryEntry.content` declared `opaque_payload`; producer/consumer contract explicit; runnable validator script committed | §5.1–§5.7, §6; `scripts/validate_amd020_schemas.py` | — |
 | E2 operation_id/correlation | PASS | Defined; scope_hash added | §4 | — |
-| F1 Acceptance battery | PARTIAL | 43 scenario rows; Test ID + Status columns (SPECIFIED/BLOCKED/NOT_APPLICABLE) added; no false PASS; previously ambiguous cases split; each scenario has one expected result; some scenarios still depend on unresolved decisions | §13 | Finalize decisions blocking C1/D3 before W6 run |
+| F1 Acceptance battery | PARTIAL | 45 scenario rows; full test-case format (preconditions, action, HTTP, persisted state, barrier state, audit event, retryability, invariant, evidence type, status); counts corrected to 36 specified / 8 blocked / 1 N/A; mandatory recovery and scope_hash monotonicity tests added; not executed | §13 | Finalize decisions blocking C1/D3 before W6 run |
 | G1 Нет открытых decisions при сдаче | **FAIL** | Multiple owner/legal/security decisions remain open | §14 | Resolve blocker decisions before final approval |
 | G2 Validation | PASS | Repository validator: 0 errors, warnings ≤ baseline | — | Re-run after edits |
 | G3 Отчёт по форме | PASS | This section + final agent report | §17 | — |
-| H Cross-document consistency | **PASS** | Amendment v0.6 synchronized: 25 readiness-gate items match; generic 404 fallback removed; step-up fail-closed; export backlog added; atomic operation creation and `aborted` state aligned; open questions cleaned | AMD-020 §6, §8.2, §12; Amendment §2, §3, DEL-005, DEL-007, EXP-002…EXP-005 | — |
+| H Cross-document consistency | **PARTIAL** | Contract v0.7 changed barrier lifecycle, relink, subject_gone, scope_hash, consent flags, export auth, W6 battery; Amendment v0.7 not yet synchronized; readiness gate count still 25 but normative content diverges | AMD-020 §3.1, §4.2, §4.4, §6, §8.6, §10.2, §13; Amendment | Synchronize Amendment v0.7 before claiming PASS |
 | I Implementation evidence | PARTIAL | Pinned commit SHAs and reproducible grep commands added for Redis/cache/derived inventory; code evidence cited for key facts; backup evidence and full W6 evidence still pending | §2.1, §2.2, §8.5 | Collect W6 evidence and backup inventory after implementation |
-| J Writing precision | **PARTIAL** | Code-fence issue fixed; most ambiguous W6 results corrected; `subject_gone` formalized; remaining precision depends on owner decisions and final implementation evidence | §5, §6, §13 | Finalize owner decisions and re-verify after implementation |
+| J Writing precision | **PARTIAL** | Code-fence issue fixed; W6 battery rewritten as full test cases with preconditions/persisted state/barrier/audit/invariants; `subject_gone` redesigned for W2 implementability; scope_hash serialization formalized; remaining precision depends on owner decisions and final implementation evidence | §4.2, §5, §6, §13 | Finalize owner decisions and re-verify after implementation |
 
-**Итог Quality Bar:** FAIL/BLOCKED по пунктам B3, C1, D1, D3, G1; PARTIAL по B4, C3, F1, I, J.
-Документ остаётся Draft/Proposed/Blocked. После v0.6 пакет готов к
-**техническому повторному ревью**, но **не** к structured owner decision review,
-final owner approval, canonicalization или operational activation.
+**Итог Quality Bar:** FAIL/BLOCKED по пунктам B3, C1, D1, D3, G1; PARTIAL по B4, C3, F1, H, I, J.
+Документ остаётся Draft/Proposed/Blocked с `review_status: pending_technical_re_review`.
+Пакет подготовлен для **повторного технического ревью**, но **не** к structured
+owner decision review, final owner approval, canonicalization или operational
+activation.
 
 ---
 
 ## 18. Change Log
+
+### v0.7 — 2026-07-23
+
+- `review_status` изменён на `pending_technical_re_review`; owner approval запрещён
+  до прохождения технического ревью.
+- Barrier lifecycle перепроектирован: `failed`/`aborted` не снимают barrier
+  автоматически; введены `deletion_converged`, `recovery_purge_operation`,
+  `subject_suppression` как обязательные безопасные исходы.
+- Relink lifecycle перепроектирован: `link_generation` монотонно возрастающий;
+  запрещено восстановление прежнего `scope_hash`; старая persona получает
+  обязательный путь завершения удаления без зависимости от OP6.
+- `scope_hash` формализован: canonical JSON serialization, HMAC-SHA-256,
+  sorted keys, key version management.
+- `subject_gone` перепроектирован: W2 не обязан возвращать `bot_user_id`;
+  добавлены `format_version`, `correlation_id`, `retryable`; `operation_id`
+  объяснено отсутствие.
+- Все root JSON Schemas получили `$id`; добавлен запускаемый
+  `scripts/validate_amd020_schemas.py`.
+- ConsentRecord export schema: `legacy_record`, `schema_complete`,
+  `semantic_complete`, `legal_validity_status` — required; разделена schema
+  completeness и legal validity.
+- Export step-up политика помечена как `owner_decision_required`.
+- W6 acceptance battery переписана в полноценном формате тест-кейсов с
+  preconditions, persisted state, barrier state, audit event, invariant,
+  evidence type; добавлены сценарии mandatory recovery и scope_hash monotonicity;
+  counts исправлены (36 specified / 8 blocked / 1 N/A).
+- Quality Bar обновлена: удалены ложные PASS; `H Cross-document consistency`
+  понижен до PARTIAL из-за необходимости синхронизации Amendment.
+- Implementation Amendment ещё не синхронизирован с v0.7 Contract.
 
 ### v0.6 — 2026-07-23
 
@@ -2682,4 +2881,4 @@ final owner approval, canonicalization или operational activation.
 
 ---
 
-**Конец документа — AMD-020 v0.6 (Draft, pending owner approval)**
+**Конец документа — AMD-020 v0.7 (Draft, pending technical re-review)**

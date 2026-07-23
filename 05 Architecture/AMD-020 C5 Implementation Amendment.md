@@ -7,7 +7,7 @@ aliases:
 type: specification
 status: draft
 decision_status: proposed
-version: "0.6"
+version: "0.7"
 canonical_status: draft
 owner: Chief Product Architect
 priority: P0
@@ -60,12 +60,12 @@ review_cycle: event-driven
 |---|---|
 | Document status | Draft |
 | Decision status | Proposed |
-| Version | 0.6 (2026-07-23) |
+| Version | 0.7 (2026-07-23) |
 | Canonical status | draft |
-| Review status | pending_owner_approval |
+| Review status | pending_technical_re_review |
 
 Этот документ — извлечённый перечень code deltas для W2/W3, необходимых для
-реализации AMD-020 v0.6. Он не включает Verification Evidence (создаётся W6
+реализации AMD-020 v0.7. Он не включает Verification Evidence (создаётся W6
 после реализации) и не меняет код самостоятельно.
 
 ---
@@ -79,7 +79,7 @@ review_cycle: event-driven
 | `norm_id` | AMD020-DEL-001 |
 | Source section | AMD-020 §3.1, §3.2, §3.3 |
 | Current implemented fact | No barrier exists. `delete_personal_data` in `apps/identity/services/privacy.py:186-248` runs steps sequentially without blocking new writes or inference. |
-| Required delta | Introduce operation lifecycle: `accepted` is an internal pre-commit state, and the first externally observable state is `blocked`. Operation record, scope lock, and barrier activation must be created in a single database transaction. Track per-class states separately. Block new MemoryEntry writes, inferred writes, and derived-representation creation while a delete operation is active. |
+| Required delta | Introduce operation lifecycle: `accepted` is an internal pre-commit state, and the first externally observable state is `blocked`. Operation record, scope lock, and barrier activation must be created in a single database transaction. Track per-class states separately. Block new MemoryEntry writes, inferred writes, and derived-representation creation while a delete operation is active. After terminal `failed`/`aborted`, barrier must NOT be released automatically; implement convergence gate with `deletion_converged`, `recovery_purge_operation`, and `subject_suppression` tombstone before barrier release. |
 | Repository/module | W3: `apps/identity/services/privacy.py`, `apps/identity/services/memory_writer.py`, `apps/identity/services/memory_inferred.py`, `apps/orchestrator/memory/personal_context.py`, new `apps/identity/services/privacy_operations.py` |
 | W2/W3 window | W3 |
 | Dependency | operation_id / state store (AMD020-DEL-003) |
@@ -113,7 +113,7 @@ review_cycle: event-driven
 | `norm_id` | AMD020-DEL-003 |
 | Source section | AMD-020 §4 |
 | Current implemented fact | No operation-scoped identifiers. W3 view uses `bot_user.id` and internal HTTP client. |
-| Required delta | Generate `operation_id` at request acceptance; compute `scope_hash`; accept `Idempotency-Key` header; store operation state; distinguish `request_attempt` vs `execution_attempt`; propagate `correlation_id` to W2 and audit. |
+| Required delta | Generate `operation_id` at request acceptance; compute `scope_hash` using canonical JSON serialization, sorted keys, HMAC-SHA-256 `subject_ref`, versioned HMAC key, and monotonically increasing `link_generation`; accept `Idempotency-Key` header; store operation state keyed by `(scope_hash, idempotency_key)`; distinguish `request_attempt` vs `execution_attempt`; propagate `correlation_id` to W2 and audit; ensure old `scope_hash`/`link_generation` values are never reused after relink. |
 | Repository/module | W3: `apps/miniapp_api/views.py` (export/delete views), `apps/identity/services/privacy.py`, new `apps/identity/services/privacy_operations.py` |
 | W2/W3 window | W3 |
 | Dependency | None |
@@ -130,7 +130,7 @@ review_cycle: event-driven
 | `norm_id` | AMD020-DEL-004 |
 | Source section | AMD-020 §5 |
 | Current implemented fact | W3 returns raw dict from `privacy.py`; W2 returns `success_response({"user_id", "deleted"})` or 404. No machine error codes. |
-| Required delta | Implement JSON Schema 2020-12 for success/partial/failure/export using shared `$defs` (`subject`, `perStepResults`, `retainedItem`, `error`); mark `personal_context` and `MemoryEntry.content` as `opaque_payload`; add export failure schema; synchronize failure `enum` with full error taxonomy (`upstream_timeout`, `upstream_unavailable`, `upstream_error`, `upstream_malformed`, `init_data_expired`, etc.); `format_version` on all responses; `per_step_results`; remove `consents` from `deleted[]`; map each error class to HTTP + machine code; external 500 for internal credential failures with internal security-incident classification. |
+| Required delta | Implement JSON Schema 2020-12 for success/partial/failure/export/subject-gone; each root schema must have a stable `$id`; shared `$defs` (`subject`, `perStepResults`, `retainedItem`, `error`) duplicated per schema; mark `personal_context` and `MemoryEntry.content` as `opaque_payload`; add export failure schema; synchronize failure `enum` with full error taxonomy (`upstream_timeout`, `upstream_unavailable`, `upstream_error`, `upstream_malformed`, `init_data_expired`, etc.); `format_version` on all responses; `per_step_results`; remove `consents` from `deleted[]`; map each error class to HTTP + machine code; external 500 for internal credential failures with internal security-incident classification; commit runnable schema validation script (`scripts/validate_amd020_schemas.py`). |
 | Repository/module | W2: `users/personal_data_api.py`; W3: `apps/miniapp_api/views.py`, `apps/identity/services/privacy.py` |
 | W2/W3 window | W2 + W3 |
 | Dependency | operation_id (AMD020-DEL-003) |
@@ -147,7 +147,7 @@ review_cycle: event-driven
 | `norm_id` | AMD020-DEL-005 |
 | Source section | AMD-020 §6 |
 | Current implemented fact | W2 returns 404 with generic `NOT_FOUND` body (`users/personal_data_api.py:53-58`). W3 interprets `PersonalContextNotFoundError` as `already_deleted`. |
-| Required delta | W2 returns JSON body `{"code":"subject_gone","subject":{"ayla_user_id":"..."}}` for missing/soft-deleted users. W3 validates code before treating as gone. |
+| Required delta | W2 returns JSON body `{"code":"subject_gone","format_version":"1.0","subject":{"ayla_user_id":"..."},"correlation_id":"...","retryable":false}` for missing/soft-deleted users. Schema must not require W2 to return `bot_user_id`. W3 validates `code`, `subject.ayla_user_id` correlation, and `format_version` before treating as gone. |
 | Repository/module | W2: `users/personal_data_api.py`; W3: `apps/integrations/ayla/personal_context_client.py`, `apps/identity/services/privacy.py` |
 | W2/W3 window | W2 + W3 |
 | Dependency | Closed response schemas (AMD020-DEL-004) |
@@ -181,7 +181,7 @@ review_cycle: event-driven
 | `norm_id` | AMD020-DEL-007 |
 | Source section | AMD-020 §8 |
 | Current implemented fact | Customer endpoints use `MaxInitData` only. No step-up, nonce, or replay protection beyond Django session. |
-| Required delta | Add destructive-operation confirmation challenge (nonce, TTL), rate limits, session/device binding, relink checks, safe-logging rule (no plaintext user IDs); keep `Idempotency-Key` and `correlation_id` separate. Implement fail-closed behavior: if step-up is disabled, unavailable or misconfigured, the destructive endpoint returns `internal_error`; no fallback to MaxInitData-only authentication is permitted. |
+| Required delta | Add destructive-operation confirmation challenge (nonce, TTL), rate limits, session/device binding, relink checks, safe-logging rule (no plaintext user IDs); keep `Idempotency-Key` and `correlation_id` separate. Implement fail-closed behavior: if step-up is disabled, unavailable or misconfigured, the destructive endpoint returns `internal_error`; no fallback to MaxInitData-only authentication is permitted. Define security incident severity, alert routing, endpoint-disable condition, circuit breaker, and recovery SLA for step-up misconfiguration. Export step-up policy is `owner_decision_required` and must be configurable; default proposal is no export step-up, but activation is blocked until Security/Owner approves. |
 | Repository/module | W3: `apps/miniapp_api/views.py`, `apps/miniapp_api/auth.py`, new `apps/identity/services/privacy_security.py`; W4: miniapp UX |
 | W2/W3 window | W3 + W4 |
 | Dependency | operation_id (AMD020-DEL-003) |
@@ -232,7 +232,7 @@ review_cycle: event-driven
 | `norm_id` | AMD020-EXP-001 |
 | Source section | AMD-020 §10.2 |
 | Current implemented fact | `ConsentRecord` stores `consent_type`, `granted`, `document_version`, `source`, `captured_at`, `withdrawn_at`. |
-| Required delta | Add fields: `purpose`, `data_categories`, `operator`, `recipients`, `term`, `lawful_basis`, `identification_method`. Backfill every existing record before activation; if source data is unavailable, populate the sentinel values defined in AMD-020 §10.2. Store an optional `legacy_record` boolean. |
+| Required delta | Add fields: `purpose`, `data_categories`, `operator`, `recipients`, `term`, `lawful_basis`, `identification_method`. Backfill every existing record before activation; if source data is unavailable, populate the sentinel values defined in AMD-020 §10.2. Store required boolean `legacy_record` plus computed flags `schema_complete`, `semantic_complete`, and `legal_validity_status` enum (`approved`/`owner_decision_required`/`legacy_unknown`). Schema completeness must not be treated as legal validity. |
 | Repository/module | W3: `apps/consent/models.py`, migrations, `apps/identity/services/privacy.py` export serializer |
 | W2/W3 window | W3 |
 | Dependency | Legal consent-text approval |
@@ -365,6 +365,10 @@ review_cycle: event-driven
 
 ## 2. Readiness Gate Mapping
 
+This table mirrors AMD-020 Contract §12. The Contract is the authoritative
+gate registry; this mapping is updated to v0.7 and adds implementation-specific
+secondary deltas.
+
 | # | Gate item | Primary delta | Secondary deltas | Implementation status | Activation blocker | Evidence owner |
 |---|---|---|---|---|---|---|
 | 1 | Delete barrier | AMD020-DEL-001 | — | not implemented | yes | W6 |
@@ -432,6 +436,7 @@ review_cycle: event-driven
 | 5 | Backup retention SLA | yes | SRE/Legal |
 | 6 | Timeout values (10s/25s) | yes | W3/SRE |
 | 7 | Rate-limit values and challenge TTL | yes | W3/Security |
+| 7a | Export step-up requirement (required or not) | yes | Security/Owner |
 | 8 | Formal operator/processor designation | yes | Legal |
 | 9 | Consent history lawful-basis text | yes | Legal |
 | 10 | HMAC/pseudonymization method for audit subject references | yes | W3/Security |
@@ -441,6 +446,27 @@ review_cycle: event-driven
 ---
 
 ## 5. Change Log
+
+### v0.7 — 2026-07-23
+
+- Bumped version and `review_status` to `pending_technical_re_review`.
+- Updated AMD020-DEL-001: barrier remains active after terminal `failed`/`aborted`;
+  convergence gate with `deletion_converged`, `recovery_purge_operation`, and
+  `subject_suppression` required before release.
+- Updated AMD020-DEL-003: canonical `scope_hash` serialization, HMAC-SHA-256,
+  monotonic `link_generation`, no reuse of old scope_hash after relink.
+- Updated AMD020-DEL-004: each root schema must have `$id`; schema validation
+  script committed.
+- Updated AMD020-DEL-005: `subject_gone` schema no longer requires `bot_user_id`
+  from W2; includes `format_version`, `correlation_id`, `retryable`.
+- Updated AMD020-DEL-007: security incident severity, circuit breaker, endpoint
+  disable, recovery SLA for step-up misconfiguration; export step-up is
+  `owner_decision_required`.
+- Updated AMD020-EXP-001: required `legacy_record`, `schema_complete`,
+  `semantic_complete`, `legal_validity_status` flags; legal validity separate
+  from schema completeness.
+- Updated readiness gate intro to state Contract §12 is authoritative.
+- Added export step-up question to §4 Open Implementation Questions.
 
 ### v0.6 — 2026-07-23
 
@@ -488,4 +514,4 @@ review_cycle: event-driven
 
 ---
 
-**Конец документа — AMD-020 Implementation Amendment v0.6 (Draft, pending owner approval)**
+**Конец документа — AMD-020 Implementation Amendment v0.7 (Draft, pending technical re-review)**
