@@ -1,12 +1,42 @@
 ---
 node_id: ayla.foundation.document-quality-bar
 title: Document Quality Bar (W7)
-type: standard
-status: active
+aliases:
+  - Document Quality Bar
+  - W7 Quality Bar
+type: specification
+status: approved
+decision_status: accepted
 version: "1.0"
-owner: оркестратор / Chief Product Architect
-applies_to: W7 (Knowledge/Canon Architect) и все авторы нормативных документов
+canonical_status: approved
+owner: Product Architecture
+knowledge_area:
+  - foundation
+domain:
+  - governance
+system_owner:
+  - ayla-knowledge
+source_repository: ayla-knowledge
 created: 2026-07-23
+updated: 2026-07-23
+source_kind: canonical
+classification: internal
+data_sensitivity: none
+data_categories:
+  - none
+security_sensitivity: low
+ai_indexing: allowed
+export_policy: full
+tags:
+  - ayla
+  - ayla/foundation
+  - quality-bar
+  - w7
+implements:
+  - "[[Ayla Constitution]]"
+depends_on:
+  - "[[Ayla Knowledge Architecture Specification]]"
+review_cycle: event-driven
 ---
 
 # Document Quality Bar — обязательная самопроверка перед сдачей документа
