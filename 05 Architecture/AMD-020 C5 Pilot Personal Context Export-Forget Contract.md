@@ -12,7 +12,7 @@ decision_status: proposed
 implementation_status: blocked
 enforcement_status: not_effective
 effective_from: null
-version: "0.5"
+version: "0.6"
 canonical_status: draft
 review_status: pending_owner_approval
 owner: Chief Product Architect
@@ -77,7 +77,7 @@ review_cycle: event-driven
 | Implementation status | Blocked |
 | Enforcement status | Not effective |
 | Effective from | null |
-| Version | 0.5 (2026-07-23) |
+| Version | 0.6 (2026-07-23) |
 | Review status | pending_owner_approval |
 
 **Owner ruling:** Режим 2+ — двухступенчатая канонизация. Настоящий документ
@@ -90,10 +90,10 @@ Canonical/Accepted запрещён.
 
 **What this document IS NOT (дословные дисклеймеры):**
 
-- AMD-020 v0.5 не является полным механизмом реализации прав субъекта по 152-ФЗ.
-- AMD-020 v0.5 не является формальным ответом по статье 14 152-ФЗ.
-- AMD-020 v0.5 не является удалением аккаунта.
-- AMD-020 v0.5 не является исчерпывающим удалением всех персональных данных Ayla.
+- AMD-020 v0.6 не является полным механизмом реализации прав субъекта по 152-ФЗ.
+- AMD-020 v0.6 не является формальным ответом по статье 14 152-ФЗ.
+- AMD-020 v0.6 не является удалением аккаунта.
+- AMD-020 v0.6 не является исчерпывающим удалением всех персональных данных Ayla.
 
 ---
 
@@ -131,7 +131,7 @@ Canonical/Accepted запрещён.
 
 Several handoff documents frame a broader "delete/export all my data" scope
 (OP6 / account-deletion track) that conflicts with the narrow AMD-020 pilot
-boundary. These conflicts are **not resolved** in v0.5; they are recorded here
+boundary. These conflicts are **not resolved** in v0.6; they are recorded here
 and in §14 for owner decision:
 
 | Conflict | Handoff source | AMD-020 position | Resolution authority |
@@ -143,6 +143,37 @@ and in §14 for owner decision:
 | Customer profile button «Удалить все мои данные» triggers OP6 | `2026-05-18-customer-first-time-handoff.md` §12 F4 | AMD-020 is not exhaustive deletion / account deletion | Owner / Product / Legal |
 | Account-lock state machine includes `DELETED` | `2026-05-19-master-device-reauth-handoff.md` §9.1 | Account deletion excluded from pilot scope | Owner / OP6 track |
 
+### 1.4 Handoff scope analysis
+
+All 16 owner-provided handoff files were reviewed against the AMD-020 pilot boundary.
+The table below records the inclusion decision, direct source sections, and any conflict
+with the narrow pilot scope. It is the evidence basis for the excluded-scope registry
+in §1.2 and the conflicts table in §1.3.
+
+| Handoff file | Reviewed fully | Relevant personal-data classes/data | Inclusion decision | Direct source sections | Conflict with AMD-020 pilot scope | Owner action |
+|---|---|---|---|---|---|---|
+| `2026-05-18-analytics-dashboard-handoff.md` | yes | Customer, `BookingRequest`, `Conversation`, `Master`, `AnalyticsSnapshot`, billing | `excluded_post_pilot_inventory` | §10 Export, §21 Q-AD3 | none | Add analytics / `AnalyticsSnapshot` to post-pilot Data Inventory Matrix; define retention and ownership. |
+| `2026-05-17-salon-onboarding-handoff.md` | yes | Tenant admin identity, YClients credentials, KB documents, billing | `not_applicable_to_customer_pilot` | §8 Data retention | none | Govern tenant-admin data under tenant-data governance, not AMD-020. |
+| `2026-05-18-persona-editor-handoff.md` | yes | Persona change history / staff identifiers | `not_applicable_to_customer_pilot` | none | none | Persona config is tenant-level business config; route staff-data requests via OP6 or general DSR track. |
+| `2026-05-17-conversations-handoff.md` | yes | `Conversation`/`Message`, customer profile PII, medical notes, visit history, learning suggestions | `excluded_post_pilot_inventory` | §7 Edge cases, §C4 GDPR deletion | Account-deletion cascade implies broader OP6 scope | W5 / Conversation Owner defines export/deletion path in Data Inventory Matrix; route account-deletion cascade to OP6. |
+| `2026-05-18-marketing-campaigns-handoff.md` | yes | `CampaignDispatch`, `CampaignAudience`, segmentation profile fields | `excluded_post_pilot_inventory` | §3 Data model, §6 Compliance/export | CSV export of recipient hash + opt-out timestamps is a personal-data export outside pilot | Decide whether marketing CSV export belongs to AMD-020 or a separate compliance module. |
+| `2026-05-18-master-mobile-handoff.md` | yes | Customer first name/aftercare notes, conversation transcripts, master profile/audit | `excluded_post_pilot_inventory` | §8 Gating matrix, §13 E17 | Customer-deletion request handling for master deeplinks implies OP6 scope | Resolve Q-M4 aftercare-notes retention; classify master-authored replies as post-pilot inventory. |
+| `2026-05-18-loyalty-system-handoff.md` | yes | `LoyaltyAccount`, `LoyaltyEvent`, `ReferralPending`, visit/booking/LTV data | `not_applicable_to_customer_pilot` | §14 Edge cases, §17 Q-L12 | Account deletion erases loyalty data (OP6) | Add loyalty customer data as a separate post-pilot inventory item. |
+| `2026-05-19-master-device-reauth-handoff.md` | yes | `MasterSession`, `MasterRecoveryAttempt`, phone/MAX binding, earnings, audit | `excluded_post_pilot_inventory` | §9.1 `DELETED` state, §6.4 retention, §2.5 | Account-lock state machine `DELETED` terminal state conflicts with AMD-020 scope | Reclassify `DELETED` transition as OP6 / account-deletion track. |
+| `2026-05-19-master-reviews-feedback-handoff.md` | yes | `CustomerFeedback`, `MasterReviewAggregate`, `ReviewMasterAction`, `ReviewAdminAction` | `excluded_post_pilot_inventory` | §2.10 Privacy, §7.1/§7.2, §9.1 | 30-day customer hard-delete window outside pilot | Classify `CustomerFeedback` as distinct post-pilot inventory; decide 30d delete/anonymization owner. |
+| `2026-05-19-master-earnings-handoff.md` | yes | `Master`, Customer initials, `Booking`, `MasterEarning`, `Tip`, `EarningsExport` | `excluded_post_pilot_inventory` | §2.9 Tax export, §10.3 PII minimization, §11.7 | none (tax export is a separate financial export) | Add master earnings classes to post-pilot Data Inventory Matrix. |
+| `2026-05-19-master-time-off-handoff.md` | yes | `MasterLeaveRequest`, `MasterLeaveBookingImpact`, `SickDayPatternFlag`, `MasterRecurringSchedule` | `not_applicable_to_customer_pilot` | none | none | Govern master leave records by tenant/HR policy or OP6 if masters are later covered. |
+| `2026-05-18-customer-first-time-handoff.md` | yes | Customer profile, preferences, visits, feedback, dispatch logs, phone, location, attachments | `excluded_post_pilot_inventory` | §12 F4, §15 `data-deletion-request` | «Удалить все мои данные» button triggers OP6 customer-deletion workflow; conflicts with narrow pilot | Reconcile F4 button copy with AMD-020 scope: restrict label to pilot-covered classes or expand inventory before shipping. |
+| `2026-05-19-master-substitution-handoff.md` | yes | Substitution records, customer preferences/allergies, wellness profile, AI memory, reviews | `not_applicable_to_customer_pilot` | §2.12, §5.3, §5.6 | none | No AMD-020 delta; ensure substitution records are covered by OP6 inventory. |
+| `2026-05-19-wellness-sleep-handoff.md` | yes | `WellnessSleepEvent`, `WellnessModuleConsent`, derived profile aggregates | `excluded_post_pilot_inventory` | §2.5, §4.1, §5.1, §9.1, §11.4 | OP6 export includes raw sleep history; 30d revoke deletion outside pilot | Classify `WellnessSleepEvent` and derived aggregates as post-pilot inventory. |
+| `2026-05-19-master-admin-internal-chat-handoff.md` | yes | `MasterAdminThread`/`Message`/`Attachment`, linked artifacts | `excluded_post_pilot_inventory` | §2.8, §6 Data models, §8.4/§8.5 | Export/hard-delete promises for master-admin chat outside pilot | Decide whether §8.5/§2.8 promises must be honored pre-pilot or deferred to post-pilot inventory. |
+| `2026-05-19-master-offboarding-handoff.md` | yes | Master data, customer-master AI memory, reviews, wellness profile | `excluded_post_pilot_inventory` | §2.2, §2.3, §6.4, §7.1/§7.3/§7.5 | none | Confirm customer-master `MemoryEntry` revocation semantics are compatible with AMD-020 green `MemoryEntry` lifecycle. |
+
+**Classification legend:**
+
+- `excluded_post_pilot_inventory` — personal-data class exists and needs a future export/forget owner, but is outside the AMD-020 pilot boundary.
+- `not_applicable_to_customer_pilot` — the file concerns tenant/master/operational data, not the customer personal-context pilot scope.
+
 ---
 
 ## 2. Derived Boundary
@@ -151,11 +182,33 @@ and in §14 for owner decision:
 
 | Included class | Postgres | Redis/cache | Embeddings/vector | Prompt snapshots | Audit/events | Queues | Analytics | Logs/traces | Backups | Derived attributes | Evidence |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| UserPersonalContext (W2) | `users_userpersonalcontext` | none found in read/write path | none found | none found | `AnalyticsEvent` via `emit_personal_data_deleted` | none found | none found | `user_id` in structured logs; query: `grep -n 'user_id' users/personal_data_api.py` | Postgres backups | none found | `users/personal_data_api.py`, `users/personal_context_events.py`, `users/models.py:425-544` |
-| Green MemoryEntry (W3) | `identity_memoryentry` | none found in read/write path | none found (ChromaDB only in `apps/kb/`) | none found | `write_audit("memory.forget_entry")`, `write_audit("memory.forget_all_requested")` | none found | none found | `user_id` in structured logs; query: `grep -n 'user_id' apps/identity/services/memory_*.py` | Postgres backups | in-memory prompt block | `apps/identity/models.py:621-838`, `apps/identity/services/memory_deleter.py`, `apps/identity/services/memory_reader.py`, `apps/orchestrator/memory_block.py` |
-| ConsentRecord (W3) | `consent_consentrecord` | none found in read/write path | none found | none found | `write_audit("privacy.personal_data_deleted")`; `ConsentRecord` itself is audit trail | none found | none found | `bot_user_id` in audit payload | Postgres backups | none found | `apps/consent/models.py:56-183`, `apps/identity/services/privacy.py:143-157`, `apps/identity/services/privacy.py:229-233` |
+| UserPersonalContext (W2) | `users_userpersonalcontext` | none found | none found | none found | `AnalyticsEvent` via `emit_personal_data_deleted` | none found | none found | `user_id` in structured logs | Postgres backups | none found | SHA `f6e9572e`: `users/personal_context_events.py`, `users/models.py:425-544`; `personal_data_api.py` not present in this branch |
+| Green MemoryEntry (W3) | `identity_memoryentry` | none found | none found (ChromaDB only in `apps/kb/`) | none found | `write_audit("memory.forget_entry")`, `write_audit("memory.forget_all_requested")` | none found | none found | `user_id` in structured logs | Postgres backups | in-memory prompt block | SHA `fe6c1f87`: `apps/identity/models.py:621-838`, `apps/identity/services/memory_writer.py`; `memory_reader.py`/`memory_deleter.py`/`memory_block.py` not present in main branch |
+| ConsentRecord (W3) | `consent_consentrecord` | none found | none found | none found | `write_audit("privacy.personal_data_deleted")`; `ConsentRecord` itself is audit trail | none found | none found | `bot_user_id` in audit payload | Postgres backups | none found | SHA `fe6c1f87`: `apps/consent/models.py:56-183`, `apps/identity/services/privacy.py:143-157`, `apps/identity/services/privacy.py:229-233` |
 
 ### 2.2 Evidence statement
+
+Reproducible inventory commands (run against pinned SHAs):
+
+```bash
+# ai-bot-platform SHA fe6c1f872bcff5a0a2ade8cc0b3d4bdef9a31b8a
+grep -n -i 'redis\|cache\|chroma\|embedding\|snapshot\|persist' \
+  apps/identity/services/memory_writer.py
+# result: <no matches>
+
+grep -n -i 'redis\|cache\|chroma\|embedding\|snapshot\|persist' \
+  apps/consent/models.py
+# result: line 40/118 mention "document_version snapshots" (metadata, not persistent derived store)
+
+grep -rn 'from django.core.cache\|cache\.\|caches\[' \
+  apps/identity apps/consent --include='*.py'
+# result: <no matches>
+
+# djangoproject SHA f6e9572e157b8391d21c02e979e07e033f64fd6f
+grep -n -i 'redis\|cache\|chroma\|embedding\|snapshot\|persist' \
+  users/models.py users/personal_context_events.py
+# result: <no matches>
+```
 
 - **ChromaDB:** dependency present in `.venv`, but production code using ChromaDB
   lives only in `apps/kb/` (knowledge-base retrieval). No call path from any
@@ -163,8 +216,9 @@ and in §14 for owner decision:
 - **Redis/Django cache:** general cache usage exists in the repo (eventbus,
   catalog sync, etc.), but none of the three included-class read/write paths use
   cache. Status: `not_applicable_pending_inventory_evidence` for pilot.
-- **Prompt snapshots:** `build_concierge_memory_block` constructs the block and
-  returns it to the orchestrator; no intermediate persistence was found.
+- **Prompt snapshots:** `build_concierge_memory_block` is not present in the
+  pinned main branch of `ai-bot-platform`; the only memory-related service found
+  is `apps/identity/services/memory_writer.py`, which persists to Postgres.
 - **Audit/events:** all audit rows reference `user_id`/`bot_user_id` but do not
   store deleted personal values.
 - **Backups:** standard Postgres backups exist; backup retention SLA is an owner
@@ -202,15 +256,38 @@ enforcement.
   `blocked`.
 - `processing` — активные обработчики остановлены/заблокированы; каскад
   удаления выполняется.
-- `partially_completed` — каскад завершён с одним или более failed steps;
-  retryable.
+- `partially_completed` — **внутреннее состояние**: каскад завершён с одним
+  или более failed steps; retryable. Во внешнем ответе это состояние
+  отображается как `status: "partial"`.
 - `completed` — каскад завершён успешно; все included-классы обработаны.
-- `failed` — каскад завершён с не-retryable ошибкой.
+- `failed` — каскад завершён с не-retryable ошибкой; terminal state.
+- `aborted` — операция прервана авторизованным break-glass, relink или
+  неисправимым сбоем; terminal state. Barrier снимается только после
+  достижения terminal state и записи incident/audit.
+
+**State-to-response mapping:**
+
+| Internal operation state | External response `status` | HTTP |
+|---|---|---|
+| `blocked` | `accepted` (or `blocked` in status read) | 202 |
+| `processing` | `processing` | 202 |
+| `partially_completed` | `partial` | 502 |
+| `completed` | `completed` | 200 |
+| `failed` | `failed` | 502/504/500 |
+| `aborted` | `failed` or `aborted`* | 502/500 |
+
+`*` `aborted` may be exposed as a dedicated external `status` only after owner
+approval of the break-glass/relink semantics. Until then, external responses use
+`failed` with `error.code: subject_mismatch` / `internal_error`.
 
 **Atomicity requirement:** operation record + scope lock + barrier activation
 are created in a single database transaction. If the transaction fails, the
 client receives an error and no `operation_id`. There is no externally
 observable window between `operation_id` issuance and barrier activation.
+
+**Barrier release rule:** barrier is released only when the operation reaches a
+terminal state (`completed`, `failed`, or `aborted`). Automatic release after a
+partial or unrecoverable failure without terminal state is prohibited.
 
 ### 3.2 Per-class state
 
@@ -264,18 +341,45 @@ blocked  ← first externally observable state; barrier active
   ▼
 processing  ← каскад выполняется
   │
-  ├──► partially_completed  ← есть failed steps
+  ├──► partially_completed  ← есть failed steps; retryable
   │      │
-  │      ▼ retry
-  │   processing
+  │      ├──► retry  → processing
+  │      │
+  │      └──► max retries / unrecoverable → failed  (terminal)
   │
-  └──► completed  ← все шаги успешны
-         │
-         └──► per-class lifecycle продолжается независимо:
-                UserPersonalContext: deleted → backup_expired
-                MemoryEntry: soft_deleted → primary_purged → backup_expired
-                ConsentRecord: withdrawn → retained_under_other_basis
+  ├──► completed  ← все шаги успешны (terminal)
+  │         │
+  │         └──► per-class lifecycle продолжается независимо:
+  │                UserPersonalContext: deleted → backup_expired
+  │                MemoryEntry: soft_deleted → primary_purged → backup_expired
+  │                ConsentRecord: withdrawn → retained_under_other_basis
+  │
+  └──► aborted  ← break-glass / relink / authorized terminal abort (terminal)
+
+Barrier is released only after a terminal state is persisted.
 ```
+
+### 3.6 Break-glass and terminal abort
+
+A delete operation may be moved to terminal `aborted` state only by:
+
+1. **Relink** — `scope_hash.link_generation` changes mid-flight (§4.4).
+2. **Authorized break-glass** — two authorized operators (W3 on-call + Security)
+   approve an explicit abort because the operation is stuck and cannot resume
+   safely.
+3. **Unrecoverable infrastructure failure** — after all bounded retries are
+   exhausted and the incident commander records a terminal abort decision.
+
+Abort procedure:
+
+- Record reason code, operator identities, incident ticket, and audit event
+  `privacy.delete_aborted`.
+- Move operation to `aborted` **before** releasing the barrier.
+- Do **not** auto-retry an `aborted` operation; the client must start a new
+  delete operation with a new `idempotency_key` after the incident is resolved.
+- Preserve evidence of completed steps; already-deleted classes remain deleted.
+- After abort, perform a fresh inventory sweep before any new operation on the
+  same `scope_hash`.
 
 ---
 
@@ -312,6 +416,7 @@ processing  ← каскад выполняется
   `operation_id`. Вторая destructive execution не создаётся и не queued.
 - **Relink during deletion:** операция **aborted**; клиент получает
   `subject_mismatch` и должен инициировать новую операцию после relink.
+  Полный lifecycle relink описан в §4.4.
 - Retry после потери success-response: клиент повторяет с тем же
   `idempotency_key`; W3 возвращает финальный результат из idempotency store
   (replay read), не запуская новое execution.
@@ -319,6 +424,39 @@ processing  ← каскад выполняется
   (`owner_decision_required`).
 - После завершённой операции повторный запрос возвращает `completed_at` и
   финальный `status` без увеличения `execution_attempt`.
+
+### 4.4 Relink lifecycle
+
+`scope_hash` включает `link_generation`. Если связь BotUser ↔ Ayla User
+меняется во время активной операции:
+
+1. Текущая операция немедленно переходит в terminal state `aborted`.
+2. Внешний ответ: `failed` (или `aborted` после owner approval) с
+   `error.code: subject_mismatch`.
+3. Уже выполненные шаги остаются выполненными; незавершённые шаги отменяются.
+4. Barrier снимается только после достижения `aborted` и записи audit/incident.
+5. Клиент должен инициировать **новую** операцию с новым `idempotency_key`;
+   новый `scope_hash` будет содержать новое `link_generation`.
+
+**Fate of the old persona:**
+
+- Старая persona (`BotUser` + связанный `Ayla User`) продолжает существовать в
+  системе со своей историей согласий, памяти и аудита.
+- Пользователь не теряет прав на экспорт/удаление данных старой persona;
+  доступ к старой persona осуществляется через OP6 / account-deletion track или
+  через отдельный owner-approved flow связывания persona.
+- `ConsentRecord`, `MemoryEntry` и `UserPersonalContext` старой persona не
+  мигрируют к новой persona автоматически.
+- Повторный relink обратно на старый `Ayla User` восстанавливает прежний
+  `scope_hash` и позволяет продолжить операции над старой persona.
+
+**Export after relink:**
+
+- An in-flight export operation is aborted if relink occurs; the client must
+  retry after relink.
+- Export, созданный до relink, привязан к старому `scope_hash` и содержит
+  данные старой persona.
+- Новый export возвращает данные только для текущей persona.
 
 ---
 
@@ -338,7 +476,15 @@ processing  ← каскад выполняется
 - Добавление полей требует MINOR-инкремента `format_version` / contract version.
 - Удаление/переименование полей требует MAJOR-инкремента и нового amendment.
 
-### 5.2 Common definitions (`$defs`)
+### 5.2 Schema bundle contract
+
+- Each root schema in §5.3–§5.7 is a self-contained JSON Schema 2020-12 document.
+- Shared structures (`subject`, `perStepResults`, `retainedItem`, `error`) are duplicated in every root schema so that all `$ref` resolve within the same document.
+- `additionalProperties: false` is enforced at every closed level.
+- `personal_context` and `MemoryEntry.content` are intentionally declared `opaque_payload` and are not closed by this contract.
+- `subject_gone` is formalized as a separate closed schema in §6.
+
+### 5.3 Export success schema
 
 ```json
 {
@@ -347,42 +493,99 @@ processing  ← каскад выполняется
     "subject": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["ayla_user_id", "bot_user_id"],
+      "required": [
+        "ayla_user_id",
+        "bot_user_id"
+      ],
       "properties": {
-        "ayla_user_id": {"oneOf": [{"type": "string", "format": "uuid"}, {"type": "null"}]},
-        "bot_user_id": {"type": "string", "format": "uuid"}
+        "ayla_user_id": {
+          "oneOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "bot_user_id": {
+          "type": "string",
+          "format": "uuid"
+        }
       }
     },
     "perStepResults": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["ayla_delete", "memory_delete", "consent_withdraw"],
+      "required": [
+        "ayla_delete",
+        "memory_delete",
+        "consent_withdraw"
+      ],
       "properties": {
         "ayla_delete": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["ok", "detail"],
+          "required": [
+            "ok",
+            "detail"
+          ],
           "properties": {
-            "ok": {"type": "boolean"},
-            "detail": {"type": "string", "enum": ["deleted", "already_deleted", "not_linked"]}
+            "ok": {
+              "type": "boolean"
+            },
+            "detail": {
+              "type": "string",
+              "enum": [
+                "deleted",
+                "already_deleted",
+                "subject_gone",
+                "not_linked"
+              ]
+            }
           }
         },
         "memory_delete": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["ok", "detail"],
+          "required": [
+            "ok",
+            "detail"
+          ],
           "properties": {
-            "ok": {"type": "boolean"},
-            "detail": {"type": "string", "enum": ["deleted", "already_deleted", "not_linked"]}
+            "ok": {
+              "type": "boolean"
+            },
+            "detail": {
+              "type": "string",
+              "enum": [
+                "deleted",
+                "already_deleted",
+                "not_linked"
+              ]
+            }
           }
         },
         "consent_withdraw": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["ok", "detail"],
+          "required": [
+            "ok",
+            "detail"
+          ],
           "properties": {
-            "ok": {"type": "boolean"},
-            "detail": {"type": "string", "enum": ["withdrawn", "already_withdrawn", "not_linked"]}
+            "ok": {
+              "type": "boolean"
+            },
+            "detail": {
+              "type": "string",
+              "enum": [
+                "withdrawn",
+                "already_withdrawn",
+                "not_linked"
+              ]
+            }
           }
         }
       }
@@ -390,22 +593,95 @@ processing  ← каскад выполняется
     "retainedItem": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["category", "reason", "lawful_basis", "retention_until", "decision_status", "restrictions", "owner", "deletion_trigger"],
+      "required": [
+        "category",
+        "reason",
+        "lawful_basis",
+        "retention_until",
+        "decision_status",
+        "restrictions",
+        "owner",
+        "deletion_trigger"
+      ],
       "properties": {
-        "category": {"type": "string", "enum": ["audit_trail", "consent_history", "statutory_record", "backup", "tombstone", "other"]},
-        "reason": {"type": "string", "enum": ["regulatory_audit", "withdrawal_evidence", "statutory_retention", "backup_window", "lawful_basis_other"]},
-        "lawful_basis": {"oneOf": [{"type": "string"}, {"type": "null"}]},
-        "retention_until": {"oneOf": [{"type": "string", "format": "date-time"}, {"type": "null"}]},
-        "decision_status": {"type": "string", "enum": ["owner_decision_required", "approved"]},
-        "restrictions": {"type": "string", "enum": ["no_personal_values", "read_only", "access_role_restriction"]},
-        "owner": {"type": "string"},
-        "deletion_trigger": {"type": "string", "enum": ["legal_retention_expiry", "backup_expiry", "owner_decision"]}
+        "category": {
+          "type": "string",
+          "enum": [
+            "audit_trail",
+            "consent_history",
+            "statutory_record",
+            "backup",
+            "tombstone",
+            "other"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "enum": [
+            "regulatory_audit",
+            "withdrawal_evidence",
+            "statutory_retention",
+            "backup_window",
+            "lawful_basis_other"
+          ]
+        },
+        "lawful_basis": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "retention_until": {
+          "oneOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "decision_status": {
+          "type": "string",
+          "enum": [
+            "owner_decision_required",
+            "approved"
+          ]
+        },
+        "restrictions": {
+          "type": "string",
+          "enum": [
+            "no_personal_values",
+            "read_only",
+            "access_role_restriction"
+          ]
+        },
+        "owner": {
+          "type": "string"
+        },
+        "deletion_trigger": {
+          "type": "string",
+          "enum": [
+            "legal_retention_expiry",
+            "backup_expiry",
+            "owner_decision"
+          ]
+        }
       }
     },
     "error": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["code", "message", "retryable"],
+      "required": [
+        "code",
+        "message",
+        "retryable"
+      ],
       "properties": {
         "code": {
           "type": "string",
@@ -426,53 +702,84 @@ processing  ← каскад выполняется
             "internal_error"
           ]
         },
-        "message": {"type": "string"},
-        "retryable": {"type": "boolean"}
+        "message": {
+          "type": "string"
+        },
+        "retryable": {
+          "type": "boolean"
+        }
       }
     }
-  }
-}
-```
-
-### 5.3 Export success schema
-
-```json
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  },
   "type": "object",
   "additionalProperties": false,
-  "required": ["operation_id", "status", "generated_at", "subject", "format_version", "ayla", "memory", "consents"],
+  "required": [
+    "operation_id",
+    "status",
+    "generated_at",
+    "subject",
+    "format_version",
+    "ayla",
+    "memory",
+    "consents"
+  ],
   "properties": {
-    "operation_id": {"type": "string", "format": "uuid"},
-    "status": {"type": "string", "enum": ["completed"]},
-    "generated_at": {"type": "string", "format": "date-time"},
-    "subject": {"$ref": "#/$defs/subject"},
-    "format_version": {"type": "string", "enum": ["1.0"]},
+    "operation_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "completed"
+      ]
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "subject": {
+      "$ref": "#/$defs/subject"
+    },
+    "format_version": {
+      "type": "string",
+      "enum": [
+        "1.0"
+      ]
+    },
     "ayla": {
       "oneOf": [
-        {"type": "null"},
+        {
+          "type": "null"
+        },
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["user_id", "exported_at", "profile", "personal_context"],
+          "required": [
+            "user_id",
+            "exported_at",
+            "personal_context"
+          ],
           "properties": {
-            "user_id": {"type": "string", "format": "uuid"},
-            "exported_at": {"type": "string", "format": "date-time"},
-            "profile": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": ["phone", "email", "full_name", "bio", "city"],
-              "properties": {
-                "phone": {"oneOf": [{"type": "string"}, {"type": "null"}]},
-                "email": {"oneOf": [{"type": "string"}, {"type": "null"}]},
-                "full_name": {"oneOf": [{"type": "string"}, {"type": "null"}]},
-                "bio": {"oneOf": [{"type": "string"}, {"type": "null"}]},
-                "city": {"oneOf": [{"type": "string"}, {"type": "null"}]}
-              }
+            "user_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "exported_at": {
+              "type": "string",
+              "format": "date-time"
             },
             "personal_context": {
               "description": "opaque_payload: structure governed by UserPersonalContextSerializer; not closed by this schema",
-              "oneOf": [{"type": "object", "additionalProperties": true}, {"type": "null"}]
+              "oneOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                {
+                  "type": "null"
+                }
+              ]
             }
           }
         }
@@ -483,18 +790,50 @@ processing  ← каскад выполняется
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "kind", "source", "content", "last_inferred_at", "created_at"],
+        "required": [
+          "id",
+          "kind",
+          "source",
+          "content",
+          "last_inferred_at",
+          "created_at"
+        ],
         "properties": {
-          "id": {"type": "string", "format": "uuid"},
-          "kind": {"type": "string"},
-          "source": {"type": "string", "enum": ["explicit", "inferred", "signal"]},
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "explicit",
+              "inferred",
+              "signal"
+            ]
+          },
           "content": {
             "description": "opaque_payload: MemoryEntry content structure; not closed by this schema",
             "type": "object",
             "additionalProperties": true
           },
-          "last_inferred_at": {"oneOf": [{"type": "string", "format": "date-time"}, {"type": "null"}]},
-          "created_at": {"type": "string", "format": "date-time"}
+          "last_inferred_at": {
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
         }
       }
     },
@@ -503,118 +842,1226 @@ processing  ← каскад выполняется
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["consent_type", "granted", "document_version", "source", "captured_at", "withdrawn_at", "purpose", "data_categories", "operator", "recipients", "term", "lawful_basis", "identification_method"],
+        "required": [
+          "consent_type",
+          "granted",
+          "document_version",
+          "source",
+          "captured_at",
+          "withdrawn_at",
+          "purpose",
+          "data_categories",
+          "operator",
+          "recipients",
+          "term",
+          "lawful_basis",
+          "identification_method"
+        ],
         "properties": {
-          "consent_type": {"type": "string"},
-          "granted": {"type": "boolean"},
-          "document_version": {"type": "string"},
-          "source": {"type": "string"},
-          "captured_at": {"type": "string", "format": "date-time"},
-          "withdrawn_at": {"oneOf": [{"type": "string", "format": "date-time"}, {"type": "null"}]},
-          "purpose": {"type": "string"},
-          "data_categories": {"type": "array", "items": {"type": "string"}},
-          "operator": {"type": "string"},
-          "recipients": {"type": "array", "items": {"type": "string"}},
-          "term": {"type": "string"},
-          "lawful_basis": {"oneOf": [{"type": "string"}, {"type": "null"}]},
-          "identification_method": {"type": "string"}
+          "consent_type": {
+            "type": "string"
+          },
+          "granted": {
+            "type": "boolean"
+          },
+          "document_version": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "captured_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "withdrawn_at": {
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "data_categories": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "operator": {
+            "type": "string"
+          },
+          "recipients": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "term": {
+            "type": "string"
+          },
+          "lawful_basis": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "identification_method": {
+            "type": "string"
+          }
         }
       }
     }
   }
 }
 ```
+*(Export is all-or-nothing; there is no partial export response in the pilot contract. Any upstream failure yields the failure schema with HTTP 502/504.)*
 
 ### 5.4 Export failure schema
 
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ayla_user_id",
+        "bot_user_id"
+      ],
+      "properties": {
+        "ayla_user_id": {
+          "oneOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "bot_user_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "perStepResults": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ayla_delete",
+        "memory_delete",
+        "consent_withdraw"
+      ],
+      "properties": {
+        "ayla_delete": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ok",
+            "detail"
+          ],
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            },
+            "detail": {
+              "type": "string",
+              "enum": [
+                "deleted",
+                "already_deleted",
+                "subject_gone",
+                "not_linked"
+              ]
+            }
+          }
+        },
+        "memory_delete": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ok",
+            "detail"
+          ],
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            },
+            "detail": {
+              "type": "string",
+              "enum": [
+                "deleted",
+                "already_deleted",
+                "not_linked"
+              ]
+            }
+          }
+        },
+        "consent_withdraw": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ok",
+            "detail"
+          ],
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            },
+            "detail": {
+              "type": "string",
+              "enum": [
+                "withdrawn",
+                "already_withdrawn",
+                "not_linked"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "retainedItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "category",
+        "reason",
+        "lawful_basis",
+        "retention_until",
+        "decision_status",
+        "restrictions",
+        "owner",
+        "deletion_trigger"
+      ],
+      "properties": {
+        "category": {
+          "type": "string",
+          "enum": [
+            "audit_trail",
+            "consent_history",
+            "statutory_record",
+            "backup",
+            "tombstone",
+            "other"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "enum": [
+            "regulatory_audit",
+            "withdrawal_evidence",
+            "statutory_retention",
+            "backup_window",
+            "lawful_basis_other"
+          ]
+        },
+        "lawful_basis": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "retention_until": {
+          "oneOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "decision_status": {
+          "type": "string",
+          "enum": [
+            "owner_decision_required",
+            "approved"
+          ]
+        },
+        "restrictions": {
+          "type": "string",
+          "enum": [
+            "no_personal_values",
+            "read_only",
+            "access_role_restriction"
+          ]
+        },
+        "owner": {
+          "type": "string"
+        },
+        "deletion_trigger": {
+          "type": "string",
+          "enum": [
+            "legal_retention_expiry",
+            "backup_expiry",
+            "owner_decision"
+          ]
+        }
+      }
+    },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "message",
+        "retryable"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": [
+            "upstream_timeout",
+            "upstream_unavailable",
+            "upstream_error",
+            "upstream_malformed",
+            "rate_limited",
+            "auth_invalid",
+            "init_data_expired",
+            "subject_mismatch",
+            "confirmation_expired",
+            "replay_detected",
+            "cross_tenant_violation",
+            "schema_mismatch",
+            "contract_violation",
+            "internal_error"
+          ]
+        },
+        "message": {
+          "type": "string"
+        },
+        "retryable": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
   "type": "object",
   "additionalProperties": false,
-  "required": ["operation_id", "status", "format_version", "error"],
+  "required": [
+    "operation_id",
+    "status",
+    "format_version",
+    "error"
+  ],
   "properties": {
-    "operation_id": {"oneOf": [{"type": "string", "format": "uuid"}, {"type": "null"}]},
-    "status": {"type": "string", "enum": ["failed"]},
-    "format_version": {"type": "string", "enum": ["1.0"]},
-    "error": {"$ref": "#/$defs/error"}
+    "operation_id": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "uuid"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "failed"
+      ]
+    },
+    "format_version": {
+      "type": "string",
+      "enum": [
+        "1.0"
+      ]
+    },
+    "error": {
+      "$ref": "#/$defs/error"
+    }
   }
 }
 ```
-
-*(Export is all-or-nothing; there is no partial export response in the pilot
-contract. Any upstream failure yields the failure schema with HTTP 502/504.)*
-
 ### 5.5 Delete success schema
 
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ayla_user_id",
+        "bot_user_id"
+      ],
+      "properties": {
+        "ayla_user_id": {
+          "oneOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "bot_user_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "perStepResults": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ayla_delete",
+        "memory_delete",
+        "consent_withdraw"
+      ],
+      "properties": {
+        "ayla_delete": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ok",
+            "detail"
+          ],
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            },
+            "detail": {
+              "type": "string",
+              "enum": [
+                "deleted",
+                "already_deleted",
+                "subject_gone",
+                "not_linked"
+              ]
+            }
+          }
+        },
+        "memory_delete": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ok",
+            "detail"
+          ],
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            },
+            "detail": {
+              "type": "string",
+              "enum": [
+                "deleted",
+                "already_deleted",
+                "not_linked"
+              ]
+            }
+          }
+        },
+        "consent_withdraw": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ok",
+            "detail"
+          ],
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            },
+            "detail": {
+              "type": "string",
+              "enum": [
+                "withdrawn",
+                "already_withdrawn",
+                "not_linked"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "retainedItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "category",
+        "reason",
+        "lawful_basis",
+        "retention_until",
+        "decision_status",
+        "restrictions",
+        "owner",
+        "deletion_trigger"
+      ],
+      "properties": {
+        "category": {
+          "type": "string",
+          "enum": [
+            "audit_trail",
+            "consent_history",
+            "statutory_record",
+            "backup",
+            "tombstone",
+            "other"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "enum": [
+            "regulatory_audit",
+            "withdrawal_evidence",
+            "statutory_retention",
+            "backup_window",
+            "lawful_basis_other"
+          ]
+        },
+        "lawful_basis": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "retention_until": {
+          "oneOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "decision_status": {
+          "type": "string",
+          "enum": [
+            "owner_decision_required",
+            "approved"
+          ]
+        },
+        "restrictions": {
+          "type": "string",
+          "enum": [
+            "no_personal_values",
+            "read_only",
+            "access_role_restriction"
+          ]
+        },
+        "owner": {
+          "type": "string"
+        },
+        "deletion_trigger": {
+          "type": "string",
+          "enum": [
+            "legal_retention_expiry",
+            "backup_expiry",
+            "owner_decision"
+          ]
+        }
+      }
+    },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "message",
+        "retryable"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": [
+            "upstream_timeout",
+            "upstream_unavailable",
+            "upstream_error",
+            "upstream_malformed",
+            "rate_limited",
+            "auth_invalid",
+            "init_data_expired",
+            "subject_mismatch",
+            "confirmation_expired",
+            "replay_detected",
+            "cross_tenant_violation",
+            "schema_mismatch",
+            "contract_violation",
+            "internal_error"
+          ]
+        },
+        "message": {
+          "type": "string"
+        },
+        "retryable": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
   "type": "object",
   "additionalProperties": false,
-  "required": ["operation_id", "status", "format_version", "subject", "completed_at", "per_step_results", "deleted", "retained"],
+  "required": [
+    "operation_id",
+    "status",
+    "format_version",
+    "subject",
+    "completed_at",
+    "per_step_results",
+    "deleted",
+    "retained"
+  ],
   "properties": {
-    "operation_id": {"type": "string", "format": "uuid"},
-    "status": {"type": "string", "enum": ["completed"]},
-    "format_version": {"type": "string", "enum": ["1.0"]},
-    "subject": {"$ref": "#/$defs/subject"},
-    "completed_at": {"type": "string", "format": "date-time"},
-    "per_step_results": {"$ref": "#/$defs/perStepResults"},
+    "operation_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "completed"
+      ]
+    },
+    "format_version": {
+      "type": "string",
+      "enum": [
+        "1.0"
+      ]
+    },
+    "subject": {
+      "$ref": "#/$defs/subject"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "per_step_results": {
+      "$ref": "#/$defs/perStepResults"
+    },
     "deleted": {
       "type": "array",
-      "items": {"type": "string", "enum": ["ayla_personal_context", "memory_green"]}
+      "items": {
+        "type": "string",
+        "enum": [
+          "ayla_personal_context",
+          "memory_green"
+        ]
+      }
     },
     "retained": {
       "type": "array",
-      "items": {"$ref": "#/$defs/retainedItem"}
+      "items": {
+        "$ref": "#/$defs/retainedItem"
+      }
     }
   }
 }
 ```
-
 ### 5.6 Delete partial schema
 
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ayla_user_id",
+        "bot_user_id"
+      ],
+      "properties": {
+        "ayla_user_id": {
+          "oneOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "bot_user_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "perStepResults": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ayla_delete",
+        "memory_delete",
+        "consent_withdraw"
+      ],
+      "properties": {
+        "ayla_delete": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ok",
+            "detail"
+          ],
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            },
+            "detail": {
+              "type": "string",
+              "enum": [
+                "deleted",
+                "already_deleted",
+                "subject_gone",
+                "not_linked"
+              ]
+            }
+          }
+        },
+        "memory_delete": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ok",
+            "detail"
+          ],
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            },
+            "detail": {
+              "type": "string",
+              "enum": [
+                "deleted",
+                "already_deleted",
+                "not_linked"
+              ]
+            }
+          }
+        },
+        "consent_withdraw": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ok",
+            "detail"
+          ],
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            },
+            "detail": {
+              "type": "string",
+              "enum": [
+                "withdrawn",
+                "already_withdrawn",
+                "not_linked"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "retainedItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "category",
+        "reason",
+        "lawful_basis",
+        "retention_until",
+        "decision_status",
+        "restrictions",
+        "owner",
+        "deletion_trigger"
+      ],
+      "properties": {
+        "category": {
+          "type": "string",
+          "enum": [
+            "audit_trail",
+            "consent_history",
+            "statutory_record",
+            "backup",
+            "tombstone",
+            "other"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "enum": [
+            "regulatory_audit",
+            "withdrawal_evidence",
+            "statutory_retention",
+            "backup_window",
+            "lawful_basis_other"
+          ]
+        },
+        "lawful_basis": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "retention_until": {
+          "oneOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "decision_status": {
+          "type": "string",
+          "enum": [
+            "owner_decision_required",
+            "approved"
+          ]
+        },
+        "restrictions": {
+          "type": "string",
+          "enum": [
+            "no_personal_values",
+            "read_only",
+            "access_role_restriction"
+          ]
+        },
+        "owner": {
+          "type": "string"
+        },
+        "deletion_trigger": {
+          "type": "string",
+          "enum": [
+            "legal_retention_expiry",
+            "backup_expiry",
+            "owner_decision"
+          ]
+        }
+      }
+    },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "message",
+        "retryable"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": [
+            "upstream_timeout",
+            "upstream_unavailable",
+            "upstream_error",
+            "upstream_malformed",
+            "rate_limited",
+            "auth_invalid",
+            "init_data_expired",
+            "subject_mismatch",
+            "confirmation_expired",
+            "replay_detected",
+            "cross_tenant_violation",
+            "schema_mismatch",
+            "contract_violation",
+            "internal_error"
+          ]
+        },
+        "message": {
+          "type": "string"
+        },
+        "retryable": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
   "type": "object",
   "additionalProperties": false,
-  "required": ["operation_id", "status", "format_version", "subject", "completed_at", "per_step_results", "completed_steps", "failed_steps", "retryable", "request_attempt", "execution_attempt", "retained", "next_action"],
+  "required": [
+    "operation_id",
+    "status",
+    "format_version",
+    "subject",
+    "completed_at",
+    "per_step_results",
+    "completed_steps",
+    "failed_steps",
+    "retryable",
+    "request_attempt",
+    "execution_attempt",
+    "retained",
+    "next_action"
+  ],
   "properties": {
-    "operation_id": {"type": "string", "format": "uuid"},
-    "status": {"type": "string", "enum": ["partial"]},
-    "format_version": {"type": "string", "enum": ["1.0"]},
-    "subject": {"$ref": "#/$defs/subject"},
-    "completed_at": {"type": "string", "format": "date-time"},
-    "per_step_results": {"$ref": "#/$defs/perStepResults"},
-    "completed_steps": {"type": "array", "items": {"type": "string", "enum": ["ayla_delete", "memory_delete", "consent_withdraw"]}},
-    "failed_steps": {"type": "array", "items": {"type": "string", "enum": ["ayla_delete", "memory_delete", "consent_withdraw"]}},
-    "retryable": {"type": "boolean"},
-    "request_attempt": {"type": "integer", "minimum": 1},
-    "execution_attempt": {"type": "integer", "minimum": 1},
-    "retained": {"type": "array", "items": {"$ref": "#/$defs/retainedItem"}},
-    "next_action": {"type": "string", "enum": ["retry_by_user", "contact_support"]}
+    "operation_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "partial"
+      ]
+    },
+    "format_version": {
+      "type": "string",
+      "enum": [
+        "1.0"
+      ]
+    },
+    "subject": {
+      "$ref": "#/$defs/subject"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "per_step_results": {
+      "$ref": "#/$defs/perStepResults"
+    },
+    "completed_steps": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "ayla_delete",
+          "memory_delete",
+          "consent_withdraw"
+        ]
+      }
+    },
+    "failed_steps": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "ayla_delete",
+          "memory_delete",
+          "consent_withdraw"
+        ]
+      }
+    },
+    "retryable": {
+      "type": "boolean"
+    },
+    "request_attempt": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "execution_attempt": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "retained": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/retainedItem"
+      }
+    },
+    "next_action": {
+      "type": "string",
+      "enum": [
+        "retry_by_user",
+        "contact_support"
+      ]
+    }
   }
 }
 ```
-
 ### 5.7 Delete failure schema
 
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ayla_user_id",
+        "bot_user_id"
+      ],
+      "properties": {
+        "ayla_user_id": {
+          "oneOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "bot_user_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "perStepResults": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ayla_delete",
+        "memory_delete",
+        "consent_withdraw"
+      ],
+      "properties": {
+        "ayla_delete": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ok",
+            "detail"
+          ],
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            },
+            "detail": {
+              "type": "string",
+              "enum": [
+                "deleted",
+                "already_deleted",
+                "subject_gone",
+                "not_linked"
+              ]
+            }
+          }
+        },
+        "memory_delete": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ok",
+            "detail"
+          ],
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            },
+            "detail": {
+              "type": "string",
+              "enum": [
+                "deleted",
+                "already_deleted",
+                "not_linked"
+              ]
+            }
+          }
+        },
+        "consent_withdraw": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ok",
+            "detail"
+          ],
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            },
+            "detail": {
+              "type": "string",
+              "enum": [
+                "withdrawn",
+                "already_withdrawn",
+                "not_linked"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "retainedItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "category",
+        "reason",
+        "lawful_basis",
+        "retention_until",
+        "decision_status",
+        "restrictions",
+        "owner",
+        "deletion_trigger"
+      ],
+      "properties": {
+        "category": {
+          "type": "string",
+          "enum": [
+            "audit_trail",
+            "consent_history",
+            "statutory_record",
+            "backup",
+            "tombstone",
+            "other"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "enum": [
+            "regulatory_audit",
+            "withdrawal_evidence",
+            "statutory_retention",
+            "backup_window",
+            "lawful_basis_other"
+          ]
+        },
+        "lawful_basis": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "retention_until": {
+          "oneOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "decision_status": {
+          "type": "string",
+          "enum": [
+            "owner_decision_required",
+            "approved"
+          ]
+        },
+        "restrictions": {
+          "type": "string",
+          "enum": [
+            "no_personal_values",
+            "read_only",
+            "access_role_restriction"
+          ]
+        },
+        "owner": {
+          "type": "string"
+        },
+        "deletion_trigger": {
+          "type": "string",
+          "enum": [
+            "legal_retention_expiry",
+            "backup_expiry",
+            "owner_decision"
+          ]
+        }
+      }
+    },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "message",
+        "retryable"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": [
+            "upstream_timeout",
+            "upstream_unavailable",
+            "upstream_error",
+            "upstream_malformed",
+            "rate_limited",
+            "auth_invalid",
+            "init_data_expired",
+            "subject_mismatch",
+            "confirmation_expired",
+            "replay_detected",
+            "cross_tenant_violation",
+            "schema_mismatch",
+            "contract_violation",
+            "internal_error"
+          ]
+        },
+        "message": {
+          "type": "string"
+        },
+        "retryable": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
   "type": "object",
   "additionalProperties": false,
-  "required": ["operation_id", "status", "format_version", "error"],
+  "required": [
+    "operation_id",
+    "status",
+    "format_version",
+    "error"
+  ],
   "properties": {
-    "operation_id": {"oneOf": [{"type": "string", "format": "uuid"}, {"type": "null"}]},
-    "status": {"type": "string", "enum": ["failed"]},
-    "format_version": {"type": "string", "enum": ["1.0"]},
-    "error": {"$ref": "#/$defs/error"}
+    "operation_id": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "uuid"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "failed"
+      ]
+    },
+    "format_version": {
+      "type": "string",
+      "enum": [
+        "1.0"
+      ]
+    },
+    "error": {
+      "$ref": "#/$defs/error"
+    }
   }
 }
 ```
-
 ### 5.8 Error taxonomy
 
 | Error class | External HTTP | External body `code` | Internal classification | Retryable | When |
@@ -643,20 +2090,41 @@ machine-readable `code`, и запрещено раскрытие внешнем
 ## 6. subject_gone
 
 - **Implemented fact:** W2 endpoint `DELETE /api/v1/internal/users/{ayla_user_id}/personal-data/`
-  сейчас возвращает HTTP 404 с телом `{"code":"NOT_FOUND","message":"User not found."}`
+  currently returns HTTP 404 with body `{"code":"NOT_FOUND","message":"User not found."}`
   (`users/personal_data_api.py:53-58`).
-- **Proposed norm:** после amendment W2 обязан возвращать машинный код
-  `subject_gone` в теле ответа для отсутствующего или soft-deleted пользователя:
+- **Proposed norm:** after amendment W2 must return HTTP 404 with the closed body
+  below when the subject is missing or soft-deleted:
 
 ```json
 {
-  "code": "subject_gone",
-  "subject": { "ayla_user_id": "<uuid>" }
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["code", "subject"],
+  "properties": {
+    "code": {"type": "string", "enum": ["subject_gone"]},
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ayla_user_id", "bot_user_id"],
+      "properties": {
+        "ayla_user_id": {"oneOf": [{"type": "string", "format": "uuid"}, {"type": "null"}]},
+        "bot_user_id": {"type": "string", "format": "uuid"}
+      }
+    }
+  }
 }
 ```
 
-- Голый HTTP 404 не трактуется W3 как успешное удаление без машинного кода и
-  подтверждённой subject correlation.
+- `subject_gone` is a **semantic success code**, not an `error.code`. It means the
+  subject has no personal context to delete.
+- W3 maps `subject_gone` to `per_step_results.ayla_delete.ok=true` with
+  `detail="subject_gone"` and returns a completed delete response with empty
+  `deleted[]`.
+- A bare HTTP 404 is **not** treated as semantic success. It is classified as
+  `upstream_error` / `contract_violation` and remains retryable.
+- W3 validates `subject` correlation before treating the response as gone.
+- `subject_gone` is idempotent: repeated requests return the same code.
 - Implementation delta: AMD020-DEL-005.
 
 ---
@@ -772,6 +2240,27 @@ misconfigured, destructive endpoint недоступен. Запрещён fallb
   must not contain the subject identifier (e.g. `ayla-personal-data-{YYYY-MM-DD}.json`).
   Current code uses a generic filename without a date.
 
+### 8.6 Export authentication policy
+
+Export is privacy-sensitive but **not destructive**. Therefore the required
+authentication assurance is lower than for delete:
+
+| Control | Export | Delete |
+|---|---|---|
+| `MaxInitData` freshness | required | required |
+| Session/device binding | required | required |
+| Cross-user/cross-tenant checks | required | required |
+| Step-up confirmation challenge | **not required** by default | required |
+| Destructive nonce | not applicable | required |
+| Rate limit | required (separate value) | required |
+
+- First export and repeated exports both require fresh `MaxInitData` and a valid
+  session; the operation is authorized for the authenticated subject only.
+- An owner MAY configure step-up for export via feature flag, but this is not
+  the default pilot behavior.
+- Export after a completed delete must return empty personal-context data
+  (`ayla.personal_context: null`, `memory: []`).
+
 ---
 
 ## 9. Audit Retention
@@ -787,6 +2276,22 @@ misconfigured, destructive endpoint недоступен. Запрещён fallb
 **Norm:** `user_id`/`bot_user_id` являются персональными/псевдонимизированными
 данными и не могут считаться безопасной неперсональной metadata. До утверждения
 Legal/Privacy retention и lawful basis readiness gate считается незакрытым.
+
+### 9.1 Legacy audit cleanup
+
+The retention policy applies to **all** audit rows, including legacy rows
+written before activation of AMD-020 v0.6.
+
+| Aspect | Required behavior |
+|---|---|
+| Scope | All audit tables listed above; rows without `retention_until` or classification must be backfilled or marked `owner_decision_required`. |
+| Retention start | For legacy rows use `created_at` if present; rows without `created_at` require manual inventory and owner decision before cleanup. |
+| Statutory hold | Rows under statutory hold are exempt from deletion; hold list is maintained by Legal/Privacy and must be loaded into the cleanup job. |
+| Dry-run mode | Every cleanup job run starts with `dry_run=true`; the report lists rows that would be deleted and held rows preserved. |
+| Execution approval | Transition from dry-run to real deletion requires written approval from Legal/Privacy and a logged approval ticket. |
+| Batch limits | Each deletion batch is bounded (default 1000 rows) and resumes from a persisted cursor. |
+| Idempotency | Re-running the cleanup with the same cursor and parameters is idempotent; already-deleted rows are skipped. |
+| Evidence | W6 scenario 38 validates both dry-run and execution phases. |
 
 ---
 
@@ -824,6 +2329,25 @@ Legal/Privacy retention и lawful basis readiness gate считается нез
 | `document_version` | implemented_fact | present |
 | `identification_method` | implementation_delta | not present |
 
+**Legacy record policy:** Before activation, every existing `ConsentRecord` row
+must be backfilled with the expanded fields. If source data is unavailable, use
+sentinel values:
+
+| Field | Sentinel value for legacy rows |
+|---|---|
+| `purpose` | `"pre_amd020_legacy"` |
+| `data_categories` | `[]` |
+| `operator` | `"unknown"` |
+| `recipients` | `[]` |
+| `term` | `"unknown"` |
+| `lawful_basis` | `null` |
+| `identification_method` | `"unknown"` |
+
+A boolean `legacy_record` flag may be stored to distinguish pre-amendment rows.
+`enforcement_status: Effective` is blocked until the backfill migration is
+verified and the export schema's `required` fields are satisfied for 100% of
+rows. W6 scenario 39 validates the backfill.
+
 ### 10.3 ConsentRecord delete semantics (AMD020-CONSENT-001)
 
 **Status:** `proposed_norm_pending_owner_confirmation`. The withdrawal semantics
@@ -858,7 +2382,7 @@ lawful basis and cleanup of legacy rows require Legal/Privacy/Security decisions
 ## 12. Implementation Readiness Gate
 
 До `enforcement_status: Effective` запрещено заявлять соответствие endpoint
-требованиям AMD-020 v0.5.
+требованиям AMD-020 v0.6.
 
 | # | Gate item | Normative status | Implementation status | Evidence owner | Activation blocker |
 |---|---|---|---|---|---|
@@ -884,6 +2408,9 @@ lawful basis and cleanup of legacy rows require Legal/Privacy/Security decisions
 | 20 | Audit retention approved | owner_decision_required | pending Legal | Legal/Privacy | yes |
 | 21 | W6 acceptance battery passed | proposed_norm | pending W6 | W6 | yes |
 | 22 | Code version recorded | proposed_norm | pending | W3 | yes |
+| 23 | Export filename pattern | proposed_norm | implementation_delta | W3 | no |
+| 24 | Export operation/auth/schema/failure handling | proposed_norm | not implemented | W3 | yes |
+| 25 | ConsentRecord expanded-field backfill verified | implementation_delta | not implemented | W3 | yes |
 
 Effective разрешается только после:
 
@@ -897,48 +2424,62 @@ Effective разрешается только после:
 
 ## 13. W6 Acceptance Battery
 
-| # | Scenario | Expected result | Evidence owner |
-|---|---|---|---|
-| 1 | Concurrent delete | Second request joins the active operation and receives the same `operation_id`; no second destructive execution is created | W6 |
-| 2 | Retry after lost success-response | Repeat with same `idempotency_key` returns the final completed/partial status without a new `execution_attempt` | W6 |
-| 3 | Failure of each individual step | HTTP 502 with `status: partial`, correct `failed_steps`, and all other steps completed | W6 |
-| 4 | Overall deadline between steps | HTTP 504 with `error.code: upstream_timeout`; no partial success returned to client | W6 |
-| 5 | Schema mismatch | HTTP 500 with `error.code: schema_mismatch` | W6 |
-| 6 | Malformed upstream response | HTTP 502 with `error.code: upstream_malformed` | W6 |
-| 7 | Relinking during deletion | Operation is aborted with `error.code: subject_mismatch`; a new operation is required after relink | W6 |
-| 8 | Cross-tenant access | HTTP 403 with `error.code: cross_tenant_violation` | W6 |
-| 9 | Write UserPersonalContext after barrier | New W2 `UserPersonalContext` row is rejected while the delete operation is active | W6 |
-| 10 | Write MemoryEntry after barrier | New green `MemoryEntry` is rejected while the delete operation is active | W6 |
-| 11 | Create ConsentRecord after barrier | New `ConsentRecord` is rejected while the delete operation is active | W6 |
-| 12 | Inference job after barrier | Inference job that would create green `MemoryEntry` is blocked while the delete operation is active | W6 |
-| 13 | Hard purge MemoryEntry | Soft-deleted `MemoryEntry` row is physically removed after `soft_delete_retention` | W6 |
-| 14 | Physical wipe UserPersonalContext | `UserPersonalContext` row is removed from W2 primary store immediately on delete | W6 |
-| 15 | ConsentRecord withdrawal and retention | Active consents receive `withdrawn_at`; rows remain as audit trail | W6 |
-| 16 | Redis cleanup | No Redis keys for included classes are found in read/write path; Redis inventory is documented | W6 |
-| 17 | Derived/cache/index cleanup | In-memory prompt block no longer surfaces deleted facts | W6 |
-| 18 | Retained manifest | Delete response `retained[]` lists every retained category with reason and `decision_status` | W6 |
-| 19 | Audit correlation | All audit rows for the operation share `operation_id` and `correlation_id` | W6 |
-| 20 | PII in URL/logs/metrics/traces | No plaintext `ayla_user_id`, `bot_user_id`, phone, email, name, `MemoryEntry.content`, or export body in inspected sinks | W6 |
-| 21 | Export of another user | HTTP 403 with `error.code: subject_mismatch` | W6 |
-| 22 | Stale initData | HTTP 401 with `error.code: init_data_expired` | W6 |
-| 23 | Expired confirmation challenge | HTTP 403 with `error.code: confirmation_expired` | W6 |
-| 24 | Nonce reuse | HTTP 409 with `error.code: replay_detected` | W6 |
-| 25 | Export after delete | Export returns `ayla.personal_context: null` and `memory: []`; `consents` contains only withdrawn history | W6 |
-| 26 | Repeat delete after completion | HTTP 200 delete success response with `status: completed`, empty `deleted[]`, `retained[]` listing audit/consent items, and `per_step_results` showing `already_deleted` / `already_withdrawn` detail codes | W6 |
-| 27 | Partial recovery | Retry after upstream recovery completes all remaining steps and returns HTTP 200 `status: completed` | W6 |
-| 28 | Backup expiry | After `backup_expiry`, backups no longer contain deleted primary data | W6 |
-| 29a | Operation recovery after process crash — resumable | Operation resumes from last persisted state and completes all remaining steps | W6 |
-| 29b | Operation recovery after process crash — unrecoverable | Operation returns HTTP 502 `status: partial`; watchdog releases barrier after timeout | W6 |
-| 30 | Stuck processing_blocked | Monitoring alert fires; break-glass release requires two authorized operators (W3 on-call + Security) and is audit-logged | W6 |
-| 31 | Scope mismatch with same idempotency key | HTTP 409 with `error.code: replay_detected` | W6 |
-| 32 | Different idempotency keys for same active operation | Both requests join the same `operation_id`; no second destructive execution | W6 |
-| 33 | Export delivery headers | HTTP 200 with `Content-Disposition: attachment; filename="ayla-personal-data-{date}.json"`; no persistent URL | W6 |
-| 34 | No subject ID in access logs | No plaintext `ayla_user_id`, `bot_user_id`, phone, email, or name in access logs, traces, or metrics for the operation; pseudonymization uses HMAC digest if present | W6 |
-| 35 | Export schema versioning — producer | W3 rejects a response that contains unknown top-level fields for `format_version: "1.0"` | W6 |
-| 36 | Partial export failure | HTTP 502 with `error.code: upstream_unavailable`; no partial JSON body is returned | W6 |
-| 37 | Fail-closed step-up unavailable | Delete is rejected with HTTP 500 `error.code: internal_error`; no fallback to MaxInitData-only auth | W6 |
-| 38 | Legacy audit cleanup | Retention cleanup job removes expired audit rows and preserves rows under statutory hold; dry-run mode first | W6 |
-| 39 | Expanded consent history in export | Export `consents[]` includes `purpose`, `data_categories`, `operator`, `recipients`, `term`, `lawful_basis`, and `identification_method` for every record | W6 |
+**Status definitions:**
+
+- `SPECIFIED` — test case documented, preconditions/action/expected result are unambiguous, but implementation and execution are pending.
+- `IMPLEMENTED` — test automation exists, but has not been executed against the current build.
+- `EXECUTED_PASS` — test executed and passed.
+- `EXECUTED_FAIL` — test executed and failed.
+- `BLOCKED` — test cannot be implemented/executed until an external decision (owner/Legal/Privacy/Security) or a code delta is available.
+- `NOT_APPLICABLE` — test does not apply to the current pilot scope; reason recorded.
+
+| # | Test ID | Scenario | Expected result | Evidence owner | Status | Blocker / note |
+|---|---|---|---|---|---|---|
+| 1 | AMD020-W6-001 | Concurrent delete | Second request joins the active operation and receives the same `operation_id`; no second destructive execution is created | W6 | SPECIFIED | — |
+| 2 | AMD020-W6-002 | Retry after lost success-response | Repeat with same `idempotency_key` returns the final completed/partial status without a new `execution_attempt` | W6 | SPECIFIED | — |
+| 3 | AMD020-W6-003 | W2 ayla_delete step failure | HTTP 502 with `status: partial`; `failed_steps` contains `ayla_delete`; `memory_delete` and `consent_withdraw` completed | W6 | SPECIFIED | — |
+| 4 | AMD020-W6-004 | Overall deadline between steps | HTTP 504 with `error.code: upstream_timeout`; no partial success returned to client | W6 | SPECIFIED | — |
+| 5 | AMD020-W6-005 | Schema mismatch | HTTP 500 with `error.code: schema_mismatch` | W6 | SPECIFIED | — |
+| 6 | AMD020-W6-006 | Malformed upstream response | HTTP 502 with `error.code: upstream_malformed` | W6 | SPECIFIED | — |
+| 7 | AMD020-W6-007 | Relinking during deletion | Operation is aborted with `error.code: subject_mismatch`; a new operation is required after relink | W6 | SPECIFIED | — |
+| 8 | AMD020-W6-008 | Cross-tenant access | HTTP 403 with `error.code: cross_tenant_violation` | W6 | SPECIFIED | — |
+| 9 | AMD020-W6-009 | Write UserPersonalContext after barrier | New W2 `UserPersonalContext` row is rejected while the delete operation is active | W6 | SPECIFIED | — |
+| 10 | AMD020-W6-010 | Write MemoryEntry after barrier | New green `MemoryEntry` is rejected while the delete operation is active | W6 | SPECIFIED | — |
+| 11 | AMD020-W6-011 | Create ConsentRecord after barrier | New `ConsentRecord` is rejected while the delete operation is active | W6 | SPECIFIED | — |
+| 12 | AMD020-W6-012 | Inference job after barrier | Inference job that would create green `MemoryEntry` is blocked while the delete operation is active | W6 | SPECIFIED | — |
+| 13 | AMD020-W6-013 | Hard purge MemoryEntry | Soft-deleted `MemoryEntry` row is physically removed after `soft_delete_retention` | W6 | BLOCKED | Legal/Privacy must confirm `soft_delete_retention` and hard-delete deadline |
+| 14 | AMD020-W6-014 | Physical wipe UserPersonalContext | `UserPersonalContext` row is removed from W2 primary store immediately on delete | W6 | BLOCKED | Owner/Legal must confirm physical wipe as canonical semantics |
+| 15 | AMD020-W6-015 | ConsentRecord withdrawal and retention | Active consents receive `withdrawn_at`; rows remain as audit trail | W6 | BLOCKED | Legal/Privacy must confirm retention period, lawful basis, and pseudonymization method |
+| 16 | AMD020-W6-016 | Redis cleanup | No Redis keys for included classes are found in read/write path; Redis inventory is documented | W6 | NOT_APPLICABLE | No Redis usage in included-class read/write path per §2.1 inventory |
+| 17 | AMD020-W6-017 | Derived/cache/index cleanup | In-memory prompt block no longer surfaces deleted facts | W6 | SPECIFIED | — |
+| 18 | AMD020-W6-018 | Retained manifest | Delete response `retained[]` lists every retained category with reason and `decision_status` | W6 | SPECIFIED | — |
+| 19 | AMD020-W6-019 | Audit correlation | All audit rows for the operation share `operation_id` and `correlation_id` | W6 | SPECIFIED | — |
+| 20 | AMD020-W6-020 | PII in URL/logs/metrics/traces | No plaintext `ayla_user_id`, `bot_user_id`, phone, email, name, `MemoryEntry.content`, or export body in inspected sinks | W6 | SPECIFIED | Internal W3→W2 URL decision (AMD020-DEL-009) may affect evidence |
+| 21 | AMD020-W6-021 | Export of another user | HTTP 403 with `error.code: subject_mismatch` | W6 | SPECIFIED | — |
+| 22 | AMD020-W6-022 | Stale initData | HTTP 401 with `error.code: init_data_expired` | W6 | SPECIFIED | — |
+| 23 | AMD020-W6-023 | Expired confirmation challenge | HTTP 403 with `error.code: confirmation_expired` | W6 | SPECIFIED | — |
+| 24 | AMD020-W6-024 | Nonce reuse | HTTP 409 with `error.code: replay_detected` | W6 | SPECIFIED | — |
+| 25 | AMD020-W6-025 | Export after delete | Export returns `ayla.personal_context: null` and `memory: []`; `consents` contains only withdrawn history | W6 | SPECIFIED | — |
+| 26 | AMD020-W6-026 | Repeat delete after completion | HTTP 200 delete success response with `status: completed`, empty `deleted[]`, `retained[]` listing audit/consent items, and `per_step_results` showing `already_deleted` / `already_withdrawn` detail codes | W6 | SPECIFIED | — |
+| 27 | AMD020-W6-027 | Partial recovery | Retry after upstream recovery completes all remaining steps and returns HTTP 200 `status: completed` | W6 | SPECIFIED | — |
+| 28 | AMD020-W6-028 | Backup expiry | After `backup_expiry`, backups no longer contain deleted primary data | W6 | BLOCKED | SRE/Legal must confirm backup retention SLA |
+| 29a | AMD020-W6-029a | Operation recovery after process crash — resumable | Operation resumes from last persisted state and completes all remaining steps | W6 | SPECIFIED | — |
+| 29b | AMD020-W6-029b | Operation recovery after process crash — unrecoverable | Operation transitions to terminal `failed` state; barrier is released only after terminal state and incident record; subsequent idempotent request returns HTTP 502 `status: failed` with `failed_steps` listing incomplete steps | W6 | SPECIFIED | — |
+| 30 | AMD020-W6-030 | Stuck operation — authorized terminal abort | Two authorized operators (W3 on-call + Security) approve abort with reason code and incident ticket; operation moves to terminal `aborted`; barrier released only after terminal state; audit event `privacy.delete_aborted` is written | W6 | SPECIFIED | — |
+| 31 | AMD020-W6-031 | Scope mismatch with same idempotency key | HTTP 409 with `error.code: replay_detected` | W6 | SPECIFIED | — |
+| 32 | AMD020-W6-032 | Different idempotency keys for same active operation | Both requests join the same `operation_id`; no second destructive execution | W6 | SPECIFIED | — |
+| 33 | AMD020-W6-033 | Export delivery headers | HTTP 200 with `Content-Disposition: attachment; filename="ayla-personal-data-YYYY-MM-DD.json"` where `YYYY-MM-DD` is the generation date in UTC; no persistent URL | W6 | SPECIFIED | — |
+| 34 | AMD020-W6-034 | No subject ID in access logs | No plaintext `ayla_user_id`, `bot_user_id`, phone, email, or name in access logs, traces, or metrics for the operation; pseudonymization uses HMAC digest if present | W6 | SPECIFIED | Internal W3→W2 URL decision (AMD020-DEL-009) may affect evidence |
+| 35 | AMD020-W6-035 | Export schema versioning — producer | W3 rejects a response that contains unknown top-level fields for `format_version: "1.0"` | W6 | SPECIFIED | — |
+| 36 | AMD020-W6-036 | Partial export failure | HTTP 502 with `error.code: upstream_unavailable`; no partial JSON body is returned | W6 | SPECIFIED | — |
+| 37 | AMD020-W6-037 | Fail-closed step-up unavailable | Delete is rejected with HTTP 500 `error.code: internal_error`; no fallback to MaxInitData-only auth | W6 | BLOCKED | Security/owner must confirm fail-closed policy and alert severity before execution |
+| 38a | AMD020-W6-038a | Legacy audit cleanup — dry-run | Retention cleanup job in `dry_run=true` mode reports expired rows that would be deleted and held rows preserved; no rows are deleted | W6 | BLOCKED | Legal/Privacy must approve dry-run report format and retention schedule |
+| 38b | AMD020-W6-038b | Legacy audit cleanup — execution | After Legal/Privacy approval, retention cleanup job deletes expired rows and preserves rows under statutory hold; idempotent re-run deletes no additional rows | W6 | BLOCKED | Legal/Privacy written approval required before execution |
+| 39 | AMD020-W6-039 | Expanded consent history in export | After backfill, export `consents[]` includes `purpose`, `data_categories`, `operator`, `recipients`, `term`, `lawful_basis`, and `identification_method` for every record; legacy rows use sentinel values defined in §10.2 | W6 | BLOCKED | Legal must approve consent text/lawful basis; W3 must verify backfill before execution |
+| 40 | AMD020-W6-040 | Green MemoryEntry delete step failure | HTTP 502 with `status: partial`; `failed_steps` contains `memory_delete`; `ayla_delete` and `consent_withdraw` completed | W6 | SPECIFIED | — |
+| 41 | AMD020-W6-041 | ConsentRecord withdraw step failure | HTTP 502 with `status: partial`; `failed_steps` contains `consent_withdraw`; `ayla_delete` and `memory_delete` completed | W6 | SPECIFIED | — |
+
+**Battery summary:** 43 scenario rows; 0 implemented; 0 executed; 7 blocked; 1 not applicable; 35 specified. No scenario is claimed as passing.
 
 ---
 
@@ -959,11 +2500,7 @@ Effective разрешается только после:
 | Step-up/auth values | P0.6 | max_init_data_age, challenge TTL, rate limits | `owner_decision_required` | W4/W3/Security | confirm values; fail-closed policy | no | yes |
 | HMAC/pseudonymization method | Owner feedback v0.3 | audit subject references | `implementation_delta` | W3/Security | choose HMAC/key management | no | yes |
 | Internal W3→W2 URL with ayla_user_id | Owner feedback v0.3 | PII in URL | `implementation_delta` | W2/W3 | AMD020-DEL-009: opaque token or sanitization | no | yes |
-| Export delivery filename | Owner feedback v0.3 | filename should not contain subject ID | `implementation_delta` | W3 | update filename pattern | no | yes |
-| Export implementation backlog | Owner feedback v0.3/v0.4 review | Export orchestration, serializers, failure/retry, post-forget semantics not fully decomposed | `implementation_delta` | W3 | Add EXP-002…EXP-005 deltas to Implementation Amendment | no | yes |
-| Response schema closure | v0.4 review | `personal_context`/`content` are opaque; failure enum was incomplete | `implementation_delta` | W3/Knowledge | Adopt $defs-based schemas; decide opaque payload contract | no | yes |
-| Atomic operation creation | v0.4 review | `accepted` state contradicted atomic barrier creation | `proposed_norm` | W3 | Implement single-transaction operation+lock+barrier | no | yes |
-| Handoff scope conflicts | 16 handoff files | OP6 / account-deletion promises exceed AMD-020 pilot boundary | `owner_decision_required` | Owner / Product / Legal / OP6 track | Reconcile customer-facing «delete all my data» copy with narrow AMD-020 scope | yes | no |
+| Handoff scope conflicts | 16 handoff files (§1.4) | OP6 / account-deletion promises exceed AMD-020 pilot boundary | `owner_decision_required` | Owner / Product / Legal / OP6 track | Reconcile customer-facing «delete all my data» copy with narrow AMD-020 scope | yes | no |
 | Formal Article 14 response | P0.2 | excluded from AMD-020; separate post-pilot track | `external_obligation` | Product/Legal | scope decision in separate track | no | no |
 | Full account deletion | P0.1 | excluded from AMD-020; separate post-pilot track | `external_obligation` | Product Architecture | separate track | no | no |
 
@@ -1018,7 +2555,7 @@ Effective разрешается только после:
 | Operation vs per-class state | not defined | 6 states mixed | 6 states mixed | separate operation state + per-class state | `accepted` redefined as internal pre-commit; first observable state is `blocked` | v0.4 review |
 | Concurrent delete | not defined | queue | queue | joins active operation | same | Owner feedback v0.3 |
 | scope_hash | not defined | not defined | BotUser.id + idempotency_key | subject_ref + tenant_ref + included_classes + contract_version + link_generation | same | Owner feedback v0.3 |
-| Response schemas | partial | examples with `...` | examples with `...` | JSON Schema 2020-12 with additionalProperties:false | $defs-based schemas; opaque_payload noted; full error enum; export failure schema added | v0.4 review |
+| Response schemas | partial | examples with `...` | examples with `...` | JSON Schema 2020-12 with additionalProperties:false | Self-contained root schemas; local `$ref` resolvable; `profile` removed; `subject_gone` formalized | v0.5/v0.6 review |
 | subject_gone | 404 interpreted | contradiction | implemented/proposed split | explicit fact + proposed norm | same; code fence fixed | v0.4 review |
 | Retention manifest | absent | `retained[]` | fake date example | `null` + `owner_decision_required` | same | Owner feedback v0.2/v0.3 |
 | Auth/step-up | MaxInitData only | full controls | same | separate idempotency/nonce/correlation | fail-closed rule added; feature flag cannot weaken auth | v0.4 review |
@@ -1026,8 +2563,8 @@ Effective разрешается только после:
 | Audit retention | TBD | structured table | contains_personal_data: no | contains_personal_data: yes + HMAC note | same | Owner feedback v0.3 |
 | Error taxonomy | basic | machine codes | internal credential as auth_invalid | internal credential as security incident + safe external code | `init_data_expired` added; upstream codes in failure schema | v0.4 review |
 | Idempotency | conceptual | request/execution attempt | request/execution attempt | scope_hash + join behavior | same | Owner feedback v0.3 |
-| Readiness gate | minimal | 21 items | 21 items (claimed 13) | 22 items, correctly counted | statuses corrected where v0.4 overclaimed | v0.4 review |
-| W6 battery | minimal | 23 scenarios | same | 39 scenarios | ambiguous scenarios split/fixed; expected results made unambiguous | v0.4 review |
+| Readiness gate | minimal | 21 items | 21 items (claimed 13) | 22 items, correctly counted | 25 items; synchronized between AMD-020 and Amendment; export and backfill gates added | v0.5/v0.6 review |
+| W6 battery | minimal | 23 scenarios | same | 39 scenarios | 43 scenario rows; ambiguous cases split; one expected result per scenario; Test ID + Status columns added | v0.5/v0.6 review |
 | Quality Bar table | absent | absent | absent | included in document | re-graded with honest PASS/FAIL/BLOCKED; no PASS as Draft | v0.4 review |
 
 ---
@@ -1036,7 +2573,7 @@ Effective разрешается только после:
 
 | bar item | PASS/FAIL/BLOCKED/PARTIAL | evidence | document section | unresolved action |
 |---|---|---|---|---|
-| A1 Честность scope | PASS | Title matches scope; included/excluded tables; split implementation status; conflicts table | §0, §1, §1.3 | — |
+| A1 Честность scope | PASS | Title matches scope; included/excluded/handoff analysis tables; `profile` removed from export; split implementation status; conflicts table | §0, §1, §1.3, §1.4 | — |
 | A2 «полный/complete» | PASS | Title changed; 4 explicit disclaimers | §0 | — |
 | A3 «конфликтов не обнаружено» | PASS | Removed; replaced with issues/conflicts tables | §14 | — |
 | A4 Норма = факт или design candidate | PASS | Implemented/proposed/owner_decision labels; no overclaim | all | — |
@@ -1054,21 +2591,42 @@ Effective разрешается только после:
 | D4 Retention manifest | PASS | `retained[]` with `decision_status` | §7 | — |
 | E1 Closed schemas | **PASS** | Schemas use `$defs`; recursive `$ref` fixed; failure enum matches taxonomy; `personal_context` and `MemoryEntry.content` are intentionally declared `opaque_payload`; producer/consumer contract is explicit | §5.1, §5.3 | — |
 | E2 operation_id/correlation | PASS | Defined; scope_hash added | §4 | — |
-| F1 Acceptance battery | PARTIAL | 38 scenarios, ambiguous cases split; some scenarios still depend on unresolved decisions | §13 | Finalize decisions blocking C1/D3 before W6 run |
+| F1 Acceptance battery | PARTIAL | 43 scenario rows; Test ID + Status columns (SPECIFIED/BLOCKED/NOT_APPLICABLE) added; no false PASS; previously ambiguous cases split; each scenario has one expected result; some scenarios still depend on unresolved decisions | §13 | Finalize decisions blocking C1/D3 before W6 run |
 | G1 Нет открытых decisions при сдаче | **FAIL** | Multiple owner/legal/security decisions remain open | §14 | Resolve blocker decisions before final approval |
 | G2 Validation | PASS | Repository validator: 0 errors, warnings ≤ baseline | — | Re-run after edits |
 | G3 Отчёт по форме | PASS | This section + final agent report | §17 | — |
-| H Cross-document consistency | **PASS** | Amendment v0.5 synchronized: generic 404 fallback removed, step-up fail-closed, export backlog added, atomic operation creation aligned | AMD-020 §6, §8.2; Amendment §3, DEL-005, DEL-007, EXP-002…EXP-005 | — |
-| I Implementation evidence | PARTIAL | Code evidence cited for key facts; derived inventory, Redis, backup evidence still pending | §2, §8.5 | Collect W6 evidence and inventory after implementation |
-| J Writing precision | **PASS** | Code-fence issue fixed; ambiguous W6 results corrected; no placeholders or vague expected results remain | §5, §6, §13 | — |
+| H Cross-document consistency | **PASS** | Amendment v0.6 synchronized: 25 readiness-gate items match; generic 404 fallback removed; step-up fail-closed; export backlog added; atomic operation creation and `aborted` state aligned; open questions cleaned | AMD-020 §6, §8.2, §12; Amendment §2, §3, DEL-005, DEL-007, EXP-002…EXP-005 | — |
+| I Implementation evidence | PARTIAL | Pinned commit SHAs and reproducible grep commands added for Redis/cache/derived inventory; code evidence cited for key facts; backup evidence and full W6 evidence still pending | §2.1, §2.2, §8.5 | Collect W6 evidence and backup inventory after implementation |
+| J Writing precision | **PARTIAL** | Code-fence issue fixed; most ambiguous W6 results corrected; `subject_gone` formalized; remaining precision depends on owner decisions and final implementation evidence | §5, §6, §13 | Finalize owner decisions and re-verify after implementation |
 
-**Итог Quality Bar:** FAIL/BLOCKED по пунктам B3, C1, D1, D3, G1.
-Документ остаётся Draft/Proposed; готов к structured owner decision review, но
-**не** к final owner approval, canonicalization или operational activation.
+**Итог Quality Bar:** FAIL/BLOCKED по пунктам B3, C1, D1, D3, G1; PARTIAL по B4, C3, F1, I, J.
+Документ остаётся Draft/Proposed/Blocked. После v0.6 пакет готов к
+**техническому повторному ревью**, но **не** к structured owner decision review,
+final owner approval, canonicalization или operational activation.
 
 ---
 
 ## 18. Change Log
+
+### v0.6 — 2026-07-23
+
+- Добавлена §1.4 — полная handoff scope analysis по всем 16 файлам.
+- JSON Schema исправлена: каждая root schema самодостаточна, `$ref` разрешаются
+  локально; `profile` удалён из export (вне pilot scope).
+- `subject_gone` формализован как отдельная закрытая schema.
+- Operation state machine дополнен terminal state `aborted`; добавлено explicit
+  mapping `partially_completed` → external `status: partial`.
+- Barrier release разрешён только после terminal state; break-glass procedure
+  определена.
+- Relink lifecycle и судьба старой persona описаны в §4.4.
+- ConsentRecord legacy backfill policy и sentinel values определены в §10.2.
+- Readiness gates синхронизированы между AMD-020 и Amendment (25 items).
+- Open Questions очищены от уже выполненных decomposition tasks.
+- Legacy audit cleanup specification расширена (§9.1).
+- W6 battery дополнена: однозначные expected results, сценарии 38a/38b, 40, 41; добавлены Test ID и Status (SPECIFIED/BLOCKED/NOT_APPLICABLE) без ложных PASS.
+- Export authentication policy выделена отдельно (§8.6).
+- Physical/derived inventory дополнена воспроизводимыми командами и результатами.
+- Quality Bar пересчитана; document status остаётся Draft/Proposed/Blocked.
 
 ### v0.5 — 2026-07-23
 
@@ -1124,4 +2682,4 @@ Effective разрешается только после:
 
 ---
 
-**Конец документа — AMD-020 v0.5 (Draft, pending owner approval)**
+**Конец документа — AMD-020 v0.6 (Draft, pending owner approval)**

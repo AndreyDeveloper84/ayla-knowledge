@@ -7,7 +7,7 @@ aliases:
 type: specification
 status: draft
 decision_status: proposed
-version: "0.5"
+version: "0.6"
 canonical_status: draft
 owner: Chief Product Architect
 priority: P0
@@ -60,12 +60,12 @@ review_cycle: event-driven
 |---|---|
 | Document status | Draft |
 | Decision status | Proposed |
-| Version | 0.5 (2026-07-23) |
+| Version | 0.6 (2026-07-23) |
 | Canonical status | draft |
 | Review status | pending_owner_approval |
 
 Этот документ — извлечённый перечень code deltas для W2/W3, необходимых для
-реализации AMD-020 v0.5. Он не включает Verification Evidence (создаётся W6
+реализации AMD-020 v0.6. Он не включает Verification Evidence (создаётся W6
 после реализации) и не меняет код самостоятельно.
 
 ---
@@ -87,7 +87,7 @@ review_cycle: event-driven
 | Observability | metric `privacy.delete_barrier_active`; audit event `privacy.delete_barrier_set` |
 | Rollback consideration | Revert barrier release on failure; idempotent retry must re-check barrier. |
 | SP estimate | 5–8 |
-| W6 evidence | Scenarios 1, 9, 10, 11, 12, 29, 30 |
+| W6 evidence | Scenarios 1, 9, 10, 11, 12, 29a, 29b, 30 |
 
 ### 1.2 Hard-delete purge job and lifecycle
 
@@ -232,11 +232,11 @@ review_cycle: event-driven
 | `norm_id` | AMD020-EXP-001 |
 | Source section | AMD-020 §10.2 |
 | Current implemented fact | `ConsentRecord` stores `consent_type`, `granted`, `document_version`, `source`, `captured_at`, `withdrawn_at`. |
-| Required delta | Add fields: `purpose`, `data_categories`, `operator`, `recipients`, `term`, `lawful_basis`, `identification_method`. Backfill existing records or mark legacy rows. |
+| Required delta | Add fields: `purpose`, `data_categories`, `operator`, `recipients`, `term`, `lawful_basis`, `identification_method`. Backfill every existing record before activation; if source data is unavailable, populate the sentinel values defined in AMD-020 §10.2. Store an optional `legacy_record` boolean. |
 | Repository/module | W3: `apps/consent/models.py`, migrations, `apps/identity/services/privacy.py` export serializer |
 | W2/W3 window | W3 |
 | Dependency | Legal consent-text approval |
-| Migration/backfill | Migration adding nullable columns; backfill policy for legacy consent records. |
+| Migration/backfill | Migration adding non-nullable columns with default sentinel values; verification query must return zero rows with missing expanded fields before activation. |
 | Observability | log backfill count |
 | Rollback consideration | Keep legacy fields; additive change. |
 | SP estimate | 5–8 |
@@ -334,15 +334,15 @@ review_cycle: event-driven
 | `norm_id` | AMD020-AUD-001 |
 | Source section | AMD-020 §9 |
 | Current implemented fact | Audit records written via `write_audit`; retention not enforced by code. |
-| Required delta | Enforce retention schedule per Legal ruling; treat identifiers as personal data; add scheduled cleanup job with exemption list for statutory holds. |
+| Required delta | Enforce retention schedule per Legal ruling; treat identifiers as personal data; add scheduled cleanup job with exemption list for statutory holds. Cleanup applies to legacy rows; rows without `created_at` or classification require manual inventory and owner decision. |
 | Repository/module | W3: `apps/audit/services.py`, new `apps/audit/tasks/retention_cleanup.py`; W2: `users/personal_context_events.py` |
 | W2/W3 window | W2 + W3 |
 | Dependency | Legal retention decision |
-| Migration/backfill | None initially; cleanup runs forward. |
+| Migration/backfill | Backfill `retention_until` and `contains_personal_data` for legacy rows; handle rows without `created_at` via manual inventory. |
 | Observability | metric `audit.retention_cleanup.rows_deleted` |
 | Rollback consideration | Start with dry-run; retention is legally sensitive. |
 | SP estimate | 3–5 |
-| W6 evidence | Scenario 38 |
+| W6 evidence | Scenarios 38a, 38b |
 
 ### 1.17 Derived representation purge
 
@@ -391,6 +391,7 @@ review_cycle: event-driven
 | 22 | Code version recorded | release process | — | pending | yes | Release Manager |
 | 23 | Export filename pattern | AMD020-EXP-004 | — | implementation_delta | no | W6 |
 | 24 | Export operation/auth/schema/failure handling | AMD020-EXP-002, AMD020-EXP-003, AMD020-EXP-005 | — | not implemented | yes | W6 |
+| 25 | ConsentRecord expanded-field backfill verified | AMD020-EXP-001 | — | not implemented | yes | W6 |
 
 ---
 
@@ -435,15 +436,22 @@ review_cycle: event-driven
 | 9 | Consent history lawful-basis text | yes | Legal |
 | 10 | HMAC/pseudonymization method for audit subject references | yes | W3/Security |
 | 11 | Internal W3→W2 URL: opaque token vs sanitization | yes | W2/W3 |
-| 12 | Export delivery filename pattern | no | W3 |
-| 13 | Atomic operation creation (single transaction for operation record + scope lock + barrier) | yes | W3 |
-| 14 | Response schema closure: accept `personal_context` and `MemoryEntry.content` as `opaque_payload` or define sub-schema | no | W3/Knowledge |
-| 15 | Export implementation backlog fully decomposed (EXP-002…EXP-005) | no | W3 |
-| 16 | Handoff scope conflicts with OP6/account-deletion promises | no | Owner/Product/Legal |
+| 12 | Handoff scope conflicts with OP6/account-deletion promises | no | Owner/Product/Legal |
 
 ---
 
 ## 5. Change Log
+
+### v0.6 — 2026-07-23
+
+- Synchronized readiness gate with AMD-020 v0.6: 25 items, same statuses.
+- Updated AMD020-EXP-001: mandatory backfill with sentinel values before
+  activation; non-nullable expanded consent fields after backfill.
+- Updated AMD020-AUD-001: legacy audit rows are in scope for cleanup/backfill.
+- Updated AMD020-DEL-001: `accepted` is internal pre-commit; `aborted` terminal
+  state; barrier release only after terminal state.
+- Removed completed decomposition items from §4 Open Implementation Questions.
+- Added v0.6 Change Log entry and version bump.
 
 ### v0.5 — 2026-07-23
 
@@ -480,4 +488,4 @@ review_cycle: event-driven
 
 ---
 
-**Конец документа — AMD-020 Implementation Amendment v0.5 (Draft, pending owner approval)**
+**Конец документа — AMD-020 Implementation Amendment v0.6 (Draft, pending owner approval)**
