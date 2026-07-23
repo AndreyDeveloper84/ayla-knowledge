@@ -13,7 +13,7 @@ owner: Product Architecture
 knowledge_area:
   - foundation
 domain:
-  - governance
+  - cross-domain
 system_owner:
   - ayla-knowledge
 source_repository: ayla-knowledge
