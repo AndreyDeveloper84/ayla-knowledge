@@ -4,7 +4,7 @@ title: Ayla
 type: moc
 status: review
 activation_status: pending-infrastructure
-version: "1.1"
+version: "1.2"
 owner: Product Architecture
 priority: P0
 knowledge_area:
@@ -17,7 +17,7 @@ system_owner:
   - ayla-knowledge
 source_repository: ayla-knowledge
 created: 2026-07-18
-updated: 2026-07-18
+updated: 2026-07-24
 source_kind: canonical
 classification: internal
 data_sensitivity: none
@@ -79,10 +79,12 @@ migration_source:
 | [[Ayla Constitution]] | 2.2 | approved | фундаментальные права, принципы и ограничения |
 | [[Ayla Knowledge Architecture Specification]] | 1.3 | review / pending infrastructure | управление knowledge repository |
 | [[Ayla Decision Log]] | 0.2 | review / pending infrastructure | межрепозиторные решения Founder |
-| [[Ayla]] | 1.1 | review / pending infrastructure | навигация и migration state |
+| [[Ayla]] | 1.2 | review / pending infrastructure | навигация и migration state |
 
 Таблица отражает только уже перенесённые и проверенные документы. Она не
 считается release bundle.
+
+Документы со статусом `draft` не являются утверждёнными canonical nodes и требуют review перед approval.
 
 ## Decision Hierarchy
 
@@ -130,6 +132,16 @@ migration_source:
 | `.knowledge/` | schema и sync manifest |
 
 Папка не определяет ownership. Источник и ответственность задаются metadata.
+
+## Data Governance Nodes
+
+Следующие документы определяют границы владения данными и памятью:
+
+| Document | Type | Status | Purpose |
+|---|---|---|---|
+| [[Data Inventory Matrix]] | data-inventory-matrix | draft | фиксирует классы данных, владельцев, источники истины и правила обработки |
+
+Эти документы не наделяют W2 правами владения semantic memory и не разрешают обход consent/purpose gates.
 
 ## System Map
 
@@ -217,7 +229,7 @@ P0 Foundation, Constitution, safety и privacy требуют профильно
 |---|---|
 | Separate `ayla-knowledge` repository | active |
 | Stable filenames and `node_id` | active |
-| Schema | active, v1.6 |
+| Schema | active, v1.11 |
 | Local validator | active |
 | Validator tests | active |
 | GitHub Actions workflow | configured; remote status requires verification |
@@ -258,6 +270,15 @@ Root MOC готов к approval, когда:
 - ссылки разрешаются без migration warnings.
 
 ## Change Log
+
+### v1.2 — 2026-07-24
+
+- версия повышена до 1.2, дата обновления — 2026-07-24;
+- Data Inventory Matrix добавлен в секцию Data Governance Nodes со статусом draft и не включён в Current Canonical Set до approval;
+- добавлена секция Data Governance Nodes для навигации по документам ownership и policy;
+- явно указано, что документы со статусом draft не являются утверждёнными canonical nodes;
+- добавлено ограничение: документы не наделяют W2 правами владения semantic memory и не разрешают обход consent/purpose gates;
+- schema status обновлён до v1.11.
 
 ### v1.1 — 2026-07-18
 
