@@ -1,17 +1,18 @@
 ---
-node_id: data-inventory-matrix
+node_id: ayla.governance.data-inventory-matrix
 title: Data Inventory Matrix
-type: canonical
-document_type: canonical
+type: data-inventory-matrix
 status: draft
-version: 1.0
+version: "1.0"
+owner: Safety and Governance Domain
+knowledge_area:
+  - safety-governance
+system_owner:
+  - ayla-knowledge
+source_repository: ayla-knowledge
 created: 2026-07-24
 updated: 2026-07-24
-last_updated: 2026-07-24
-owner: Safety and Governance Domain
-system_owner: Safety and Governance Domain
-knowledge_area: Safety and Governance
-source_kind: documented
+source_kind: canonical
 classification: internal
 data_sensitivity: none
 data_categories:
@@ -25,9 +26,6 @@ tags: [data-governance, memory-ownership, data-inventory, privacy]
 depends_on:
   - "[[Ayla Constitution]]"
   - "[[Ayla Glossary]]"
-related:
-  - "[[ADR-0012 Dynamic User Model]]"
-  - "[[AMD-020 Pilot Scope Registry]]"
 ---
 
 # Data Inventory Matrix
