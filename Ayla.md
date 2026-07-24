@@ -80,7 +80,6 @@ migration_source:
 | [[Ayla Knowledge Architecture Specification]] | 1.3 | review / pending infrastructure | управление knowledge repository |
 | [[Ayla Decision Log]] | 0.2 | review / pending infrastructure | межрепозиторные решения Founder |
 | [[Ayla]] | 1.2 | review / pending infrastructure | навигация и migration state |
-| [[Data Inventory Matrix]] | 1.0 | draft | data ownership, memory boundaries, privacy governance |
 
 Таблица отражает только уже перенесённые и проверенные документы. Она не
 считается release bundle.
