@@ -4,7 +4,7 @@ title: Ayla
 type: moc
 status: review
 activation_status: pending-infrastructure
-version: "1.1"
+version: "1.2"
 owner: Product Architecture
 priority: P0
 knowledge_area:
@@ -17,7 +17,7 @@ system_owner:
   - ayla-knowledge
 source_repository: ayla-knowledge
 created: 2026-07-18
-updated: 2026-07-18
+updated: 2026-07-24
 source_kind: canonical
 classification: internal
 data_sensitivity: none
@@ -79,10 +79,11 @@ migration_source:
 | [[Ayla Constitution]] | 2.2 | approved | фундаментальные права, принципы и ограничения |
 | [[Ayla Knowledge Architecture Specification]] | 1.3 | review / pending infrastructure | управление knowledge repository |
 | [[Ayla Decision Log]] | 0.2 | review / pending infrastructure | межрепозиторные решения Founder |
-| [[Ayla]] | 1.1 | review / pending infrastructure | навигация и migration state |
+| [[Ayla]] | 1.2 | review / pending infrastructure | навигация и migration state |
+| [[Data Inventory Matrix]] | 0.1 | draft | классы данных, ownership и governance boundaries |
 
 Таблица отражает только уже перенесённые и проверенные документы. Она не
-считается release bundle.
+считается release bundle. Документы со статусом `draft` не являются утверждёнными canonical nodes.
 
 ## Decision Hierarchy
 
@@ -156,6 +157,17 @@ Implementation-local документ остаётся каноническим 
 | 5 | Area MOC | завершить навигацию по заполненным областям | validated navigation |
 
 Название в очереди не создаёт Knowledge Node и не означает approval.
+
+## Data Governance Nodes
+
+Следующие документы фиксируют границы владения данными и policy:
+
+| Document | Version | Status | Purpose |
+|---|---:|---|---|
+| [[Data Inventory Matrix]] | 0.1 | draft | единый реестр классов данных, owners, consumers и retention rules |
+| [[Ayla Memory and Personalization Policy]] | TBD | planned | implementation policy для semantic memory (custodian: W3) |
+
+Эти документы не наделяют W2 правами владения semantic memory и не разрешают обход consent/purpose gates.
 
 ## Agent Workflow
 
@@ -258,6 +270,15 @@ Root MOC готов к approval, когда:
 - ссылки разрешаются без migration warnings.
 
 ## Change Log
+
+### v1.2 — 2026-07-24
+
+- версия повышена до 1.2;
+- дата обновления изменена на 2026-07-24;
+- [[Data Inventory Matrix]] добавлен в Current Canonical Set со статусом `draft`;
+- добавлена секция Data Governance Nodes для навигации по ownership и policy documents;
+- явно указано, что документы со статусом `draft` не являются утверждёнными canonical nodes;
+- добавлено ограничение: документы не наделяют W2 правами владения semantic memory и не разрешают обход consent/purpose gates.
 
 ### v1.1 — 2026-07-18
 
