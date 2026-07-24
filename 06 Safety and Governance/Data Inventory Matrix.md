@@ -44,7 +44,7 @@ depends_on:
 | Semantic Memory (MemoryEntry) | User | W3 Memory & Identity Domain | W3 Memory Service | W3 Memory Service (after gate) | Approved consumers via purpose-limited API | W3 only (via proposal/consent/purpose gate) | Requires explicit consent + purpose approval | W3 privacy flow on user request | Not allowed; memory is persistent, not projected |
 | Raw Wellness History | User | Wellness Domain | Wellness Service | Wellness Service | W3 Memory (for derivation), Dashboards (read-only) | Wellness Service only | Wellness tracking purpose | Wellness Domain per retention policy | Allowed for dashboards, summaries, API views; marked as derived |
 | Wellness-Derived Memory | User | W3 Memory & Identity Domain | W3 Memory Service | W3 Memory Service (after memory gate) | Approved consumers via purpose-limited API | W3 only (via memory gate) | Requires consent + memory proposal approval | W3 privacy flow on user request | Not allowed; becomes semantic memory after gate |
-| Purpose-Limited Projections | User | Varies by source domain | Consumer-specific cache | Source domain (live) | Specific consumer only | No write authority; read-through only | Inherited from source + consumer purpose | Session lifetime or consumer-defined (must not exceed source retention) | Must be marked as temporary; cannot be persisted as memory |
+| Purpose-Limited Projections | User | N/A — inherits normative ownership from source data class | Consumer-specific cache | Source domain (live) | Specific consumer only | No write authority; read-through only | Inherited from source + consumer purpose | Session lifetime or consumer-defined (must not exceed source retention) | Must be marked as temporary; cannot be persisted as memory |
 | Notification Preferences | User | Notification Preferences Domain | Notification Service | Notification Service | Communication systems (read-only) | Notification Service only | Communication consent | Notification Domain on preference change | Allowed for delivery queue caching |
 | Marketing Opt-Out | User | Consent Domain | Consent Service | Consent Service | Marketing systems (read-only for gating) | Consent Service only | Marketing consent (or lack thereof) | Consent Domain per legal requirements | Not allowed; must check live or via authoritative cache |
 | Customer Service Preferences | User | User Context Domain | W2 Preferences Service | W2 Preferences Service | Substitute (booking-specific projection only) | W2 only | Booking purpose | W2 per booking lifecycle | Allowed only as booking-specific purpose-limited projection; never as MemoryEntry copy |
@@ -84,7 +84,7 @@ depends_on:
 
 2. **Raw wellness history ≠ memory.** Сырые измерения и история остаются в Wellness Domain. Персонализированные выводы становятся памятью только после прохождения memory gate в W3.
 
-3. **Consent — отдельный источник истины.** Согласия не дублируются в других доменах; все системы проверяют consent live через Consent Service.
+3. **Consent — отдельный источник истины.** Согласия не дублируются в других доменах; все решения используют authoritative consent state непосредственно из Consent Service либо из purpose-bound authoritative projection/cache с установленными freshness, TTL и invalidation guarantees. Независимый source of truth запрещён.
 
 4. **Projections не являются памятью.** Временные проекции (dashboards, summaries, API views, booking-specific views) не становятся MemoryEntry без прохождения proposal/consent/purpose gate.
 

@@ -274,7 +274,7 @@ Root MOC готов к approval, когда:
 ### v1.2 — 2026-07-24
 
 - версия повышена до 1.2, дата обновления — 2026-07-24;
-- Data Inventory Matrix добавлен в Current Canonical Set со статусом draft;
+- Data Inventory Matrix добавлен в секцию Data Governance Nodes со статусом draft и не включён в Current Canonical Set до approval;
 - добавлена секция Data Governance Nodes для навигации по документам ownership и policy;
 - явно указано, что документы со статусом draft не являются утверждёнными canonical nodes;
 - добавлено ограничение: документы не наделяют W2 правами владения semantic memory и не разрешают обход consent/purpose gates;
