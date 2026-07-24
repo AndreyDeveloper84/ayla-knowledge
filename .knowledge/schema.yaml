@@ -115,6 +115,8 @@ enums:
     - ayla-mobile
     - ayla-mini-app
     - ayla-knowledge
+    - ayla-consent
+    - ayla-wellness
     - shared
     - external
     - to-be-confirmed
@@ -148,6 +150,7 @@ enums:
     - analytics
     - marketing
     - loyalty
+    - memory
   concerns:
     - knowledge-management
     - governance
@@ -160,6 +163,7 @@ enums:
     - explainability
     - localization
     - accessibility
+    - data-ownership
   classification:
     - public
     - internal
@@ -180,6 +184,10 @@ enums:
     - credentials
     - raw-user-content
     - production-data
+    - user-profile
+    - consent
+    - wellness
+    - semantic-memory
   security_sensitivity:
     - none
     - low
@@ -195,6 +203,7 @@ enums:
     - sanitized
     - metadata-only
     - prohibited
+    - restricted
   review_cycle:
     - monthly
     - quarterly
@@ -415,6 +424,16 @@ document_type_rules:
     normative: false
   source-placeholder:
     normative: false
+  data-inventory-matrix:
+    normative: true
+    require_sections:
+      - Назначение
+      - Модель владения
+      - Матрица классов данных
+      - Детализация по классам
+      - Связь с другими документами
+      - Проверка соответствия
+      - Change Log
 
 relationships:
   depends_on:
