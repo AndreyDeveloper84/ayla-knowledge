@@ -1,16 +1,33 @@
 ---
+node_id: data-inventory-matrix
+title: Data Inventory Matrix
+type: canonical
 document_type: canonical
 status: draft
 version: 1.0
 created: 2026-07-24
+updated: 2026-07-24
 last_updated: 2026-07-24
 owner: Safety and Governance Domain
+system_owner: Safety and Governance Domain
+knowledge_area: Safety and Governance
+source_kind: documented
+classification: internal
+data_sensitivity: none
+data_categories:
+  - none
+security_sensitivity: medium
+ai_indexing: metadata-only
+export_policy: sanitized
+review_cycle: quarterly
 reviewers: []
 tags: [data-governance, memory-ownership, data-inventory, privacy]
-related_documents:
-  - ADR-0012 Dynamic User Model
-  - AMD-020 Pilot Scope Registry
-  - Constitution
+depends_on:
+  - "[[Ayla Constitution]]"
+  - "[[Ayla Glossary]]"
+related:
+  - "[[ADR-0012 Dynamic User Model]]"
+  - "[[AMD-020 Pilot Scope Registry]]"
 ---
 
 # Data Inventory Matrix
@@ -23,16 +40,16 @@ related_documents:
 
 | Class of Data | Data Subject | Normative Domain / System Owner | Physical Custodian | Source of Truth | Permitted Consumers | Write Authority | Consent / Purpose | Retention & Deletion Orchestrator | Temporary Projections Rules |
 |---------------|--------------|--------------------------------|--------------------|-----------------|---------------------|-----------------|-------------------|-----------------------------------|----------------------------|
-| Account / Profile | User | W2 User Context Domain (`ayla-user-context`) | W2 Profile Service | W2 Profile Service | W3 Memory, Wellness, Consent, Notification | W2 only | Account creation purpose | W2 on user request or account closure | Allowed for UI rendering; no persistent storage outside W2 |
-| Operational Preferences | User | W2 User Context Domain | W2 Preferences Service | W2 Preferences Service | All domains (read-only) | W2 only | Service operation purpose | W2 on preference change or account closure | Allowed for session caching; must refresh from source |
-| Consent Records | User | Consent Domain | Consent Service | Consent Service | All domains (read-only for gating) | Consent Service only | Explicit consent capture | Consent Domain per legal requirements; orchestrates deletion requests | Not allowed; consent state must be read live |
+| Account / Profile | User | User Context Domain (`ayla-user-context`) | W2 Profile Service | W2 Profile Service | W3 Memory, Wellness, Consent, Notification | W2 only | Account creation purpose | W2 on user request or account closure | Allowed for UI rendering; no persistent storage outside W2 |
+| Operational Preferences | User | User Context Domain | W2 Preferences Service | W2 Preferences Service | W3 Memory, Wellness, Notification (read-only) | W2 only | Service operation purpose | W2 on preference change or account closure | Allowed for session caching with TTL; must refresh from source on invalidation |
+| Consent Records | User | Consent Domain | Consent Service | Consent Service | All domains (read-only for gating via authoritative cache with TTL) | Consent Service only | Explicit consent capture | Consent Domain per legal requirements; orchestrates deletion requests | Not allowed as independent source; authoritative cache with TTL and invalidation required |
 | Semantic Memory (MemoryEntry) | User | W3 Memory & Identity Domain | W3 Memory Service | W3 Memory Service (after gate) | Approved consumers via purpose-limited API | W3 only (via proposal/consent/purpose gate) | Requires explicit consent + purpose approval | W3 privacy flow on user request | Not allowed; memory is persistent, not projected |
 | Raw Wellness History | User | Wellness Domain | Wellness Service | Wellness Service | W3 Memory (for derivation), Dashboards (read-only) | Wellness Service only | Wellness tracking purpose | Wellness Domain per retention policy | Allowed for dashboards, summaries, API views; marked as derived |
 | Wellness-Derived Memory | User | W3 Memory & Identity Domain | W3 Memory Service | W3 Memory Service (after memory gate) | Approved consumers via purpose-limited API | W3 only (via memory gate) | Requires consent + memory proposal approval | W3 privacy flow on user request | Not allowed; becomes semantic memory after gate |
 | Purpose-Limited Projections | User | Varies by source domain | Consumer-specific cache | Source domain (live) | Specific consumer only | No write authority; read-through only | Inherited from source + consumer purpose | Session lifetime or consumer-defined (must not exceed source retention) | Must be marked as temporary; cannot be persisted as memory |
 | Notification Preferences | User | Notification Preferences Domain | Notification Service | Notification Service | Communication systems (read-only) | Notification Service only | Communication consent | Notification Domain on preference change | Allowed for delivery queue caching |
-| Marketing Opt-Out | User | Consent / Communication Preferences Domain | Consent Service | Consent Service | Marketing systems (read-only for gating) | Consent Service only | Marketing consent (or lack thereof) | Consent Domain per legal requirements | Not allowed; must check live |
-| Customer Service Preferences | User | W2 User Context Domain OR Purpose-Limited Projection | W2 or Booking System | W2 or Booking System | Substitute (booking-specific only) | W2 or Booking System | Booking purpose | W2 or Booking System per booking lifecycle | Allowed only as booking-specific projection; not MemoryEntry copy |
+| Marketing Opt-Out | User | Consent Domain | Consent Service | Consent Service | Marketing systems (read-only for gating) | Consent Service only | Marketing consent (or lack thereof) | Consent Domain per legal requirements | Not allowed; must check live or via authoritative cache |
+| Customer Service Preferences | User | User Context Domain | W2 Preferences Service | W2 Preferences Service | Substitute (booking-specific projection only) | W2 only | Booking purpose | W2 per booking lifecycle | Allowed only as booking-specific purpose-limited projection; never as MemoryEntry copy |
 
 ## Definitions
 
