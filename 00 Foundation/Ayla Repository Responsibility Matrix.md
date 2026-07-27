@@ -23,9 +23,9 @@ export_policy: full
 updated: 2026-07-25
 review_cycle: quarterly
 depends_on:
-  - ayla.constitution
-  - ayla.root
-  - ayla.foundation.knowledge-architecture
+  - "[[Ayla Constitution]]"
+  - "[[Ayla]]"
+  - "[[Ayla Knowledge Architecture Specification]]"
 supersedes: []
 superseded_by: []
 ---

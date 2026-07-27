@@ -41,10 +41,10 @@ ai_indexing: allowed
 export_policy: full
 
 depends_on:
-  - ayla.constitution
-  - ayla.product-vision
-  - ayla.repository-responsibility-matrix
-  - ayla.glossary
+  - "[[Ayla Constitution]]"
+  - "[[Ayla Product Vision]]"
+  - "[[Ayla Repository Responsibility Matrix]]"
+  - "[[Ayla Glossary]]"
 
 related_documents:
   - Ayla Intent Model Specification

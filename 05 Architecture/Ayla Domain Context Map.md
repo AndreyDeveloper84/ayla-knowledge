@@ -46,14 +46,13 @@ ai_indexing: allowed
 export_policy: full
 
 depends_on:
-  - ayla.constitution
-  - ayla.product-vision
-  - ayla.killer-prd
-  - ayla.user-journey
-  - ayla.intent-model
-  - ayla.knowledge-architecture
-  - ayla.repository-responsibility-matrix
-  - ayla.glossary
+  - "[[Ayla Constitution]]"
+  - "[[Ayla Product Vision]]"
+  - "[[Killer PRD]]"
+  - "[[Ayla User Journey Specification]]"
+  - "[[Ayla Knowledge Architecture Specification]]"
+  - "[[Ayla Repository Responsibility Matrix]]"
+  - "[[Ayla Glossary]]"
 
 related_documents:
   - Ayla Core Domain Model Specification
