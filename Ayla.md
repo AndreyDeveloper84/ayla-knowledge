@@ -4,7 +4,7 @@ title: Ayla
 type: moc
 status: review
 activation_status: pending-infrastructure
-version: "1.3"
+version: "1.4"
 owner: Product Architecture
 priority: P0
 knowledge_area:
@@ -176,12 +176,14 @@ Responsibility Matrix, Ayla Domain Context Map (draft), Ayla Core Domain
 Model Specification (draft-заглушка), Ayla Domain Capability Registry
 (draft), Data Inventory Matrix (draft).
 
-Текущая очередность:
+Текущая очередность (по AYLA-DEC-0014, роадмап к MVP):
 
 | Order | Document | Reason | Intended outcome |
 |---:|---|---|---|
-| 1 | Ayla Intent Model Specification | единственный отсутствующий predecessor по AYLA-DEC-0011; блокирует approval Capability Registry и Context Map | reviewed canonical node |
-| 2 | Area MOC | завершить навигацию по заполненным областям | validated navigation |
+| 1 | MVP Scope and Release Contract | P0 по AYLA-DEC-0014; жёсткая граница против разрастания scope | reviewed canonical node |
+| 2 | Ayla Intent Model Specification | predecessor по AYLA-DEC-0011; блокирует Context Map и Core Domain Model | reviewed canonical node |
+| 3 | MVP-срез User Journey | производный от полной UJS: 14 этапов + негативные сценарии | reviewed canonical node |
+| 4 | Area MOC | завершить навигацию по заполненным областям | validated navigation |
 
 Название в очереди не создаёт Knowledge Node и не означает approval.
 
@@ -286,6 +288,12 @@ Root MOC готов к approval, когда:
 - ссылки разрешаются без migration warnings.
 
 ## Change Log
+
+### v1.4 — 2026-07-27
+
+- Migration Queue перестроена по AYLA-DEC-0014 (роадмап к MVP): P0 —
+  MVP Scope and Release Contract, Intent Model Specification, MVP-срез
+  User Journey.
 
 ### v1.3 — 2026-07-27
 

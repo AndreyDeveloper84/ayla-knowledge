@@ -4,7 +4,7 @@ title: Ayla Decision Log
 type: decision-log
 status: review
 activation_status: pending-infrastructure
-version: "0.6"
+version: "0.7"
 owner: Founder / Product Architecture
 priority: P0
 knowledge_area:
@@ -387,7 +387,65 @@ reviewed-изменением после проверки commit миграци�
   устаревшее название / ошибочный ID / ещё не утверждённый planned
   artifact.
 
+### AYLA-DEC-0014 — Роадмап документации к MVP: MVP-объём вместо канонизации экосистемы
+
+**Дата:** 2026-07-27 · **Статус:** действует
+
+- **Решение:** принят роадмап документов к максимально быстрому MVP.
+  Главный принцип: документация уменьшает неопределённость разработки и
+  не становится отдельным проектом; канонизируются только решения, без
+  которых разработчики реализуют процесс по-разному, создадут
+  несовместимые модели данных, нарушат privacy/safety или не смогут
+  проверить, что MVP работает.
+- **Состав роадмапа (зафиксирован владельцем):**
+  - минимальный комплект для старта разработки — 12 артефактов:
+    Constitution, Product Vision, MVP Product Thesis, Killer PRD,
+    **MVP Scope and Release Contract**, MVP User Journey, Intent Model
+    Specification, MVP Context Map, MVP Core Domain Model, MVP
+    Architecture, API + Tool Contracts, Consent and Safety Contracts;
+  - волны исполнения: (1) продуктовые блокеры — Thesis, Scope Contract,
+    проверка Killer PRD, MVP Journey, Intent Model; (2) доменные —
+    MVP-active записи Capability Registry, Context Boundary Review,
+    MVP Context Map, Core Domain Model slice, Consent Scope Registry,
+    Safety Policy; (3) технические контракты — MVP Architecture,
+    Repository Responsibility Matrix, Prompt Canon boundary, Memory
+    Pipeline, Public API Registry, OpenAPI, Tool Schema Registry,
+    Error Code Registry, Cross-Repo Change Policy, Consumer Matrix;
+    (4) доставка — Delivery Roadmap, Backlog rules, DoD, Threat Model
+    Lite, Release Readiness, Measurement Plan, Runbook;
+  - **change control:** после approval MVP Scope and Release Contract
+    любое расширение Included Scope требует owner decision с указанием:
+    зачем нужно до MVP, какой срок добавляет, какую задачу вытесняет;
+  - не блокируют MVP (остаются draft/отложены): полная Context Map
+    экосистемы, Payment/Billing спецификации, Outcome Learning,
+    Experimentation, полный Event Catalog, multi-country legal,
+    микросервисная декомпозиция, DWH и ML training архитектуры.
+- **Соотношение с действующими решениями:**
+  - не отменяет AYLA-DEC-0011: порядок канонизации сохраняется, Intent
+    Model остаётся predecessor для Context Map и Core Domain Model;
+    роадмап уточняет объём (MVP slice), а не порядок;
+  - MVP Scope and Release Contract — продуктовый уровень (после Killer
+    PRD), в цепочку DEC-0011 доменных документов не встраивается;
+    граница с AMD-020 Pilot Scope Registry: тот владеет pilot/memory
+    ownership, новый документ — release scope capabilities;
+  - MVP User Journey — производный срез полной User Journey
+    Specification (14 этапов + негативные сценарии), не замена ей;
+  - MVP-active/deferred разбиение Capability Registry соответствует
+    OD-CAP-4 (AYLA-DEC-0012) и использует §9 MVP Scope Matrix реестра.
+- **Затрагивает:** Root MOC Migration Queue (новые P0: MVP Scope and
+  Release Contract, Intent Model Specification, MVP-срез Journey);
+  Ayla Domain Capability Registry (перевод записей MVP-active);
+  Ayla Domain Context Map и Core Domain Model (MVP slice вместо полной
+  канонизации); новые документы волн 1–4.
+
 ## Change Log
+
+### v0.7 — 2026-07-27
+
+- новая запись AYLA-DEC-0014: роадмап документации к MVP (12-артефактный
+  минимум, 4 волны, change control для Included Scope, перечень
+  неблокирующих документов); зафиксировано соотношение с DEC-0011/0012
+  и граница MVP Scope Contract ↔ AMD-020 Pilot Scope Registry.
 
 ### v0.6 — 2026-07-27
 
