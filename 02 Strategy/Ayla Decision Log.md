@@ -4,7 +4,7 @@ title: Ayla Decision Log
 type: decision-log
 status: review
 activation_status: pending-infrastructure
-version: "0.2"
+version: "0.5"
 owner: Founder / Product Architecture
 priority: P0
 knowledge_area:
@@ -17,7 +17,7 @@ system_owner:
   - shared
 source_repository: ayla-knowledge
 created: 2026-07-18
-updated: 2026-07-18
+updated: 2026-07-27
 source_kind: canonical
 classification: internal
 data_sensitivity: none
@@ -222,7 +222,207 @@ reviewed-изменением после проверки commit миграци�
   только при отсутствии online-paid Payment по записи); обязательный
   инвариант-тест; правило reconciliation job.
 
+### AYLA-DEC-0011 — Последовательность документов продуктового роадмапа
+ 
+**Дата:** 2026-07-27 · **Статус:** действует
+ 
+- **Решение:** зафиксирована обязательная последовательность материализации
+  и канонизации следующего уровня документации Ayla:
+```
+  Killer PRD
+      ↓
+  Ayla User Journey Specification
+      ↓
+  Ayla Intent Model Specification
+      ↓
+  Ayla Domain Context Map
+      ↓
+  Ayla Core Domain Model
+```
+ 
+  Следующий документ может существовать как `draft` (структура, сбор
+  источников, терминология) параллельно с работой над предыдущим — это не
+  запрещено. Запрещён переход следующего документа к содержательной
+  канонизации (`review` без открытых P0-противоречий → `approved`) раньше,
+  чем предыдущий документ в цепочке достигнет состояния `review` без
+  открытых P0-противоречий. В частности:
+  - Intent Model не формализуется до готовности Journey (границы намерений
+    производны от пользовательского пути, не наоборот);
+  - Domain Context Map не строится до готовности Intent Model (границы
+    bounded contexts производны от уже определённых сценариев и намерений);
+  - Core Domain Model (агрегаты, инварианты) не проектируется до утверждения
+    Domain Context Map — проектирование агрегатов до фиксации границ
+    контекстов создаёт риск их полной переделки при последующем изменении
+    границ.
+  Вышестоящая последовательность уже определена и не пересматривается этой
+  записью:
+ 
+```
+  Ayla Constitution
+      ↓
+  Ayla Product Vision
+      ↓
+  Ayla MVP Product Thesis
+```
+ 
+  Настоящее решение фиксирует порядок следующего уровня документации,
+  начиная с Killer PRD, как естественное продолжение уже сформированной
+  архитектуры документации.
+ 
+- **Основание:** обратный или произвольный порядок создаёт риск
+  искусственных сущностей и дублирования понятий — например, доменные
+  агрегаты, спроектированные до утверждения Context Map, потребуют
+  переделки при изменении границ bounded context. Ayla Constitution и
+  Ayla MVP Product Thesis уже определяют вышестоящие уровни (миссия,
+  MVP-гипотеза); эта запись закрывает недостающее звено — порядок
+  документов, которые их детализируют.
+- **Затрагивает:** Ayla Domain and Metadata Registry (потребуется
+  добавление planned-узлов `Ayla Intent Model Specification`,
+  `Ayla Domain Context Map`, `Ayla Core Domain Model`, которых сейчас нет в
+  реестре ни в каком статусе); Domain_Model_MOC (навигация должна отражать
+  этот порядок); последовательность работы Knowledge/Canon Architect по
+  дальнейшей канонизации.
+- **Важное ограничение (зафиксировано при вводе записи):** эта запись
+  фиксирует **порядок и обязательность последовательности**, а не
+  содержание самих документов «Intent Model», «Domain Context Map» и
+  «Core Domain Model» — они не материализованы и не существуют как файлы
+  в `ayla-knowledge` на момент этой записи. Материализация каждого из них
+  проходит обычный процесс (проверка на дублирование, предложение
+  структуры, согласование границ — см. правила Chief Knowledge Architect),
+  а не создаётся автоматически из факта этой записи.
+
+### AYLA-DEC-0012 — Owner directions по Ayla Domain Capability Registry (OD-CAP-1..4)
+
+**Дата:** 2026-07-27 · **Статус:** действует
+
+- **Решение:** по результатам ревью draft «Ayla Domain Capability
+  Specification» v1.0 владелец зафиксировал четыре owner directions:
+  - **OD-CAP-1 (владение capability-слоем):** capability-слой принадлежит
+    Product Architecture; канонический реестр хранится в `ayla-knowledge`.
+    Capability не владеет runtime state и не заменяет domain
+    specifications. Документ отвечает только на три вопроса: какая
+    способность нужна продукту, какой бизнес-результат она создаёт, в
+    каком candidate context она предположительно реализуется. Полная
+    DDD-методология остаётся в [[Ayla Domain Context Map]].
+  - **OD-CAP-2 (единая классификация):** сохраняется таксономия Domain
+    Context Map — Core / Supporting / Generic / Technical Capability;
+    одна категория на запись, multi-classification запрещена. Governance
+    и Platform — не DDD-категории, а `characteristics` записи
+    (например, Consent Management: `classification: supporting`,
+    `characteristics: [governance]`).
+  - **OD-CAP-3 (место в цепочке AYLA-DEC-0011):** документ не ставит
+    себя выше Context Map. Цепочка уточняется вставкой реестра:
+    Product Vision → Killer PRD → Intent Model Specification →
+    **Domain Capability Registry** → Domain Context Map. Параллельный
+    draft допустим; approval и использование для подтверждения bounded
+    contexts — только после predecessor documents по AYLA-DEC-0011.
+  - **OD-CAP-4 (Payment Processing):** остаётся в реестре экосистемы с
+    `mvp_scope: out`, `platform_scope: in`, `activation_status: deferred`.
+    Не влияет на MVP Context Boundary Review; не трассируется к Killer
+    PRD как MVP-функция — evidence из Product Vision, business model
+    или backend contracts.
+- **Основание:** ревью 2026-07-27 показало, что draft v1.0 конкурировал
+  с Domain Context Map (дублирование методологии классификации и
+  split/merge, две таксономии, multi-classification), не имел evidence
+  ни у одной из 27 записей и позиционировался выше Context Map вопреки
+  AYLA-DEC-0011.
+- **Затрагивает:** `00 Foundation/Ayla Domain Capability Registry.md`
+  (переименование и переработка: удаление методологических разделов,
+  сокращённый record schema, обязательный evidence, Capability–Context
+  Reconciliation, MVP Scope Matrix); Ayla Domain Context Map (остаётся
+  владельцем DDD-методологии); формулировки роли
+  `validate_knowledge.py` во всех документах (структурная и ссылочная
+  корректность, не canonical approval).
+
+### AYLA-DEC-0013 — C-02: эволюция schema v1.6 → v1.7 (proposed) и границы доменных документов
+
+**Дата:** 2026-07-27 · **Статус:** proposed (schema-часть ожидает owner approval) · границы документов — действует
+
+- **Контекст:** Ayla Domain Context Map, Ayla Core Domain Model
+  Specification и Data Inventory Matrix написаны в повторяющемся
+  метаданном диалекте, отличном от schema v1.6. Повторяемость диалекта
+  показывает потребность в осознанной эволюции схемы, а не в механической
+  подгонке документов.
+- **Действует сейчас:** schema v1.6 остаётся авторитетной; validator не
+  изменён. Frontmatter трёх документов временно (interim) нормализован
+  под v1.6 для сохранения зелёного состояния валидатора — это не
+  прецедент решения C-02 и не owner approval.
+- **Owner direction (действует) — границы функций документов:**
+  - Domain Context Map — на какие bounded contexts разделена Ayla и как
+    они взаимодействуют (карта границ и отношений);
+  - Core Domain Model Specification — сущности, агрегаты, value objects,
+    инварианты и события внутри этих контекстов (содержимое доменов);
+  - Data Inventory Matrix — данные, места хранения, владельцы,
+    чувствительность, retention/export/deletion.
+  Взаимное поглощение запрещено. Core Domain Model остаётся честным
+  draft/proposed; содержательное наполнение — только после решения C-02.
+- **Proposed (ожидает owner approval):** эволюция schema v1.6 → v1.7 по
+  сравнительной таблице ниже. После approval schema, validator и
+  frontmatter трёх документов обновляются одним согласованным изменением.
+
+Сравнительная таблица диалекта:
+
+| Элемент диалекта | schema v1.6 | Предполагаемая семантика | Вариант нормализации | Обратная совместимость | Влияние | Рекомендация |
+|---|---|---|---|---|---|---|
+| `owners` (массив) | `owner` обязателен (строка); `owners` игнорируется как extra | несколько ответственных ролей | `owner` = ведущая роль | совместимо (extra-поле допустимо) | валидатор и nodes без изменений | Заменить существующим `owner`; `owners` допустить как optional-информативное |
+| `system_owner` vs `owner` | оба поля есть, определения не закреплены | `owner` — орг-роль владельца документа; `system_owner` — система/репозиторий из enum | зафиксировать определения | совместимо | документация schema | Сохранить различие; в v1.7 добавить явные определения |
+| `canonical-candidate` | source_kind: canonical/mirror/external/product-requirements | «претендует на канон» — смешение source_kind и status | `canonical` + претензия через `status`/`decision_status` | совместимо | без изменений | Отклонить: source_kind описывает происхождение, не зрелость |
+| `domain` в `knowledge_area` | есть `domain-model` | доменная область знаний | → `domain-model` | совместимо | без изменений | Заменить существующим `domain-model` |
+| `security_sensitivity: internal` | none/low/medium/high/critical | «внутреннее» — смешение classification и sensitivity | → `low`; признак internal несёт `classification` | совместимо | без изменений | Отклонить: нормализовать в enum sensitivity |
+| `export_policy: internal-only` | full/sanitized/metadata-only/prohibited | «не экспортировать наружу» | временно `full` по конвенции internal-документов; семантически ближе `prohibited`/`metadata-only` | требует решения владельца | экспорт-пайплайн не активирован | В v1.7: определить матрицу classification × export_policy; значение отклонить |
+| тип `domain-context-map` | нет в document_type_rules | профильный нормативный тип | сейчас → `architecture-specification` | добавление типа обратно совместимо | schema + validator + registry + 1 node | Добавить в v1.7 как самостоятельный тип |
+| тип `domain-specification` | нет | спецификация доменной модели | сейчас → `specification` | добавление совместимо | schema + validator + 1 node | Добавить в v1.7 (семейство domain-*) |
+| тип `data-inventory-matrix` | нет | реестр классов данных | сейчас → `safety-specification` | добавление совместимо | schema + validator + 1 node | Добавить в v1.7 |
+
+- **Порядок работ (зафиксирован):** (1) аудит на стабильном состоянии +
+  commit SHA; (2) Root MOC v1.2 — выполнено; (3) регистрация C-02 —
+  настоящая запись; (4) предложение schema v1.7 + migration impact;
+  (5) после owner approval — schema, validator и frontmatter одним
+  изменением; (6) исправить битые `depends_on`, включая
+  `ayla.strategy.killer-prd`; (7) судьба `acceptance_ids.txt`;
+  (8) содержательное ревью Context Map и наполнение Core Domain Model.
+- **C-03:** массовое создание stub-документов запрещено. Каждая
+  отсутствующая ссылка сначала классифицируется как: реальный
+  отсутствующий knowledge node / внешний документ из owning repository /
+  устаревшее название / ошибочный ID / ещё не утверждённый planned
+  artifact.
+
 ## Change Log
+
+### v0.5 — 2026-07-27
+
+- новая запись AYLA-DEC-0013: C-02 оформлен как proposed-решение об
+  эволюции schema v1.6 → v1.7 (сравнительная таблица диалекта,
+  рекомендации по `owners`, `canonical-candidate`, `internal`,
+  `internal-only`, `domain`, новым типам документов); owner direction о
+  границах Domain Context Map / Core Domain Model / Data Inventory
+  Matrix; interim-нормализация frontmatter трёх документов зафиксирована
+  как временная мера; порядок работ и классификация C-03.
+
+### v0.4 — 2026-07-27
+
+- новая запись AYLA-DEC-0012 (owner directions OD-CAP-1..4 по Domain
+  Capability Registry: владение capability-слоем, единая классификация
+  из Domain Context Map с characteristics вместо категорий Governance/
+  Platform, уточнение цепочки AYLA-DEC-0011 вставкой реестра между
+  Intent Model Specification и Domain Context Map, deferred-статус
+  Payment Processing).
+
+### v0.3 — 2026-07-27
+ 
+- новая запись AYLA-DEC-0011 (последовательность документов роадмапа:
+  Killer PRD → Journey → Intent Model → Domain Context Map → Core Domain
+  Model), решение владельца от 2026-07-27; связана с уже принятой
+  вышестоящей последовательностью Constitution → Product Vision → MVP
+  Product Thesis;
+- правило смягчено: draft следующего документа разрешён параллельно,
+  запрещён только опережающий переход к канонизации;
+- запись содержит явное ограничение: фиксирует порядок, не содержание ещё
+  не материализованных документов (Intent Model, Domain Context Map, Core
+  Domain Model — не существуют как файлы в `ayla-knowledge` на дату записи);
+- затронутые документы отмечены: Ayla Domain and Metadata Registry
+  (потребуются новые planned-узлы), Domain_Model_MOC (навигация).
+
 
 ### v0.2 — 2026-07-18
 
