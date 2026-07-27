@@ -7,7 +7,7 @@ title_ru: Спецификация основной доменной модел�
 type: domain-specification
 status: draft
 decision_status: proposed
-version: "1.2"
+version: "1.2.1"
 
 owner: Domain Architecture
 owners:
@@ -319,33 +319,47 @@ updated_at:
 
 The normative structure, identifiers, allowed scopes, purposes and policy bindings for Consent are defined by the [[Consent Scope Registry]]. This document defines only the domain role, ownership, lifecycle and invariants of Consent.
 
-Consent имеет стабильный `consent_id`, привязан к `subject_id` и фиксирует состояние разрешения (granted / revoked / expired) в рамках scope, зарегистрированного в [[Consent Scope Registry]]. Собственная схема полей Consent в настоящем документе не определяется.
+Lifecycle, commands и events Consent нормативно определены в [[Consent Scope Registry]] (§7–§9); ниже — сводка для чтения модели, при расхождении приоритет имеет CSR.
 
-Lifecycle:
+Consent имеет стабильный `consent_id`, привязан к `subject_id` и фиксирует состояние разрешения в рамках scope, зарегистрированного в [[Consent Scope Registry]]. Собственная схема полей Consent в настоящем документе не определяется.
+
+Lifecycle (состояния — дословно по CSR §7; `not_requested` — отсутствие consent record):
 
 ```text
-proposed → granted → revoked / expired
+not_requested → granted
+not_requested → denied
+
+granted → revoked
+granted → expired
+
+denied  → granted  ┐
+revoked → granted  ├─ создаёт новую consent record
+expired → granted  ┘
 ```
+
+Правило повторного согласия (CSR §7): переход к `granted` после терминального состояния (`denied` / `revoked` / `expired`) создаёт новую consent record (`previous_consent_record_id` + `transition_reason`); прежняя запись остаётся в своём терминальном статусе и не возвращается в `granted`. Переходы `granted → revoked` и `granted → expired` изменяют статус той же записи, не создавая новую. Для комбинации `subject_id` + `tenant_id` + `scope_id` существует не более одного effective (`granted`) состояния одновременно.
 
 Инварианты:
 
 1. Consent имеет scope и purpose.
 2. Consent может быть отозван.
-3. Отсутствие Consent нельзя компенсировать inference.
+3. Отсутствие Consent нельзя компенсировать inference (отсутствие consent record не интерпретируется как согласие — CSR §7).
 4. Новая версия политики не расширяет старое согласие автоматически.
 
 Commands:
 
 ```text
 GrantConsent
+DenyConsent
 RevokeConsent
 ExpireConsent
 ```
 
-Events:
+Events (канонические имена audit events — snake_case в CSR §9.1: `consent_granted`, `consent_denied`, `consent_revoked`, `consent_expired`):
 
 ```text
 ConsentGranted
+ConsentDenied
 ConsentRevoked
 ConsentExpired
 ```
@@ -843,6 +857,7 @@ User commands:
 
 ```text
 GrantConsent
+DenyConsent
 RevokeConsent
 ConfirmContextFact
 CorrectContextFact
@@ -852,7 +867,6 @@ RejectRecommendation
 RequestAppointment
 RescheduleAppointment
 CancelAppointment
-SubmitFeedback
 ```
 
 System commands:
@@ -886,7 +900,11 @@ ConfirmAppointment
 RejectAppointment
 ```
 
-Примечание: `SubmitFeedback` — proposal, активируется только вместе с Feedback (§7.14).
+Deferred (активация через change control [[Ayla MVP Scope and Release Contract]] §11 — см. §7.14):
+
+```text
+SubmitFeedback
+```
 
 ## 11. Domain Events
 
@@ -921,6 +939,7 @@ Business events — фиксируют факты доменных lifecycle:
 
 ```text
 ConsentGranted
+ConsentDenied
 ConsentRevoked
 ConsentExpired
 ContextFactRecorded
@@ -947,7 +966,6 @@ AppointmentRescheduled
 AppointmentCancelled
 AppointmentCompleted
 AppointmentMarkedNoShow
-FeedbackSubmitted
 OutcomeRecorded
 ```
 
@@ -964,7 +982,13 @@ IntentFulfilled
 QualifiedActionAttributed
 ```
 
-Примечание: `IntentDetected`, `IntentAbandoned`, `IntentFulfilled` фиксируют переходы потока и не являются значениями `Intent.status` (§7.5). `FeedbackSubmitted` — proposal, активируется только вместе с Feedback (§7.14).
+Deferred (активация через change control [[Ayla MVP Scope and Release Contract]] §11 — см. §7.14):
+
+```text
+FeedbackSubmitted
+```
+
+Примечание: `IntentDetected`, `IntentAbandoned`, `IntentFulfilled` фиксируют переходы потока и не являются значениями `Intent.status` (§7.5).
 
 ## 12. Systems of Record
 
@@ -1195,16 +1219,19 @@ Deferred / proposal:
 
 ```text
 Consent ──► Context Fact ──► Intent ──► Recommendation ──► Appointment ──► Outcome
-                ▲                ▲             │
-                │                │             ▼
-             Inference ──────────┘      Attribution Link ──► Action
+  │             ▲                ▲             │
+  │             │                │             ▼
+  │          Inference ──────────┘      Attribution Link ──► Action
+  │
+  └── ребро Consent → Context Fact действует только для consent-gated facts
+      (persistent context, personalization по [[Consent Scope Registry]])
 ```
 
 Правила чтения графа:
 
-1. Consent не зависит ни от одного объекта; все объекты персонального контура зависят от наличия применимого Consent.
+1. Consent не зависит ни от одного объекта. Consent гейтует только обработку на основании согласия — persistent context и personalization по [[Consent Scope Registry]]; факты service delivery обрабатываются на договорном основании и не требуют Consent.
 2. Inference является производной от Context Fact и не создаёт обратной зависимости.
-3. Recommendation зависит от resolved Intent; Appointment зависит от Recommendation (через `recommendation_id`) и Offering/Slot; Outcome зависит от Appointment.
+3. Recommendation зависит от resolved Intent; Appointment зависит от Offering/Slot и — только для recommendation-originated appointments — от Recommendation (через `recommendation_id`; универсальная обязательность `recommendation_id` — открытый вопрос, §24, Architecture п. 9); Outcome зависит от Appointment.
 4. Обратных (циклических) зависимостей владения не допускается (§5, §8).
 
 ## 21. Global Domain Invariants
@@ -1223,27 +1250,29 @@ Consent ──► Context Fact ──► Intent ──► Recommendation ──�
 
 Матрица владения доменными объектами. Сводит §7, §8 и §12; при расхождении приоритет имеет §12.
 
-| Domain Object | Owner Context |
-|---|---|
-| User | Identity / Backend |
-| Consent | Consent Management |
-| Context Fact | Personal Context |
-| Inference (persistent) | Memory & Identity Domain |
-| Intent | Intent Understanding |
-| Service | Service Catalog |
-| Provider | Provider Management |
-| Specialist | Provider Management |
-| Service Offering | Provider/Catalog boundary |
-| Availability Slot | Availability and Scheduling |
-| Recommendation | Recommendation |
-| Appointment | Appointment Management |
-| Attribution Link | Attribution |
-| Feedback (deferred / proposal — §7.14) | Feedback Collection |
-| Outcome | Outcome Learning / Backend facts |
+Статусы: `confirmed` — владение подтверждено нормативным источником вне настоящего документа ([[AMD-020 Pilot Scope Registry]], [[Ayla Domain Capability Registry]]); `proposal` — владение зафиксировано настоящим документом и ожидает подтверждения владельца; `unresolved` — открытый вопрос (§24).
+
+| Domain Object | Owner Context | Статус |
+|---|---|---|
+| User | Identity / Backend | proposal |
+| Consent | Consent Management | confirmed (AMD-020: Consent Records → Consent Domain; CAP-002) |
+| Context Fact | Personal Context | proposal |
+| Inference (persistent) | Memory & Identity Domain | confirmed (AMD-020, Ownership Summary: Semantic Memory → Memory & Identity Domain) |
+| Intent | Intent Understanding | proposal |
+| Service | Service Catalog | proposal |
+| Provider | Provider Management | proposal |
+| Specialist | Provider Management | proposal |
+| Service Offering | Provider/Catalog boundary | unresolved (§24, Architecture п. 1) |
+| Availability Slot | Availability and Scheduling | unresolved (§24, Architecture п. 2) |
+| Recommendation | Recommendation | unresolved (§24, Architecture п. 4) |
+| Appointment | Appointment Management | proposal |
+| Attribution Link | Attribution | unresolved (§24, Architecture п. 5) |
+| Feedback (deferred / proposal — §7.14) | Feedback Collection | proposal |
+| Outcome | Outcome Learning / Backend facts | proposal |
 
 ## 23. Domain Object ↔ Capability Mapping
 
-Сопоставление доменных объектов с capability из [[Ayla Domain Capability Registry]]. Статус `confirmed` означает, что объект входит в `owned_concepts` соответствующей capability; статус `proposal` — что маппинг не зафиксирован нормативным решением и требует подтверждения владельца (§24).
+Сопоставление доменных объектов с capability из [[Ayla Domain Capability Registry]]. Статусы: `confirmed` — объект входит в `owned_concepts` соответствующей capability; `proposal` — маппинг не зафиксирован нормативным решением и требует подтверждения владельца (§24); `unresolved` — маппинг затрагивает открытый вопрос (§24).
 
 | Domain Object | CAP-ID | Capability (canonical_name) | Статус маппинга |
 |---|---|---|---|
@@ -1255,7 +1284,7 @@ Consent ──► Context Fact ──► Intent ──► Recommendation ──�
 | Service | CAP-008 | Service Catalog Management | confirmed |
 | Provider | CAP-009 | Provider and Specialist Management | confirmed |
 | Specialist | CAP-009 | Provider and Specialist Management | confirmed |
-| Service Offering | CAP-009 | Provider and Specialist Management | confirmed (граница владения — §24, Architecture п. 1) |
+| Service Offering | CAP-009 | Provider and Specialist Management | unresolved (концепт в `owned_concepts` CAP-009; owner context — §24, Architecture п. 1) |
 | Availability Slot | CAP-010 | Availability Management | confirmed |
 | Recommendation | CAP-004 | Recommendation Formation | confirmed |
 | Appointment | CAP-011 | Appointment Management | confirmed |
@@ -1276,6 +1305,11 @@ Consent ──► Context Fact ──► Intent ──► Recommendation ──�
 5. Нужен ли отдельный Attribution context в MVP.
 6. User, Service, Provider, Specialist, Service Offering, Attribution Link и Outcome не имеют определённых lifecycle и per-object commands/events — требуется дополнение до соответствия [[Ayla MVP Documentation Roadmap]] §4.3 (см. §18).
 7. Провенанс записи Change Log v1.1 («восстановленная MVP-aligned версия после удаления предыдущего файла») требует подтверждения владельца документа.
+8. Двойная семантика `Intent.status = unresolved` (interim vs terminal, §7.5): разделить на отдельные значения или зафиксировать текущую модель (v1.3, требует owner decision).
+9. `recommendation_id` обязателен для всех Appointment или только для recommendation-originated (§7.12, §20) (v1.3, требует owner decision).
+10. Action — полноценный доменный объект или generic `action_id` подлежит удалению из модели (§6.3, §7.13) (v1.3, требует owner decision).
+11. Финальный владелец Service Offering: Provider Management vs Service Catalog — конкретизация п. 1 до единственного owner context (v1.3, требует owner decision).
+12. Формализация Appointment reschedule lifecycle: отдельные состояния/события или переиспользование cancel+create (§7.12) (v1.3, требует owner decision).
 
 ### Product
 
@@ -1284,6 +1318,7 @@ Consent ──► Context Fact ──► Intent ──► Recommendation ──�
 3. Какие alternatives обязательны.
 4. Какое окно assisted attribution использовать.
 5. Какие feedback types входят в пилот (только после активации Feedback через Scope Contract §11 — см. §7.14).
+6. Active Outcome slice: какие outcome types фиксируются в MVP и через какой источник (§7.15, §17) (v1.3, требует owner decision).
 
 ### Privacy
 
@@ -1306,6 +1341,7 @@ Consent ──► Context Fact ──► Intent ──► Recommendation ──�
 3. Кто owner tool schemas при конфликте consumers.
 4. Как синхронно обновляются pins consumers.
 5. Какой документ canonical для enum values.
+6. Согласование event names с [[Ayla MVP Documentation Roadmap]] и [[Ayla MVP User Journey Specification]] (включая CamelCase доменных событий vs snake_case audit events CSR §9.1) (v1.3, требует owner decision).
 
 ## 25. Approval
 
@@ -1321,6 +1357,7 @@ Consent ──► Context Fact ──► Intent ──► Recommendation ──�
 
 | Версия | Дата | Изменение | Автор |
 |---|---|---|---|
-| 1.1 | 2026-07-28 | Восстановленная MVP-aligned версия после удаления предыдущего файла (провенанс требует подтверждения владельца — см. §19, Architecture п. 7) | Ayla Architecture |
-| 1.1 | 2026-07-28 | Слияние с vault-версией 1.0: перенесены §2.3 Normative Force, §3.2 Technical Representations, §3.10 One Canonical Meaning, §3.11 Historical Consistency; Intent lifecycle (§7.5) приведён к status-enum Output Contract [[Ayla Intent Model Specification]] с маппинг-таблицей состояний потока; §4 подчинён [[Ayla Glossary]] (нормативная оговорка); Feedback переведён в deferred / proposal (§7.14, §17) — активация только через Scope Contract §11; `client_id` унифицирован к `subject_id` (§7.12); строки Billing eligibility / Payment result в §12 помечены как ограниченный контур по AYLA-DEC-0015; frontmatter приведён к schema v1.12 | Domain Architecture |
+| 1.1 | 2026-07-28 | Восстановленная MVP-aligned версия после удаления предыдущего файла (провенанс требует подтверждения владельца — см. §24, Architecture п. 7) | Ayla Architecture |
+| 1.1.1 | 2026-07-28 | Слияние с vault-версией 1.0: перенесены §2.3 Normative Force, §3.2 Technical Representations, §3.10 One Canonical Meaning, §3.11 Historical Consistency; Intent lifecycle (§7.5) приведён к status-enum Output Contract [[Ayla Intent Model Specification]] с маппинг-таблицей состояний потока; §4 подчинён [[Ayla Glossary]] (нормативная оговорка); Feedback переведён в deferred / proposal (§7.14, §17) — активация только через Scope Contract §11; `client_id` унифицирован к `subject_id` (§7.12); строки Billing eligibility / Payment result в §12 помечены как ограниченный контур по AYLA-DEC-0015; frontmatter приведён к schema v1.12 | Domain Architecture |
 | 1.2 | 2026-07-28 | Пакет доработок по результатам независимого ревью. A: §7.2 и §8.1 — собственная схема полей Consent заменена ссылкой на [[Consent Scope Registry]] (нормативная структура scope/purpose/policy bindings выведена из документа); §12 — Inference SoR разделён на producer/processor (AI Runtime) и persistent storage (Memory & Identity Domain по [[AMD-020 Pilot Scope Registry]], Ownership Summary), добавлено пояснение про ephemeral Inference; строки Billing eligibility / Payment result приведены к «owning capability defined outside this document» (CAP-022) и «external deferred» без введения новых bounded contexts. B: добавлены §19 Entity Relationship Diagram, §20 Domain Dependency Graph, §21 Global Domain Invariants, §22 Bounded Context Ownership Matrix, §23 Domain Object ↔ Capability Mapping, §8.6–§8.7 Aggregate owns/references/does-not-own для Recommendation и Appointment; §10 Commands сгруппированы (User/System/AI/Administrative) и §11 Events сгруппированы (Business/Technical/Integration) без изменения состава; §12 дополнен колонками Caching allowed / Snapshot allowed / Replicated; бывшие §19–§21 перенумерованы в §24–§26 | Domain Architecture |
+| 1.2.1 | 2026-07-28 | Пакет «внутренние противоречия» + KM-CDM-6. (1) §7.2 — lifecycle/commands/events Consent приведены к актуальной модели [[Consent Scope Registry]] (состояния not_requested/granted/denied/revoked/expired, правило повторного согласия через новую consent record, добавлены DenyConsent/ConsentDenied), делегирование CSR усилено (lifecycle/commands/events нормативно в CSR §7–§9, здесь — сводка); (2) §20 правило 1 — Consent гейтует только обработку на основании согласия (persistent context, personalization), факты service delivery — на договорном основании; ASCII-схема помечена «consent-gated facts only»; (3) §20 правило 3 — зависимость Appointment от Recommendation смягчена до recommendation-originated, универсальность `recommendation_id` вынесена в §24 (Architecture п. 9); (4) §26 — вторая запись 1.1 переименована в 1.1.1, broken reference «§19» исправлена на «§24»; (5) §22 и §23 — добавлены статусы строк confirmed / proposal / unresolved с легендой; (6) §10/§11 — SubmitFeedback и FeedbackSubmitted вынесены в подраздел Deferred (активация через Scope Contract §11), состав сохранён; в §10/§11 добавлены DenyConsent/ConsentDenied для согласованности с §7.2; (7) §24 — добавлены пункты v1.3: двойная семантика Intent.status unresolved, обязательность `recommendation_id`, статус Action, владелец Service Offering, reschedule lifecycle Appointment (Architecture п. 8–12), active Outcome slice (Product п. 6), согласование event names (Governance п. 6) | Domain Architecture |
