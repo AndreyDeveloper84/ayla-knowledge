@@ -4,7 +4,7 @@ title: Ayla Decision Log
 type: decision-log
 status: review
 activation_status: pending-infrastructure
-version: "0.5"
+version: "0.6"
 owner: Founder / Product Architecture
 priority: P0
 knowledge_area:
@@ -336,7 +336,7 @@ reviewed-изменением после проверки commit миграци�
 
 ### AYLA-DEC-0013 — C-02: эволюция schema v1.6 → v1.7 (proposed) и границы доменных документов
 
-**Дата:** 2026-07-27 · **Статус:** proposed (schema-часть ожидает owner approval) · границы документов — действует
+**Дата:** 2026-07-27 · **Статус:** действует (owner approval 2026-07-27; внедрение — schema v1.12, фактическая нумерация вместо «v1.7»)
 
 - **Контекст:** Ayla Domain Context Map, Ayla Core Domain Model
   Specification и Data Inventory Matrix написаны в повторяющемся
@@ -388,6 +388,15 @@ reviewed-изменением после проверки commit миграци�
   artifact.
 
 ## Change Log
+
+### v0.6 — 2026-07-27
+
+- AYLA-DEC-0013 переведена из proposed в действующую: owner approval
+  2026-07-27. Уточнение нумерации: фактическая schema_version — 1.11,
+  внедряемая версия — 1.12 (в тексте записи «v1.6/v1.7» читать как
+  «1.11/1.12»). Решения по открытым вопросам: проверка «owner ∈
+  owners» — warning; require_sections для domain-specification —
+  отложены до наполнения Core Domain Model.
 
 ### v0.5 — 2026-07-27
 

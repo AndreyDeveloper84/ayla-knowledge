@@ -245,7 +245,7 @@ P0 Foundation, Constitution, safety и privacy требуют профильно
 |---|---|
 | Separate `ayla-knowledge` repository | active |
 | Stable filenames and `node_id` | active |
-| Schema | active, v1.6 |
+| Schema | active, v1.11 |
 | Local validator | active |
 | Validator tests | active |
 | GitHub Actions workflow | configured; remote status requires verification |
