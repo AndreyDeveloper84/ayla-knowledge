@@ -4,7 +4,7 @@ title: Ayla
 type: moc
 status: review
 activation_status: pending-infrastructure
-version: "1.4"
+version: "1.5"
 owner: Product Architecture
 priority: P0
 knowledge_area:
@@ -94,6 +94,9 @@ Draft / proposed nodes (в vault, НЕ канон; approval ограничен A
 | Document | Version | Status | Назначение |
 |---|---:|---|---|
 | [[Ayla MVP Product Thesis]] | 0.4 | draft | product scope и economic boundaries |
+| [[Ayla MVP Documentation Roadmap]] | 1.0 | approved / accepted | роадмап документации к MVP (AYLA-DEC-0014) |
+| [[Ayla MVP Scope and Release Contract]] | 0.2 | draft / proposed | граница MVP scope (AYLA-DEC-0014/0015) |
+| [[Ayla Intent Model Specification]] | 0.1 | draft / proposed | intent types и output contract |
 | [[Killer PRD]] | 1.4.1 | draft / proposed | killer flow и память |
 | [[ADR-0012 Dynamic User Model]] | 0.2 | draft / proposed | динамическая модель пользователя |
 | [[AMD-020 C5 Implementation Amendment]] | 0.8 | draft / proposed | поправка реализации C5 |
@@ -180,8 +183,8 @@ Model Specification (draft-заглушка), Ayla Domain Capability Registry
 
 | Order | Document | Reason | Intended outcome |
 |---:|---|---|---|
-| 1 | MVP Scope and Release Contract | P0 по AYLA-DEC-0014; жёсткая граница против разрастания scope | reviewed canonical node |
-| 2 | Ayla Intent Model Specification | predecessor по AYLA-DEC-0011; блокирует Context Map и Core Domain Model | reviewed canonical node |
+| 1 | MVP Scope and Release Contract | ✅ draft v0.2 материализован 2026-07-27; к review после волны 1 | review |
+| 2 | Ayla Intent Model Specification | ✅ draft v0.1 материализован 2026-07-27; к review после волны 1 | review |
 | 3 | MVP-срез User Journey | производный от полной UJS: 14 этапов + негативные сценарии | reviewed canonical node |
 | 4 | Area MOC | завершить навигацию по заполненным областям | validated navigation |
 
@@ -288,6 +291,14 @@ Root MOC готов к approval, когда:
 - ссылки разрешаются без migration warnings.
 
 ## Change Log
+
+### v1.5 — 2026-07-27
+
+- В draft-таблицу добавлены: Ayla MVP Documentation Roadmap (approved),
+  MVP Scope and Release Contract v0.2, Intent Model Specification v0.1;
+- Migration Queue: Scope Contract и Intent Model отмечены как
+  материализованные draft'ы (к review после волны 1);
+- Core Domain Model Specification наполнен контентом (draft).
 
 ### v1.4 — 2026-07-27
 
