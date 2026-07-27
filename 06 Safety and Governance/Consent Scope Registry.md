@@ -2,8 +2,8 @@
 node_id: ayla.governance.consent-scope-registry
 title: Consent Scope Registry
 type: specification
-status: draft
-version: "0.5"
+status: approved
+version: "1.0"
 owner: User Context Domain Owner / Privacy Owner
 priority: P0
 knowledge_area:
@@ -32,6 +32,8 @@ review_cycle: before-major-change
 depends_on:
   - "[[Ayla Constitution]]"
   - "[[ADR-0012 Dynamic User Model]]"
+  - "[[AMD-020 Pilot Scope Registry]]"
+  - "[[Data Inventory Matrix]]"
 related:
   - "[[Killer PRD]]"
   - "[[AMD-020 Pilot Scope Registry]]"
@@ -45,6 +47,13 @@ blocking_reason: >
 # Consent Scope Registry
 
 ## 1. Назначение
+
+> **Структура документа: Normative / Informative.** §1–§10 —
+> нормативное ядро (правила, категории данных, scopes, authorization
+> contract, lifecycle, audit, activation gates). §11 и подразделы
+> (§11.1–§11.4) — informative: описывают, как другие документы потребляют
+> это ядро, и не создают самостоятельных норм. Будущее разделение на
+> отдельные документы — `CSR-OD-7`.
 
 Consent Scope Registry — нормативный реестр целей использования
 пользовательского контекста в Ayla.
@@ -93,10 +102,10 @@ truth. Эти вопросы регулируются [[AMD-020 Pilot Scope Regi
 | `scope_id` | Стабильный машинный идентификатор цели использования |
 | `scope_version` | Версия конкретного scope — независима от `registry_version` документа в целом; scope может не меняться при редакторских правках Registry |
 | `data_category` | Нормативный класс пользовательских данных |
-| `consumer` | Система-потребитель данных (`ai-bot-platform`, `ayla-ai-core`, `beautygo_backend`) — не runtime-модуль внутри неё |
+| `consumer` | Система-потребитель данных (`ai-bot-platform`, `ayla-ai-core`, `beautygo_backend`, `ayla-analytics`) — не runtime-модуль внутри неё. **`ayla-analytics`** — authorization identity аналитической системы; является ли она отдельным сервисом, модулем внутри `ai-bot-platform` или частью backend — не определено (`CSR-OD-9`). До решения `recommendation_measurement` остаётся `blocked` |
 | `consumer_component` | Опциональный уточняющий модуль внутри consumer-системы (например, `recommendation-composer`) — информативное поле, не влияет на authorization decision в MVP |
-| `operation` | Действие над данными: `read`, `write`, `delete`, `derive`, `model_transfer`, `user_disclosure`, `measure` |
-| `authorization_basis` | Правовое/продуктовое основание использования: `explicit_consent` \| `service_necessity` \| `legal_obligation` \| `approved_legitimate_interest` \| `system_operation` — отдельно от факта наличия consent record. `system_operation` — для внутренних технических операций (например, memory cleanup по истечении retention), которые не требуют consent, так как не используют данные в целях персонализации |
+| `operation` | Действие над данными: `read`, `write`, `delete`, `derive`, `model_transfer`, `user_disclosure`, `measure`. **`read`** означает прямой доступ к source storage / retrieval boundary — разрешён только компонентам, физически обращающимся к хранилищу (`ai-bot-platform`, `beautygo_backend`). **`model_transfer`** означает получение уже минимизированного, отфильтрованного context envelope от компонента с `read` — этим ограничен `ayla-ai-core` во всех scopes, где он consumer: он не обращается к storage напрямую (platform retrieves → core receives approved context → core renders/orchestrates) |
+| `authorization_basis` | Правовое/продуктовое основание использования: `explicit_consent` \| `service_necessity` \| `legal_obligation` \| `approved_legitimate_interest` \| `system_operation` — отдельно от факта наличия consent record. `system_operation` — для внутренних технических операций (например, memory cleanup по истечении retention), которые не требуют consent, так как не используют данные в целях персонализации. **`service_necessity` является технической категорией authorization в этом Registry и не означает самостоятельно установленного правового основания по применимому законодательству** — окончательная юридическая квалификация остаётся за Legal/Privacy review. |
 | `session_context` | Контекст, живущий только в пределах текущей сессии |
 | `persistent_context` | Контекст, доступный между сессиями |
 | `revocation_effect` | Обязательное поведение системы после отзыва |
@@ -127,10 +136,11 @@ consent — пользователь, отправивший сообщение,
 | `booking_history` | Факты записей и их статусы из backend source of truth | medium | Backend является source of truth | Booking Domain — не в Ownership Summary AMD-020 явно, открытый вопрос |
 | `interaction_history` | Факты взаимодействия с рекомендациями и диалогом | medium | Ограниченно, по scope | Не определён в AMD-020 — открытый вопрос |
 | `recommendation_feedback` | Принятие, отказ и указанная причина отказа | medium | Разрешается по scope | Recommendation Owner (по аналогии с scope owner §5.6) |
-| `session_signal` | Сигнал, применимый только к текущей сессии | low–medium | По умолчанию не сохраняется | Не применимо — не persistent, владелец не требуется |
+| `session_signal` | Сигнал, применимый только к текущей сессии | low–medium | По умолчанию не сохраняется | Conversation / User Context Domain — persistence и ownership разные измерения: даже session-only данные требуют владельца семантики, допустимых источников и правил очистки |
 | `inferred_signal` | Выведенное системой предположение, не сообщённое пользователем явно | high | Запрещено по умолчанию | Memory & Identity Domain (AMD-020: Semantic Memory) |
 | `health_related_signal` | Сведения или выводы о здоровье, диагнозах, симптомах и противопоказаниях | special/high | Вне MVP; запрещено | Wellness Domain (AMD-020: Raw Wellness History) |
 | `religious_or_diet_signal` | Религиозные убеждения или чувствительные диетические признаки | special/high | Заблокировано до Legal ruling | User Context Domain, под OD-1 — не окончательно |
+| `recommendation_booking_linkage` | Связь `recommendation_id` с `booking_id`, attribution type и техническими идентификаторами результата | medium | Разрешается по scope | Analytics Domain / Booking Domain — открытый вопрос по разграничению |
 
 **Честно про пробелы:** для `explicit_goal`, `booking_history`,
 `interaction_history` нет прямого соответствия в Ownership Summary
@@ -139,13 +149,15 @@ AMD-020 — не придумываю владельца, оставляю ка�
 
 ## 4.1 Data Category Mapping
 
-> **Провизорно, до Data Inventory Matrix.** Правильная цепочка владения —
-> `physical field → data_category` должна принадлежать Data Inventory
-> Matrix (сейчас не существует в проекте), а этот Registry должен зависеть
-> только от стабильного `data_category`, не от конкретных имён полей.
-> Пока Data Inventory Matrix не материализована, таблица ниже временно
-> берёт на себя эту функцию — при появлении Matrix маппинг переносится
-> туда, а здесь остаётся только список `data_category`.
+> **Провизорно, до approval Data Inventory Matrix.** Правильная цепочка
+> владения — `physical field → data_category` должна принадлежать Data
+> Inventory Matrix, а этот Registry должен зависеть только от стабильного
+> `data_category`, не от конкретных имён полей. Data Inventory Matrix
+> материализована как draft ([[Data Inventory Matrix]], v1.0, draft,
+> 2026-07-24), но ещё не approved. До её approval таблица ниже временно
+> берёт на себя функцию маппинга `physical field → data_category` — после
+> approval DIM маппинг переносится туда, а здесь остаётся только список
+> `data_category`.
 
 Сопоставление `data_category` с реальными полями. **Только поля,
 подтверждённые в ADR-0012 §N (полевой каталог) — остальное оставлено как
@@ -158,7 +170,7 @@ AMD-020 — не придумываю владельца, оставляю ка�
 | `religious_or_diet_signal` | `diet_type` | Спорно — контракт: `green`; ADR-0011 §4.2 (по цитате ADR-0012): `yellow` для vegan/keto/allergies; halal/kosher — под OD-1, требует Legal ruling |
 | `health_related_signal` | `skin_sensitivities` | Спорно — контракт: `green`; ADR-0011 §4.2: `yellow`; под OD-1 |
 
-**Открытый вопрос (не выдумано, честно не хватает источника):** `explicit_goal`,
+**Открытый вопрос.** `explicit_goal`,
 `booking_history`, `interaction_history`, `recommendation_feedback`,
 `session_signal`, `inferred_signal` — для этих категорий нет точного
 маппинга на существующие поля ADR-0012. Требуется либо расширение
@@ -175,15 +187,42 @@ schema `ai-bot-platform`), прежде чем runtime authorization layer см�
 | Scope version | `1.0` (независима от `registry_version` документа) |
 | Purpose | Понять текущий запрос и определить необходимое продолжение диалога |
 | Allowed data | `explicit_goal`, `service_preference`, `provider_preference`, `session_signal` |
-| Consumers | `ai-bot-platform`, `ayla-ai-core` |
-| Allowed operations | `read`, `model_transfer` (только для текущего запроса; persistence — вне этого scope, см. §5.7 `preference_memory`) |
+
+**Permissions (per-consumer):**
+
+```yaml
+permissions:
+  - consumer: ai-bot-platform
+    operations: [read, model_transfer]
+    data_categories: [explicit_goal, service_preference, provider_preference, session_signal]
+  - consumer: ayla-ai-core
+    operations: [model_transfer]        # без read: core не обращается к storage напрямую,
+    data_categories: [explicit_goal, service_preference, provider_preference, session_signal]  # получает уже отфильтрованный context envelope от ai-bot-platform
+```
+
+| Поле | Значение |
+|---|---|
 | Persistent context | **Не разрешена этим scope.** Чтение persistent context для intent understanding требует отдельного активного consent на `preference_memory` (§5.7) |
-| Prohibited | `write`/`delete` (сохранение — не purpose этого scope); `inferred_signal` persistence; health/religious inference; использование для рекламы |
+
+**Required authorizations (каноническая schema, не только описание):**
+
+```yaml
+scope_id: intent_understanding
+required_authorizations:
+  - scope_id: preference_memory
+    condition:
+      context_mode: persistent
+    required_effective_state: granted
+```
+
+| Поле | Значение |
+|---|---|
+| Prohibited | `write`/`delete` (сохранение — не purpose этого scope); `inferred_signal` persistence; health/religious inference; использование для рекламы; прямой storage `read` для `ayla-ai-core` |
 | Authorization basis | `service_necessity` — обработка текущего сообщения не требует отдельного consent record (см. §3 «Разграничение session use и persistent consent») |
 | Consent requirement | Не требуется для текущего запроса (session use) |
 | Validity | Текущая сессия |
 | Revocation effect | Не применимо — scope не создаёт persistent state |
-| Audit events | `consent_scope_checked`, `context_read_allowed`, `context_read_denied` |
+| Audit events | `authorization_scope_checked`, `context_read_allowed`, `context_read_denied` |
 | Scope owner | User Context Domain Owner + Privacy Owner |
 | MVP status | `proposed` |
 | Blocking reason | — |
@@ -195,16 +234,43 @@ schema `ai-bot-platform`), прежде чем runtime authorization layer см�
 | Scope version | `1.0` |
 | Purpose | Подобрать подходящего специалиста или вариант услуги, используя уже доступный контекст |
 | Allowed data | `explicit_goal`, `service_preference`, `provider_preference`, `booking_history`, `recommendation_feedback` |
-| Consumers | `ai-bot-platform`, `ayla-ai-core` |
 | Data source (не consumer) | `beautygo_backend` — источник `booking_history`/availability, не consumer этого scope. Backend не читает persistent preference data через этот контракт; он предоставляет booking-факты как исходные данные (см. §11.4 для разграничения data provider / data consumer) |
-| Allowed operations | `read`, `model_transfer` |
+
+**Permissions (per-consumer):**
+
+```yaml
+permissions:
+  - consumer: ai-bot-platform
+    operations: [read, model_transfer]
+    data_categories: [explicit_goal, service_preference, provider_preference, booking_history, recommendation_feedback]
+  - consumer: ayla-ai-core
+    operations: [model_transfer]        # без read — получает подготовленный candidate context, не обращается к storage
+    data_categories: [explicit_goal, service_preference, provider_preference, booking_history, recommendation_feedback]
+```
+
+| Поле | Значение |
+|---|---|
 | Persistent context | Чтение уже сохранённых предпочтений разрешено при активном `preference_memory` consent (§5.7); этот scope **не создаёт** persistent state сам по себе |
-| Prohibited | `write`/`delete` (см. §5.7); экономически мотивированное ранжирование; sensitive inference; передача лишних идентификаторов модели |
+
+**Required authorizations (каноническая schema):**
+
+```yaml
+scope_id: provider_selection
+required_authorizations:
+  - scope_id: preference_memory
+    condition:
+      context_mode: persistent
+    required_effective_state: granted
+```
+
+| Поле | Значение |
+|---|---|
+| Prohibited | `write`/`delete` (см. §5.7); экономически мотивированное ранжирование; sensitive inference; передача лишних идентификаторов модели; прямой storage `read` для `ayla-ai-core`; `religious_or_diet_signal`/`health_related_signal` до `CSR-OD-4` (см. §11.1) |
 | Authorization basis | `service_necessity` для обработки текущего запроса; чтение persistent preferences зависит от `preference_memory` |
 | Consent requirement | Не требуется для подбора по текущему запросу; persistent preferences — через `preference_memory` |
 | Validity | Текущая сессия для базового сценария |
 | Revocation effect | Не применимо на уровне этого scope — отзыв persistent preferences регулируется `preference_memory` |
-| Audit events | `consent_scope_checked`, `memory_fact_used`, `candidate_selection_completed` |
+| Audit events | `authorization_scope_checked`, `memory_fact_used`, `candidate_selection_completed` |
 | Scope owner | User Context Domain Owner + Privacy Owner |
 | MVP status | `proposed` |
 | Blocking reason | — |
@@ -216,15 +282,28 @@ schema `ai-bot-platform`), прежде чем runtime authorization layer см�
 | Scope version | `1.0` |
 | Purpose | Инициировать полезную рекомендацию без прямого запроса в текущем сообщении |
 | Allowed data | `explicit_goal`, `service_preference`, `provider_preference`, `booking_history`, `interaction_history`, `recommendation_feedback` |
-| Consumers | `ai-bot-platform`, `ayla-ai-core` |
-| Allowed operations | `read`, `model_transfer` |
+
+**Permissions (per-consumer):**
+
+```yaml
+permissions:
+  - consumer: ai-bot-platform
+    operations: [read, model_transfer]
+    data_categories: [explicit_goal, service_preference, provider_preference, booking_history, interaction_history, recommendation_feedback]
+  - consumer: ayla-ai-core
+    operations: [model_transfer]
+    data_categories: [explicit_goal, service_preference, provider_preference, booking_history, interaction_history, recommendation_feedback]
+```
+
+| Поле | Значение |
+|---|---|
 | Persistent context | Обязательна; зависит от активного `preference_memory` consent |
-| Prohibited | Proactive use без отдельного согласия; health/religious inference; скрытое коммерческое продвижение |
+| Prohibited | Proactive use без отдельного согласия; health/religious inference; скрытое коммерческое продвижение; прямой storage `read` для `ayla-ai-core` |
 | Authorization basis | `explicit_consent` — обязателен, session use здесь неприменим по определению scope |
 | Consent requirement | Отдельное явное согласие на proactive personalization |
 | Validity | До отзыва; повторное согласие при MAJOR-изменении scope (§7) |
 | Revocation effect | Немедленно прекратить proactive recommendations; сохранить возможность обычного ответа на прямой запрос |
-| Audit events | `consent_scope_checked`, `proactive_trigger_evaluated`, `proactive_recommendation_shown` |
+| Audit events | `consent_record_checked`, `proactive_trigger_evaluated`, `proactive_recommendation_shown` |
 | Scope owner | Product Owner + User Context Domain Owner + Privacy Owner |
 | MVP status | `blocked` |
 | Blocking reason | Privacy/Legal approval required |
@@ -251,23 +330,53 @@ schema `ai-bot-platform`), прежде чем runtime authorization layer см�
 
 ### 5.5. `recommendation_explanation`
 
+**Упрощение для MVP:** этот scope существует для governance (явно
+называет purpose объяснения), но **не требует отдельной runtime
+authorization проверки и отдельного consent** — объяснение уже выданной
+рекомендации наследует authorization decision исходной рекомендации
+целиком, пока использует только те же данные и не расширяет purpose.
+Отдельная runtime-проверка активируется только когда появится реальная
+функция объяснения, выходящая за рамки простого наследования.
+
 | Поле | Значение |
 |---|---|
 | Scope version | `1.0` |
 | Purpose | Объяснить пользователю, почему была предложена конкретная рекомендация |
 | Allowed data | Только факты, фактически использованные при формировании рекомендации и разрешённые исходным scope |
-| Consumers | `ai-bot-platform`, `ayla-ai-core` |
-| Allowed operations | `read`, `model_transfer`, `user_disclosure` |
+
+**Permissions (per-consumer):**
+
+```yaml
+permissions:
+  - consumer: ai-bot-platform
+    operations: [read, model_transfer, user_disclosure]
+  - consumer: ayla-ai-core
+    operations: [model_transfer, user_disclosure]
+```
+
+**Authorization inheritance (не data_categories — этот scope не имеет
+собственного списка категорий, он ограничен исходной рекомендацией):**
+
+```yaml
+authorization_inheritance:
+  source: recommendation_authorization_decision
+  restrictions:
+    no_new_data_categories: true
+    no_new_purpose: true
+```
+
+| Поле | Значение |
+|---|---|
 | Persistent context | Наследует ограничения исходного recommendation scope |
-| Prohibited | Раскрытие внутренних score, скрытых коммерческих факторов, данных третьих лиц или запрещённых inference |
+| Prohibited | Раскрытие внутренних score, скрытых коммерческих факторов, данных третьих лиц или запрещённых inference; прямой storage `read` для `ayla-ai-core` |
 | Authorization basis | То же основание, что у исходной рекомендации (наследуется, не проверяется заново как отдельный consent) |
-| Consent requirement | То же основание, что у исходной рекомендации |
+| Consent requirement | Не требуется отдельно — наследуется от исходной рекомендации |
 | Validity | Пока доступна recommendation evidence |
 | Revocation effect | Не использовать отозванные persistent facts в новых объяснениях |
 | Audit events | `recommendation_explanation_requested`, `recommendation_explanation_rendered` |
 | Scope owner | Recommendation Owner + Privacy Owner |
-| MVP status | `proposed` |
-| Blocking reason | — |
+| MVP status | `blocked` |
+| Blocking reason | Runtime explanation capability не реализована — `proposed` создавал бы впечатление скорой активации без реальной функции |
 
 ### 5.6. `recommendation_measurement`
 
@@ -275,52 +384,97 @@ schema `ai-bot-platform`), прежде чем runtime authorization layer см�
 |---|---|
 | Scope version | `1.0` |
 | Purpose | Измерять показ, принятие, отказ, запись и attribution результата рекомендации |
-| Allowed data | `interaction_history`, `recommendation_feedback`, идентификаторы recommendation/booking linkage |
-| Consumers | `ai-bot-platform`, `beautygo_backend`, analytics pipeline |
-| Allowed operations | `write`, `read`, `measure` |
+| Allowed data | `interaction_history`, `recommendation_feedback`, `recommendation_booking_linkage` |
+
+**Permissions (per-consumer).** `consumer_component` информативен и не
+участвует в authorization decision (§6) — поэтому два разных набора прав
+для одного и того же `consumer` невозможно выразить через
+`consumer_component`. Вместо этого зарегистрирован отдельный consumer
+`ayla-analytics`:
+
+```yaml
+permissions:
+  - consumer: ai-bot-platform
+    operations: [write]
+    data_categories: [interaction_history, recommendation_feedback]
+  - consumer: beautygo_backend
+    operations: [write]
+    data_categories: [recommendation_booking_linkage]
+  - consumer: ayla-analytics
+    operations: [read, measure]
+    data_categories: [interaction_history, recommendation_feedback, recommendation_booking_linkage]
+```
+
+| Поле | Значение |
+|---|---|
 | Persistent context | Не требует semantic memory; события хранятся по отдельной retention policy |
 | Prohibited | Использование event data для новых персональных inference без отдельного scope |
-| Authorization basis | `approved_legitimate_interest`, reference: `CSR-OD-1` — **не пользовательский consent**; продуктовая аналитика имеет собственное правовое основание, отдельное от personalization consent. Персонализация из этих данных (если появится) потребует `explicit_consent` отдельным scope |
+| Authorization basis | `candidate: approved_legitimate_interest`, `approval_reference: CSR-OD-1`, `status: pending` — **не пользовательский consent** и **не утверждённое основание**; продуктовая аналитика предположительно будет иметь собственное правовое основание, отдельное от personalization consent, но это не финализировано, пока `CSR-OD-1` не решён. Персонализация из этих данных (если появится) потребует `explicit_consent` отдельным scope |
 | Consent requirement | Не требует consent record для базового измерения; персонализация из этих данных — отдельный consent |
 | Validity | Согласно Analytics Retention Policy |
 | Revocation effect | Прекратить персонализированное использование; удаление/обезличивание — согласно утверждённой policy |
 | Audit events | `recommendation_created`, `recommendation_shown`, `recommendation_accepted`, `recommendation_dismissed`, `booking_linked` |
 | Scope owner | Analytics Owner + Privacy Owner |
 | MVP status | `blocked` |
-| Blocking reason | CSR-OD-1 не решён — Legal basis для measurement retention не утверждён |
+| Blocking reason | `CSR-OD-1` (legal basis для measurement retention не утверждён) **и** `CSR-OD-9` (system owner и runtime identity для `ayla-analytics` не определены — см. §3) |
 
 ### 5.7. `preference_memory`
 
-**Новый scope (v0.4).** Разделяет использование предпочтений при подборе
-(§5.1, §5.2 — только `read`) от их сохранения для будущей персонализации
-(`write`). Один и тот же `scope_id` не может одновременно разрешать
-«использовать для текущего подбора» и «сохранить для будущего» — это два
-разных purpose с разным уровнем риска.
+Использование предпочтений для текущего подбора (§5.1, §5.2 — только
+`read`) и их сохранение для будущих сессий (`write`) — разные purposes с
+разным уровнем риска; один `scope_id` не может разрешать оба одновременно.
+
+Permissions заданы отдельно для каждого consumer, не общим списком:
+`ayla-ai-core` (формирует предложение памяти, интерпретирует и рендерит
+контекст) не получает того же доступа на `write`/`delete`, что
+`ai-bot-platform` (runtime orchestration, вызывает storage/tool).
 
 | Поле | Значение |
 |---|---|
 | Scope version | `1.0` |
 | Purpose | Сохранять явно подтверждённые предпочтения пользователя для будущей персонализации |
 | Allowed data | `service_preference`, `provider_preference` |
-| Consumers | `ai-bot-platform`, `ayla-ai-core` |
-| Allowed operations | `write`, `read`, `delete` |
+
+**Permissions (per-consumer):**
+
+```yaml
+permissions:
+  - consumer: ai-bot-platform
+    operations: [read, write, delete, model_transfer]
+    data_categories: [service_preference, provider_preference]
+  - consumer: ayla-ai-core
+    operations: [model_transfer]        # без read — см. пояснение семантики ниже
+    data_categories: [service_preference, provider_preference]
+```
+
+`ai-bot-platform` — единственный consumer с `read`/`write`/`delete`
+(runtime orchestration, обращается к storage/retrieval boundary напрямую).
+`ayla-ai-core` — только `model_transfer`; прямой доступ на чтение
+storage, запись или удаление ему не разрешён. User Context service — не
+consumer этого
+scope, а storage enforcement layer (см. §6 Enforcement ownership).
+
+| Поле | Значение |
+|---|---|
 | Persistent context | Это единственный scope, создающий persistent context для предпочтений |
-| Prohibited | `inferred_signal`; `health_related_signal`; `religious_or_diet_signal` — запись только явно подтверждённых, не выведенных фактов |
+| Prohibited | `inferred_signal`; `health_related_signal`; `religious_or_diet_signal` — запись только явно подтверждённых, не выведенных фактов; `write`/`delete` от `ayla-ai-core` |
 | Authorization basis | `explicit_consent` — обязателен для любой `write`-операции |
 | Consent requirement | Отдельное явное согласие; без него — данные не сохраняются, только session-only обработка через §5.1/§5.2 |
 | Validity | До отзыва или MAJOR-изменения scope (§7) |
 | Revocation effect | Прекратить использование сохранённых предпочтений в `provider_selection`/`intent_understanding`; данные помечаются `revoked`, не обязательно удаляются немедленно (retention policy) |
-| Audit events | `consent_scope_checked`, `memory_fact_written`, `memory_fact_used`, `memory_fact_deleted` |
+| Audit events | `consent_record_checked`, `memory_fact_written`, `memory_fact_used`, `memory_fact_deleted` |
 | Scope owner | User Context Domain Owner + Privacy Owner |
 | MVP status | `proposed` |
 | Blocking reason | — |
 
-**Это один из трёх scopes, реально необходимых для MVP** (наряду с
-`intent_understanding` и `provider_selection` в их read-only форме выше) —
-остальные четыре (`proactive_recommendation`, `cross_domain_personalization`,
-`recommendation_explanation`, `recommendation_measurement`) могут
-оставаться `blocked`/`proposed` без остановки запуска session-only +
-opt-in-persistence MVP.
+**Однозначно про первый релиз:** для базового session-only MVP
+обязательны только два scope — `intent_understanding` и
+`provider_selection` (§10.1). `preference_memory` **не блокирует первый
+релиз** — это scope **MVP Phase 2** (opt-in persistent personalization,
+§10.2). Остальные четыре (`proactive_recommendation`,
+`cross_domain_personalization`, `recommendation_explanation`,
+`recommendation_measurement`) могут
+оставаться `blocked`/`proposed` без остановки запуска **MVP Phase 1**.
 
 ## 6. Runtime authorization contract
 
@@ -328,12 +482,24 @@ opt-in-persistence MVP.
 scope, §5) — разные оси; запрос ссылается на `scope_version` того scope,
 который запрашивается, а не на версию всего документа.
 
+**`registry_version` не участвует в authorization decision.** Это поле
+только для traceability и аудита — несовпадение `registry_version` между
+запросом и текущим состоянием документа не должно приводить к `deny`.
+Только `scope_version_mismatch` (по конкретному scope) — основание для
+отказа.
+
+**Обязательное правило поддержания документа:** каждый пример в этом
+документе должен использовать `registry_version`, равный текущему
+значению `version` во frontmatter, даже будучи информативным полем —
+несовпадение вводит читателя в заблуждение.
+
 Каждый запрос к persistent user context должен содержать:
 
 ```yaml
 scope_id: provider_selection
 scope_version: "1.0"              # версия scope (§5.2), не registry_version документа
-registry_version: "0.4"           # версия этого документа на момент запроса, информативно
+registry_version: "1.0"           # версия этого документа на момент запроса, информативно
+context_mode: session | persistent   # session — без обращения к сохранённым фактам; persistent — требует зависимый scope, см. ниже
 subject_id: "<user-id>"
 tenant_id: "<tenant-id>"
 consumer: ai-bot-platform          # системный идентификатор — только из списка Consumers scope (§5)
@@ -347,6 +513,66 @@ purpose_context:
   recommendation_id: "<optional-recommendation-id>"
 ```
 
+### Dependent authorization scopes
+
+`provider_selection` и `intent_understanding` разрешают **использовать**
+данные для конкретной цели, но не разрешают сами по себе **хранить и
+повторно использовать** их между сессиями — это разрешает только
+`preference_memory` (§5.7). Когда `context_mode: persistent`, authorization
+layer обязан проверить **оба** разрешения одновременно, не одно вместо
+другого:
+
+```yaml
+# Объявление зависимости — фиксируется в самом scope (§5.1, §5.2)
+# Единственный канонический формат (см. schema ниже) — не должен
+# расходиться с примерами в §5.1/§5.2
+scope_id: provider_selection
+required_authorizations:
+  - scope_id: preference_memory
+    condition:
+      context_mode: persistent
+    required_effective_state: granted
+```
+
+**Каноническая schema `required_authorization`:**
+
+```yaml
+required_authorization:
+  scope_id: string
+  condition:
+    context_mode: session | persistent
+  required_effective_state: granted
+```
+
+Ответ при успехе перечисляет оценку каждого вовлечённого scope:
+
+```yaml
+decision: allow
+evaluated_scopes:
+  - scope_id: provider_selection
+    result: allow
+  - scope_id: preference_memory
+    result: allow
+    basis: active_consent
+```
+
+При отсутствии зависимого consent — отказ явно называет, какой scope не
+прошёл проверку, не просто общий `deny`:
+
+```yaml
+decision: deny
+reason: required_scope_not_authorized
+failed_scope_id: preference_memory
+```
+
+**Правило:** для `context_mode: session` зависимость `preference_memory`
+не проверяется вообще — session-only обработка не требует persistent
+consent ни при каких обстоятельствах (§3 «Разграничение session use и
+persistent consent»). Ошибочны обе крайности: проверять только
+`provider_selection` без `preference_memory` (данные читаются без
+проверки согласия на хранение) и проверять только `preference_memory` без
+`provider_selection` (факт используется вне заявленной цели подбора).
+
 Минимальный ответ authorization layer. **Правило для MVP — atomic deny**:
 если хотя бы одна запрошенная категория не разрешена, весь запрос
 отклоняется целиком; partial read не поддерживается (нет
@@ -359,6 +585,7 @@ reason:
   - active_consent
   - session_only
   - consent_missing
+  - consent_expired
   - consent_revoked
   - scope_unknown
   - scope_blocked
@@ -366,11 +593,19 @@ reason:
   - operation_not_allowed
   - data_category_not_allowed
   - tenant_mismatch
+  - tenant_missing
+  - subject_missing
+  - context_mode_invalid
+  - invalid_request
   - scope_version_mismatch
+  - required_scope_not_authorized
+evaluated_scopes: []                # список scope, участвовавших в decision, с индивидуальным result (см. пример выше)
+failed_scope_id: null                # заполняется при deny с reason=required_scope_not_authorized
 scope_version: "1.0"               # версия scope, на который получен ответ
-registry_version: "0.4"            # версия документа на момент decision, для аудита эволюции контракта
+registry_version: "1.0"            # версия документа на момент decision, для аудита эволюции контракта
 allowed_data_categories: []        # при decision=allow — полный список запрошенных категорий; при deny — всегда []
 decision_id: "<audit-id>"
+decision_schema_version: "1.0"     # версия схемы самого authorization response — эволюционирует отдельно от registry_version документа
 ```
 
 Если consumer нуждается только в части категорий — он должен явно
@@ -381,7 +616,7 @@ decision_id: "<audit-id>"
 
 | Ответственность | Owner |
 |---|---|
-| Source of consent facts | User Context / consent service |
+| Source of consent facts | **Pending `CSR-OD-5`** — не назначается здесь как решённый факт. Кандидаты: «Consent Domain» (по AMD-020 Ownership Summary (status: review/proposed)) или «User Context / consent service» (по текущему runtime-дизайну) — это два разных ответа из двух документов, решение не принято |
 | Runtime consent check | `ai-bot-platform` на retrieval boundary |
 | Повторная защита при rendering | `ayla-ai-core` |
 | Source data access control | Owning backend/domain service |
@@ -426,6 +661,13 @@ Privacy review, независимо от того, MINOR оно или MAJOR п
 **Отсутствие consent record.** `decision: deny`, `reason: consent_missing`
 — fail-closed: отсутствие consent не интерпретируется как согласие.
 Consumer получает только session-only данные, если это разрешено scope.
+
+**Malformed или неполный запрос.** Минимальный набор для MVP, без
+детализации до отдельного контракта валидации: отсутствует `subject_id` →
+`reason: subject_missing`; отсутствует `tenant_id` → `reason:
+tenant_missing`; `context_mode` вне `session`/`persistent` → `reason:
+context_mode_invalid`; любая другая структурная ошибка запроса → `reason:
+invalid_request`. Во всех случаях — `decision: deny`.
 
 ### Integration with Recommendation Composer (Killer PRD §5.1)
 
@@ -546,31 +788,79 @@ Audit trail proposal: `proposal_id`, `consent_scope`, `consent_status`
 Минимальные состояния:
 
 ```text
-not_requested
-→ granted
-→ revoked
+not_requested → granted
+not_requested → denied
 
-not_requested
-→ denied
+granted → revoked
+granted → expired
 
-granted
-→ expired
+denied   → granted
+revoked  → granted
+expired  → granted
 ```
 
-Обязательные поля consent record:
+**Явное разграничение mutable/immutable (устраняет двусмысленность):**
+consent record — это **текущий mutable state**: переходы `granted →
+revoked` и `granted → expired` **изменяют статус той же записи**, не
+создают новую. Immutable — это audit trail (события `consent_granted`,
+`consent_revoked`, `consent_expired` и т.д., §9) — каждое изменение
+статуса порождает неизменяемое событие, но сама запись при этом
+обновляется на месте.
+
+**Правило для повторного согласия:** только переход **к `granted` после
+терминального состояния** (`denied`/`revoked`/`expired`) создаёт
+**новую** consent record — прежняя запись остаётся в своём терминальном
+статусе и не возвращается в `granted` повторно (см. также invariant
+уникальности effective state ниже). Пользователь, однажды отказавший или
+отозвавший согласие, может дать его снова в любой момент; система не
+должна интерпретировать прошлый отказ как постоянный запрет.
+
+Обязательные поля consent record — **единственная каноническая схема**
+(устраняет ранее описанные два конкурирующих механизма — `expired` из
+Scope Version Migration и `superseded` из supersession — оставлен только
+`expired` + `previous_consent_record_id`):
 
 ```yaml
 consent_id: uuid
 subject_id: uuid
+tenant_id: uuid              # обязателен для MVP — согласие tenant-scoped, глобальные scopes blocked (§6 Edge Cases)
 scope_id: string
 scope_version: string
 status: granted | denied | revoked | expired
 granted_at: datetime | null
 revoked_at: datetime | null
 expires_at: datetime | null
+previous_consent_record_id: uuid | null   # ссылка на предыдущую lifecycle-запись того же scope_id (не обязательно «действовавшее согласие» — может указывать и на denied/revoked/expired запись)
+transition_reason: renewed_after_expiry | regranted_after_revocation | granted_after_denial | migrated_major_version | null   # почему создана новая запись; null для первого согласия (not_requested → granted)
 source: chat | profile | onboarding | support
-proof_reference: string
+proof:
+  capture_event_id: uuid          # событие, зафиксировавшее момент согласия
+  notice_version: string          # версия текста согласия, которую видел пользователь
+  source_message_id: string | null  # id сообщения в диалоге, если согласие получено через чат
 ```
+
+**Invariant уникальности.** Для комбинации `subject_id` +
+`tenant_id` + `scope_id` может существовать не более одного **effective**
+(активного, то есть `granted` без `revoked`/`expired`) consent state
+одновременно. История изменений сохраняется как immutable audit trail —
+предыдущие записи не удаляются, но не считаются effective. Точная
+реализация ограничения (например,
+`UNIQUE(subject_id, tenant_id, scope_id) WHERE status = 'granted'` или
+эквивалент) — за runtime contract, но правило зафиксировано здесь как
+нормативное.
+
+**MAJOR-изменение версии scope.** При MAJOR-изменении `scope_version`
+(§Scope Version Migration ниже) существующая effective запись переходит в
+`expired` — не вводится отдельный статус `superseded`. Когда пользователь
+предоставляет новое согласие (на новую версию scope), создаётся новая
+запись `status: granted` с `previous_consent_record_id`, указывающим на
+`expired`-запись, и `transition_reason: migrated_major_version`. Тот же
+механизм (`previous_consent_record_id` + соответствующий
+`transition_reason`) используется для любого повторного согласия после
+`denied` (`granted_after_denial`), `revoked` (`regranted_after_revocation`)
+или `expired` без смены версии scope (`renewed_after_expiry`) — не только
+после MAJOR-изменения. Один механизм для всех случаев повторного
+согласия, не два конкурирующих.
 
 Правила:
 
@@ -583,6 +873,18 @@ proof_reference: string
 - отзыв должен стать видимым runtime-компонентам без ожидания новой сессии.
 
 ### Scope Version Migration
+
+**Формат `scope_version`: `MAJOR.MINOR`, PATCH не используется в MVP** —
+редакторские правки текста без изменения authorization behavior не меняют
+`scope_version` вообще (меняется только `registry_version` документа).
+
+- **MAJOR** — изменение purpose, consumers, data categories, operations,
+  authorization basis или revocation behavior.
+- **MINOR** — обратно совместимое расширение (например, добавление
+  опционального поля), не меняющее purpose.
+
+Версию повышает Scope owner (§5, поле «Scope owner») при согласовании с
+Privacy Owner.
 
 > **Design candidate — non-normative до закрытия `CSR-OD-6`.** Пока
 > совместимость между MINOR-версиями scope не решена как открытый вопрос,
@@ -644,7 +946,7 @@ booking history из её source of truth.
 
 ## 9. Audit events
 
-Минимальный набор:
+### 9.1 Authorization and consent events — канонические в этом документе
 
 | Event | Когда создаётся |
 |---|---|
@@ -652,12 +954,34 @@ booking history из её source of truth.
 | `consent_denied` | Пользователь отказал |
 | `consent_revoked` | Пользователь отозвал согласие |
 | `consent_expired` | Согласие истекло |
-| `consent_scope_checked` | Выполнена runtime-проверка |
+| `authorization_scope_checked` | Выполнена runtime-проверка authorization scope (любой scope, независимо от authorization basis) |
+| `consent_record_checked` | Дополнительно к `authorization_scope_checked` — когда scope имеет `authorization_basis: explicit_consent` и проверяется наличие/статус consent record |
 | `context_read_allowed` | Чтение разрешено |
 | `context_read_denied` | Чтение запрещено |
+| `memory_fact_written` | Persistent fact сохранён (`preference_memory`) |
 | `memory_fact_used` | Persistent fact вошёл в рекомендацию |
 | `memory_fact_deleted` | Memory fact удалён |
 | `scope_version_mismatch` | Consent относится к несовместимой версии scope |
+| `scope_version_minor_updated` | MINOR-изменение scope, consent продолжает действовать |
+| `scope_version_major_updated` | MAJOR-изменение scope, старый consent переходит в `expired` |
+| `required_scope_not_authorized` | Dependent authorization scope (§6) не прошёл проверку |
+| `cross_tenant_access_denied` | Запрос отклонён по `tenant_mismatch` (§6 Edge Cases) |
+
+Это полный канонический список для authorization/consent-домена этого
+Registry — не выборка и не минимальный подмножество.
+
+### 9.2 Product and analytics events — informative, не владение
+
+Упоминаются в scope-таблицах §5 для полноты примеров (`candidate_selection_
+completed` в §5.2, `proactive_trigger_evaluated`/`proactive_recommendation_
+shown` в §5.3, `recommendation_created`/`recommendation_shown`/
+`recommendation_accepted`/`recommendation_dismissed`/`booking_linked` в
+§5.6, `recommendation_explanation_requested`/`recommendation_explanation_
+rendered` в §5.5). **Этот Registry не владеет их schema и не является
+источником истины для них** — она определяется owning-контрактами
+(Killer PRD для recommendation-событий, будущий Analytics Event Contract
+для measurement-событий). Consent Registry не должен становиться
+владельцем всех событий продукта.
 
 Audit event не должен содержать полный текст чувствительного факта, если для
 аудита достаточно идентификатора, категории и decision metadata.
@@ -671,7 +995,7 @@ Audit event не должен содержать полный текст чув�
 **Хранение — не решено, зависит от KM-CSR-1.** AMD-020 Pilot Scope Registry
 (approved) уже называет «Consent Domain» нормативным владельцем и source of
 truth для Consent Records, отдельно от User Context Domain. Пока это
-расхождение (KM-CSR-1 из прошлого ревью) не разрешено, конкретная система
+расхождение (KM-CSR-1) не разрешено, конкретная система
 и таблица хранения audit log здесь **не фиксируются** — это предвосхитило
 бы решение, которое ещё не принято.
 
@@ -688,17 +1012,37 @@ truth для Consent Records, отдельно от User Context Domain. Пок�
 **Доступ:** Privacy Owner — полный доступ для compliance audit; Safety
 Owner — доступ к `context_read_denied` для расследования инцидентов;
 Product Owner — доступ к обезличенной aggregate analytics; разработчики —
-только через отдельно утверждённую break-glass процедуру. **Не цитирую
-«ADR-0011 §7.2»** как источник этой процедуры — ADR-0011 в этом проекте
-существует только как несинхронизированная mirror-заглушка без реального
-содержания; ссылка на конкретный параграф непроверяема, пока mirror sync
-не активирован.
+только через отдельно утверждённую break-glass процедуру. **Ссылка на
+конкретный источник этой процедуры не является нормативной до
+синхронизации и approval ADR-0011** — в этом проекте ADR-0011 существует
+только как несинхронизированная mirror-заглушка без реального содержания.
 
-## 10. MVP activation gate
+## 10. MVP activation gates
 
-Persistent personalization может быть включена только когда:
+**Два независимых gate, не один.** Session-only обработка и persistent
+personalization имеют разные условия готовности: session-only не требует
+никаких persistent-scope approvals, а persistent personalization требует
+дополнительно `preference_memory` — единственный scope, создающий
+persistent write.
 
-- scopes `intent_understanding` и `provider_selection` имеют статус `approved`;
+### 10.1 MVP Phase 1 — Session-only vertical slice
+
+Достаточно для запуска базового вертикального среза (сообщение →
+понимание запроса → подбор мастера → запись) без персистентной памяти:
+
+- `intent_understanding` имеет статус `approved`;
+- `provider_selection` имеет статус `approved`;
+- persistent memory отключена (не активирована технически, не только по
+  политике);
+- proactive recommendations, cross-domain personalization и persistent
+  inferred signals — отключены.
+
+### 10.2 MVP Phase 2 — Opt-in persistent preferences
+
+Отдельно, требуется дополнительно к 10.1:
+
+- `preference_memory` имеет статус `approved`;
+- `CSR-OD-5` (канонический source of truth для consent records) закрыт;
 - Privacy Owner подтвердил формулировки согласия;
 - runtime authorization contract реализован;
 - consent lifecycle хранится в утверждённом source of truth;
@@ -707,7 +1051,7 @@ Persistent personalization может быть включена только к�
 - реализован negative test: отсутствие consent всегда приводит к deny;
 - реализована команда отключения persistent personalization.
 
-До выполнения gate система работает в режиме:
+До выполнения 10.2 (даже при выполненном 10.1) система работает в режиме:
 
 ```text
 session context only
@@ -717,6 +1061,8 @@ no proactive recommendations
 no cross-domain personalization
 +
 no persistent inferred signals
++
+no persistent preference storage (preference_memory not active)
 ```
 
 ## 11. Отношение к Killer PRD
@@ -758,14 +1104,22 @@ Composer» выше.
 | Поле | Sensitivity Zone | Consent Scope |
 |---|---|---|
 | `preferred_time_slots` | `green` (по контракту) | `provider_selection` |
-| `diet_type=vegan` | `yellow` (ADR-0011 §4.2, по цитате ADR-0012) | `provider_selection` |
+| `diet_type=vegan` | `yellow` (ADR-0011 §4.2, по цитате ADR-0012) | `blocked pending CSR-OD-4; scope не назначен` |
+| `skin_sensitivities` | `yellow` (ADR-0011 §4.2) | `blocked pending CSR-OD-4; scope не назначен` |
 | Подтверждённая беременность | `red` (единственный явный пример `red` в ADR-0012) | зависит от scope, использующего этот факт |
 
-**Исправление относительно предложенного примера:** аллергии (`vegan/keto/
-allergies`) в ADR-0012 дословно отнесены к `yellow`, **не** `red` — я не
-могу подтвердить пример «`allergy=peanuts` → `red`» и не вношу его в этом
-виде. Единственный подтверждённый пример `red` в корпусе — подтверждённая
-беременность.
+**Явное правило (устраняет конфликт с §4/§5.2):** `diet_type` и
+`skin_sensitivities` относятся к `data_category` `religious_or_diet_signal`
+и `health_related_signal` (§4), оба заблокированы до `CSR-OD-4`. До
+закрытия `CSR-OD-4` эти поля **не могут входить** ни в `provider_selection`,
+ни в `preference_memory`, ни в model context ни при каких обстоятельствах —
+несмотря на зону `yellow` (не `red`), consent scope для них не назначен.
+Таблица выше показывает только sensitivity zone для иллюстрации оси
+классификации, не разрешение на использование.
+
+**Уточнение по зоне аллергий:** аллергии (`vegan/keto/allergies`) в
+ADR-0012 дословно отнесены к `yellow`, не `red`. Единственный
+подтверждённый пример `red` в корпусе — подтверждённая беременность.
 
 Runtime-проверка: authorization layer проверяет оба измерения — если хотя
 бы одно возвращает отказ (`consent_scope` не разрешён ИЛИ zone
@@ -792,16 +1146,14 @@ consent_requirement: отдельное явное согласие по пар�
 impact assessment; user research на понимание cross-domain consent;
 Measurement Framework для оценки полезности.
 
-**Про иллюстративный пример: сознательно не привожу конкретный сценарий
-здесь.** Предложенный в ревью пример («сканирует завтрак → дефицит
-витамина D → рекомендует массаж») — это тот самый единственный food-first
-сценарий, который был явно исключён из Ayla Product Vision (v1.0→v1.1) как
+**Конкретный иллюстративный сценарий не фиксируется здесь.** Единственный
+food-first сценарий («сканирует завтрак → дефицит витамина D →
+рекомендует массаж») исключён из канона Ayla Product Vision (v1.0→v1.1) как
 противоречащий AYLA-DEC-0002 и Killer PRD §2.2/§4 (четыре равноправных
-триггера, еда — не центр). Использование этого примера здесь вернуло бы
-устаревшую формулировку в канон через другой документ. Если нужен
-иллюстративный пример cross-domain personalization — его стоит взять из
-одного из четырёх официальных trigger-сценариев Killer PRD §4, не
-изобретать заново.
+триггера, еда — не центр) и не должен повторно появляться здесь.
+Иллюстративные примеры cross-domain personalization определяются Killer
+PRD §4 (один из четырёх официальных trigger-сценариев), не изобретаются
+заново в этом документе.
 
 ## 11.3 Integration with Data Export (AMD-020 C5)
 
@@ -809,7 +1161,7 @@ Measurement Framework для оценки полезности.
 > целиком в AMD-020 C5, здесь только точка соприкосновения с consent
 > metadata.
 
-**Не пересказываю C5 упрощённо — ссылаюсь на его реальную модель.**
+**Модель экспорта не дублируется здесь — только точка соприкосновения с C5.**
 `AMD-020 C5 Pilot Personal Context Export-Forget Contract` уже определяет
 `operation_id`, `operation_type: export|delete`, исполнителя `W3`, и
 барьерную/идемпотентную обработку запросов — это не переизобретается
@@ -839,11 +1191,10 @@ history, что «directly contradicts AMD-020 exclusion»). Any данные,
 
 ## 11.4 Integration with Minor Protection
 
-**Не могу подтвердить «ADR-0011 §10» как источник.** ADR-0011 в этом
-проекте существует только как несинхронизированная mirror-заглушка
-(`status: planned`, содержания нет) — то же ограничение, что я уже отмечал
-для «§7.2» в этом ревью. Фиксирую идею как **открытый вопрос**, не как
-подтверждённое правило:
+**Требование не является нормативным до синхронизации и approval
+ADR-0011.** ADR-0011 в этом проекте существует только как
+несинхронизированная mirror-заглушка (`status: planned`, содержания нет).
+Фиксируется как **открытый вопрос**, не как подтверждённое правило:
 
 **Открытый вопрос:** если ADR-0011 (после синхронизации) определяет защиту
 несовершеннолетних через блокировку yellow/red записей независимо от
@@ -864,6 +1215,7 @@ ADR-0011, не фиксируется здесь как решение.
 | CSR-OD-6 | Совместимость consent между MINOR-версиями scope | Scope version migration |
 | CSR-OD-7 | Разделить Registry на нормативное ядро (правила, scopes, authorization basis, lifecycle) + отдельный Consent Runtime Authorization Contract (request/response, errors, tenant isolation, versioning) — интеграционные разделы (§6 integration, §11) остаются informative до решения | Структура документа, не блокирует MVP-контент |
 | CSR-OD-8 | Identity/tenancy контракт для global user scope (`tenant_id=null`) | Любое использование глобальной (не tenant-scoped) памяти — сейчас `blocked` |
+| CSR-OD-9 | System owner и runtime identity для `ayla-analytics` — отдельный сервис, модуль внутри `ai-bot-platform`, или часть backend | `recommendation_measurement` |
 
 **Примечание о дублировании ID:** `CSR-OD-4` — тот же вопрос, что `OD-1` в
 ADR-0012/Killer PRD (diet_type/skin_sensitivities/religious inference,
@@ -897,7 +1249,7 @@ Legal ruling). Это один открытый вопрос под тремя �
 | Утверждение scope purposes | Product Owner |
 | Privacy review | Privacy Owner |
 | Legal basis и тексты согласия | Legal |
-| Consent storage и API | User Context Domain |
+| Consent storage и API | User Context Domain (delivery; нормативное владение — pending CSR-OD-5) |
 | Retrieval enforcement | `ai-bot-platform` |
 | Rendering/grounding enforcement | `ayla-ai-core` |
 | Source data enforcement | Owning backend domains |
@@ -905,6 +1257,185 @@ Legal ruling). Это один открытый вопрос под тремя �
 | KB validation and navigation | Product Architecture |
 
 ## 14. Change Log
+
+> Этот журнал отражает историю изменений документа и не является
+> нормативной частью спецификации, включая формулировки, описывающие
+> процесс ревью. Нормативно только текущее состояние §1–§10 (см. пометку
+> Normative/Informative в начале документа).
+
+### v1.0 — 2026-07-27 — Канонизация
+
+- устранены замечания ревью: frontmatter приведён к schema v1.12; ссылки на устаревший идентификатор Pilot Scope Registry нормализованы в AMD-020; актуализирован статус Data Inventory Matrix (материализована, draft); исправлен статус AMD-020 PSR (review/proposed, не approved); добавлены depends_on на AMD-020 PSR и DIM; delivery ownership отделён от нормативного владения;
+- статус документа: review → approved; добавлена секция Approval;
+- scopes `intent_understanding` и `provider_selection` остаются `proposed` (см. §15).
+
+### v0.9 — 2026-07-27 — Шестое ревью: последние контрактные несогласованности
+
+**Статус:** `draft` → `review` (owner decision, 2026-07-27) — документ
+готов к передаче на Architecture/Privacy review. Session-only MVP Phase 1
+(§10.1) не блокирован; persistent Phase 2, `recommendation_measurement` и
+`ayla-analytics` ownership остаются открытыми вопросами для review, не
+блокерами перехода статуса.
+
+**P1 (все 7 пунктов):**
+- `ayla-analytics` — статус уточнён: не подтверждённый runtime identity,
+  добавлено `CSR-OD-9` (system owner для аналитики), `recommendation_
+  measurement` заблокирован по двум причинам (`CSR-OD-1` и `CSR-OD-9`).
+- `required_authorizations` — унифицирован формат между §5 и §6 (был:
+  `condition: context_mode == persistent` / `required_status`; стало:
+  вложенный `condition: {context_mode: persistent}` /
+  `required_effective_state` везде). Добавлена каноническая schema.
+- `reason` enum дополнен: `consent_expired`, `tenant_missing`,
+  `subject_missing`, `context_mode_invalid`, `invalid_request` — все
+  значения, использовавшиеся в прозе, но отсутствовавшие в enum.
+- §9 разделён на **9.1 Authorization and consent events** (канонические
+  здесь) и **9.2 Product and analytics events** (informative — schema и
+  ownership у Killer PRD / будущего Analytics Event Contract, не у этого
+  Registry).
+- Явно разграничены mutable consent record (статус меняется на месте:
+  `granted→revoked`, `granted→expired`) и immutable audit trail (события
+  §9) — устранена двусмысленность; новая запись создаётся только при
+  переходе к `granted` после терминального состояния.
+- `replaces_consent_id` переименован в `previous_consent_record_id` +
+  добавлен `transition_reason` (`renewed_after_expiry`,
+  `regranted_after_revocation`, `granted_after_denial`,
+  `migrated_major_version`) — снята некорректная семантика «замена
+  действовавшего согласия» там, где согласия раньше не было (после
+  `denied`).
+- «Source of consent facts» в Enforcement ownership (§6) исправлено с
+  утверждённого «User Context / consent service» на честный `Pending
+  CSR-OD-5` с перечислением кандидатов (Consent Domain по AMD-020 vs
+  User Context по текущему дизайну) — устранено одновременное назначение
+  владельца и признание, что владелец не определён.
+
+**P2:**
+- Убраны последние следы истории правки из нормативного текста (§3 про
+  `ayla-analytics`).
+- §10.1/§10.2 переименованы в явные «MVP Phase 1 — Session-only vertical
+  slice» / «MVP Phase 2 — Opt-in persistent preferences» — убрана
+  смешанная формулировка «session-only + opt-in-persistence MVP».
+
+### v0.8 — 2026-07-27 — Пятое ревью: consumer_component, lifecycle, audit registry
+
+**P0:**
+- `consumer_component` окончательно исключён из влияния на authorization
+  decision (как и было заявлено) — вместо него в `recommendation_measurement`
+  зарегистрирован отдельный consumer `ayla-analytics`. Помечен как новый,
+  неподтверждённый нигде в проекте идентификатор.
+- Устранено расхождение `expired` (Scope Version Migration) vs `superseded`
+  (invariant) — оставлен один механизм: MAJOR-изменение → `expired`,
+  повторное согласие → новая запись с `replaces_consent_id`. Единая
+  каноническая схема consent record (была продублирована дважды с разными
+  полями).
+
+**P1:**
+- Зарегистрирована `recommendation_booking_linkage` в §4 вместо неформального
+  «booking linkage identifiers».
+- `read` убран у `ayla-ai-core` в `preference_memory` (было пропущено в
+  прошлой правке, хотя уже применено везде остальные). Добавлена глобальная
+  семантика `read` (storage/retrieval boundary) vs `model_transfer`
+  (минимизированный context envelope) в §3.
+- §5.7: формулировка «один из трёх scopes для MVP» исправлена — только
+  `intent_understanding`+`provider_selection` обязательны для первого
+  релиза, `preference_memory` — scope второго этапа.
+- Audit event registry синхронизирован: добавлены `authorization_scope_checked`,
+  `consent_record_checked`, `memory_fact_written`, `required_scope_not_authorized`
+  в мастер-список §9; `consent_scope_checked` переименован в
+  `consent_record_checked` в §5.3/§5.7 (устраняет смешение «проверка scope»
+  и «наличие consent record»).
+- `required_authorizations` формализован как каноническая YAML schema в
+  §5.1/§5.2 (не только табличное описание).
+
+**P2:**
+- Остатки review-history языка убраны из нормативного текста (§6 —
+  registry_version rule, заголовок Dependent authorization scopes).
+- `recommendation_measurement` authorization basis переведён на
+  `candidate/pending` формулировку — не выдаёт нерешённый `CSR-OD-1` за
+  утверждённое основание.
+- `recommendation_explanation` — `data_categories: [inherits from source...]`
+  заменён на структурированный `authorization_inheritance` блок.
+
+### v0.7 — 2026-07-27 — Четвёртое ревью: dependent scopes, permission model, lifecycle
+
+**P0:**
+- Введён механизм **dependent authorization scopes**: `context_mode`
+  (`session`/`persistent`) в runtime-запросе; `required_authorizations` в
+  §5.1/§5.2, ссылающийся на `preference_memory`; ответ теперь включает
+  `evaluated_scopes` (результат по каждому вовлечённому scope) и
+  `failed_scope_id` при отказе. Устраняет ранее нерешённый вопрос, как
+  проверяются одновременно «разрешение хранить» и «разрешение
+  использовать для конкретной цели».
+- §11.1: `diet_type`/`skin_sensitivities` исправлены — были ошибочно
+  привязаны к `provider_selection`, что противоречило §4/§5 (обе категории
+  заблокированы до `CSR-OD-4`). Теперь явно `blocked pending CSR-OD-4`.
+- `registry_version` в runtime-примерах — снова расходился с версией
+  документа (уже в третий раз за сессию); исправлен, добавлено
+  обязательное правило поддержания актуальности примеров.
+
+**P1:**
+- Per-consumer permissions распространены на все семь scopes (ранее —
+  только `preference_memory`); везде, где было применимо, `ayla-ai-core`
+  лишён прямого `read` к storage — оставлен только `model_transfer`/
+  `user_disclosure` (platform передаёt подготовленный context envelope).
+- «analytics pipeline» (незарегистрированное свободное название) заменено
+  на `ai-bot-platform` + `consumer_component: analytics-pipeline`.
+- Ревью-история удалена из нормативных §5.7 и §10 — оставлены только
+  правила, без упоминаний версий и «предыдущая версия ошибочно…».
+- Consent lifecycle дополнен переходами `denied/revoked/expired → granted`
+  с явным правилом: новая запись, старая — immutable history.
+- Добавлена supersession между версиями scope: `status: superseded`,
+  `supersedes_consent_id`, `superseded_at` — отличается от `revoked`
+  (пользовательский отзыв) и `expired` (истечение срока).
+
+**P2:**
+- `consent_scope_checked` → `authorization_scope_checked` для scopes без
+  `explicit_consent` (§5.1, §5.2) — точнее отражает, что проверяется
+  authorization, не обязательно наличие consent.
+- `proof_reference: string` заменён на структуру (`capture_event_id`,
+  `notice_version`, `source_message_id`).
+- Добавлен `decision_schema_version`, независимый от `registry_version`.
+- `recommendation_explanation` переведён с `proposed` на `blocked` —
+  точнее отражает отсутствие реализованной runtime-функции.
+
+### v0.6 — 2026-07-27 — Третье ревью: activation gate, permissions, canonical style
+
+**P0:**
+- `registry_version` в обоих runtime-примерах исправлен на `0.5`
+  (актуально на момент правки); явно зафиксировано, что
+  `registry_version` не участвует в authorization decision.
+- §10 разделён на два независимых gate: **10.1 Session-only MVP gate**
+  (`intent_understanding` + `provider_selection`) и **10.2 Persistent
+  Personalization gate** (добавлен `preference_memory approved` + `CSR-OD-5`
+  — ранее отсутствовали в условиях активации persistent-режима).
+- `preference_memory` (§5.7) переведён на per-consumer permissions:
+  `ai-bot-platform` — `read/write/delete`, `ayla-ai-core` — только
+  `read/model_transfer`. Устранено декартово произведение разрешений.
+  Открытый вопрос: распространять ли per-consumer модель на остальные
+  шесть scopes — не сделано в этой правке.
+
+**P1:**
+- `service_necessity` — добавлена оговорка: техническая категория, не
+  юридическое заключение.
+- `tenant_id` добавлен в схему consent record; добавлен invariant
+  уникальности effective consent state (`subject_id`+`tenant_id`+`scope_id`).
+- Ревью-жаргон убран из нормативного текста (§4.1, §5.7, §6, §9, §11.1,
+  §11.2, §11.4) — формулировки вида «не выдумано», «предложенный в
+  ревью», «не могу подтвердить» заменены на нормативные («открытый
+  вопрос», «требует решения Product Architecture», «не является
+  нормативным до синхронизации»). История обсуждения остаётся только в
+  Change Log.
+
+**P2:**
+- Добавлена явная пометка Normative (§1–§10) / Informative (§11.x) в
+  начале документа.
+- `recommendation_explanation` (§5.5) явно упрощён: наследует
+  authorization исходной рекомендации, не требует отдельной runtime
+  authorization проверки до появления реальной функции объяснения.
+- `session_signal` получил владельца (Conversation / User Context Domain)
+  вместо «не применимо» — persistence и ownership разведены как разные
+  измерения.
+- Формализован SemVer для `scope_version` (MAJOR/MINOR, кто повышает).
+- Добавлен дисклеймер о ненормативности Change Log.
 
 ### v0.5 — 2026-07-27 — P1/P2 полировка
 
@@ -1042,3 +1573,15 @@ Legal ruling). Это один открытый вопрос под тремя �
 
 - документ материализован как planned knowledge node;
 - зафиксированы назначение, владельцы и связь с Killer PRD и AMD-020.
+
+## 15. Approval
+
+**Status:** Approved
+
+**Owner:** Founder / Product Architecture
+
+**Approval date:** 2026-07-27
+
+**Decision reference:** owner direction 2026-07-27 (канонизация по запросу владельца после устранения P0/P1 замечаний ревью)
+
+**Scope status note:** scopes `intent_understanding` и `provider_selection` остаются `proposed`; их перевод в `approved` — отдельное решение до MVP Phase 1 gate (§10.1).

@@ -4,7 +4,7 @@ title: Ayla
 type: moc
 status: review
 activation_status: pending-infrastructure
-version: "1.2"
+version: "1.3"
 owner: Product Architecture
 priority: P0
 knowledge_area:
@@ -86,7 +86,8 @@ Reviewed nodes (прошли перенос и проверку):
 | [[Ayla Domain and Metadata Registry]] | 1.0 | review / pending infrastructure | карта schema и ownership |
 | [[Ayla Product Vision]] | 1.4 | review / pending infrastructure | видение продукта и сегменты |
 | [[Ayla User Journey Specification]] | 1.2 | review / pending infrastructure | experience contract |
-| [[Ayla]] | 1.2 | review / pending infrastructure | навигация и migration state |
+| [[Consent Scope Registry]] | 1.0 | approved | scopes согласий и authorization contract |
+| [[Ayla]] | 1.3 | review / pending infrastructure | навигация и migration state |
 
 Draft / proposed nodes (в vault, НЕ канон; approval ограничен AYLA-DEC-0011):
 
@@ -102,7 +103,6 @@ Draft / proposed nodes (в vault, НЕ канон; approval ограничен A
 | [[Ayla Core Domain Model Specification]] | 1.0 | draft / proposed | заглушка, требует наполнения |
 | [[Ayla Domain Capability Registry]] | 1.2 | draft / proposed | реестр capabilities (AYLA-DEC-0012) |
 | [[Ayla Repository Responsibility Matrix]] | 0.1 | draft / proposed | ответственность репозиториев |
-| [[Consent Scope Registry]] | 0.5 | draft | scope согласий |
 | [[Data Inventory Matrix]] | 1.0 | draft | классы данных и владение |
 
 Таблицы отражают фактическое состояние vault и не считаются
@@ -286,6 +286,12 @@ Root MOC готов к approval, когда:
 - ссылки разрешаются без migration warnings.
 
 ## Change Log
+
+### v1.3 — 2026-07-27
+
+- Consent Scope Registry канонизирован (v1.0, approved) и перемещён из
+  draft-таблицы в reviewed set; версия схемы в Governance Status
+  актуализирована до v1.11/v1.12 ранее в рамках v1.2.
 
 ### v1.2 — 2026-07-27
 
