@@ -4,7 +4,7 @@ title: Ayla Decision Log
 type: decision-log
 status: review
 activation_status: pending-infrastructure
-version: "0.7"
+version: "0.8"
 owner: Founder / Product Architecture
 priority: P0
 knowledge_area:
@@ -438,7 +438,56 @@ reviewed-изменением после проверки commit миграци�
   Ayla Domain Context Map и Core Domain Model (MVP slice вместо полной
   канонизации); новые документы волн 1–4.
 
+### AYLA-DEC-0015 — MVP Monetary Boundary (OD-MVP-PAY-1)
+
+**Дата:** 2026-07-27 · **Статус:** действует
+
+- **Решение:**
+  1. CAP-023 Payment Processing остаётся `mvp_scope: out`,
+     `platform_scope: in`, `activation_status: deferred`.
+  2. MVP включает ограниченный provider-side monetary flow,
+     необходимый для: списания подписки; списания booking fee 90 ₽;
+     обработки результата списания; обновления billing status;
+     применения provider eligibility; минимальной reconciliation
+     с YooKassa.
+  3. Ограниченный monetary flow не считается активацией полной
+     Payment Processing capability и не создаёт универсальный
+     payment domain.
+  4. Вне MVP остаются: клиентская онлайн-оплата; wallet; payouts;
+     refunds; chargebacks; универсальный split-payment; полноценный
+     payment lifecycle; financial ledger.
+  5. YooKassa входит в Required Integrations только в пределах
+     provider-side monetary flow.
+  6. CAP-022 Billing Eligibility является MVP-active.
+  7. CAP-014 Safety Policy Enforcement имеет статус mandatory
+     cross-cutting requirement (`user_visible_capability: false`).
+  8. CAP-018 AI Orchestration and Tool Execution имеет статус
+     mandatory enabling technical capability
+     (`user_visible_capability: false`).
+- **Основание:** Thesis §6 (автосписание подписки/fee через YooKassa)
+  противоречило OD-CAP-4 (CAP-023 deferred), создавая скрытый
+  архитектурный конфликт. Разделение «полноценная payment capability»
+  (lifecycle, refunds, ledger, disputes) и «ограниченный провайдерский
+  денежный срез» (charge attempt → result → billing status →
+  eligibility) снимает конфликт без построения payment domain.
+  Минимальный контур оформляется как `mvp_commercial_integration`
+  внутри Scope Contract, а не как отдельная capability.
+- **Затрагивает:** Ayla MVP Scope and Release Contract (§4 разделён на
+  product/enabling capabilities, §5.1, §6 YooKassa); Ayla Domain
+  Capability Registry (CAP-022 → MVP-active, release_role CAP-014/018 —
+  при переводе записей в MVP-active, волна 2 AYLA-DEC-0014); MVP
+  Architecture (minimal YooKassa adapter); открытые вопросы Scope
+  Contract по платежам, CAP-014/018, персонам пилота и YooKassa —
+  закрыты.
+
 ## Change Log
+
+### v0.8 — 2026-07-27
+
+- новая запись AYLA-DEC-0015 (MVP Monetary Boundary, OD-MVP-PAY-1):
+  CAP-023 deferred, ограниченный provider-side monetary flow в MVP,
+  YooKassa только для этого контура, CAP-022 MVP-active, release_role
+  CAP-014/018; применено в Scope Contract v0.2.
 
 ### v0.7 — 2026-07-27
 

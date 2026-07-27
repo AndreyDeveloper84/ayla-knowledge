@@ -4,7 +4,7 @@ title: Ayla MVP Scope and Release Contract
 type: specification
 status: draft
 decision_status: proposed
-version: "0.1"
+version: "0.2"
 owner: Product Owner
 priority: P0
 knowledge_area:
@@ -86,11 +86,11 @@ Phase Exit Criteria) и здесь не переопределяются.
 - **Территория пилота:** Пенза; дата пилота зафиксирована отдельным решением
   AYLA-DEC-0003 и в этом документе не дублируется — при переносе даты
   пересматривается решение, а не этот контракт.
-- **Персоны:** определены на уровне продукта в [[Ayla Product Vision]] §11.
 
-> **Открытый вопрос (из Thesis §10, не закрыт здесь):** действуют ли все три
-> персоны Vision §11 одинаково для пилота в Пензе, или пилот — валидация
-> подмножества.
+**Персоны пилота (owner decision 2026-07-27):** пилот проверяет только
+персоны основного end-to-end сценария (§3): клиент, ищущий услугу или
+специалиста; соло-мастер; малый салон до трёх мастеров. Остальные персоны
+[[Ayla Product Vision]] §11 — стратегические, не release blockers.
 
 ## 3. Primary End-to-End Scenario
 
@@ -120,52 +120,56 @@ MVP User Journey (производный срез [[Ayla User Journey Specificat
 
 ## 4. Included Capabilities
 
-Список включённых capability — дословно из [[Ayla MVP Documentation Roadmap]]
-§1.4. Маппинг на Capability ID выполнен по canonical names
-[[Ayla Domain Capability Registry]] §6 и помечен как **proposal**: в §9 MVP
-Scope Matrix реестра все записи, кроме CAP-023, имеют `mvp_scope:
-undetermined`; перевод MVP-active записей — отдельная задача волны 2
-(AYLA-DEC-0014), а не содержимое этого документа.
+Основа списка — [[Ayla MVP Documentation Roadmap]] §1.4; разделение на две
+группы и включение CAP-014/CAP-018/CAP-022 — по AYLA-DEC-0015 (MVP Monetary
+Boundary и enabling capabilities, owner decision 2026-07-27). Маппинг на
+Capability ID выполнен по canonical names
+[[Ayla Domain Capability Registry]] §6 и остаётся **proposal** до перевода
+записей в MVP-active (волна 2, AYLA-DEC-0014): в §9 MVP Scope Matrix реестра
+все записи, кроме CAP-023, имеют `mvp_scope: undetermined`.
+
+### 4.1 Product capabilities (user-visible)
 
 | # | Included capability | Capability ID (proposal) | Ограничение MVP |
 |---|---|---|---|
-| 1 | Conversation Experience | CAP-016 | Только сквозной сценарий §3 |
-| 2 | Intent Understanding | CAP-003 | Минимальный набор intent types (Roadmap §3.1) |
-| 3 | Consent Management | CAP-002 | Минимальный scope — только scopes, необходимые Phase 1/2 ([[Consent Scope Registry]] §10) |
-| 4 | Personal Context | CAP-001 | Только whitelist персональных фактов (Roadmap §3.4): способ общения, категории услуг, предпочтение времени, предыдущая подтверждённая услуга, явно подтверждённые ограничения, согласие на персонализацию |
-| 5 | Service Catalog | CAP-008 | Seed catalog пилотных провайдеров |
-| 6 | Provider Management | CAP-009 | Минимальный профиль провайдера |
-| 7 | Availability | CAP-010 | Актуальные слоты пилотных провайдеров |
-| 8 | Recommendation Formation | CAP-004 | Primary recommendation + alternatives; без продвинутого ML ranking (Roadmap §3.2) |
+| 1 | Intent Understanding | CAP-003 | Минимальный набор intent types (Roadmap §3.1) |
+| 2 | Recommendation Formation | CAP-004 | Primary recommendation + alternatives; без продвинутого ML ranking (Roadmap §3.2) |
+| 3 | Appointment Management | CAP-011 | Создание, подтверждение, перенос, отмена записи |
+| 4 | Service Catalog | CAP-008 | Seed catalog пилотных провайдеров |
+| 5 | Provider Management | CAP-009 | Минимальный профиль провайдера |
+| 6 | Availability | CAP-010 | Актуальные слоты пилотных провайдеров |
+| 7 | Consent Management | CAP-002 | Минимальный scope — только scopes, необходимые Phase 1/2 ([[Consent Scope Registry]] §10) |
+| 8 | Personal Context | CAP-001 | Только whitelist персональных фактов (Roadmap §3.4): способ общения, категории услуг, предпочтение времени, предыдущая подтверждённая услуга, явно подтверждённые ограничения, согласие на персонализацию |
 | 9 | Explanation | CAP-005 | Объяснение «почему эта рекомендация» — обязательно (Конституция Ст. VII) |
-| 10 | Appointment Management | CAP-011 | Создание, подтверждение, перенос, отмена записи |
-| 11 | Notification | CAP-021 | Транзакционные уведомления по записи |
-| 12 | Attribution | CAP-013 | Минимальный direct linkage: `recommendation_id` → qualified action ([[Killer PRD]] §6) |
-| 13 | Audit | CAP-026 | Только критические события (consent, authorization, booking, safety) |
+| 10 | Notification | CAP-021 | Транзакционные уведомления по записи |
+| 11 | Attribution | CAP-013 | Минимальный direct linkage: `recommendation_id` → qualified action ([[Killer PRD]] §6) |
+| 12 | Conversation Experience | CAP-016 | Только сквозной сценарий §3 |
 
-Дополнительные нормативные ограничения Included Scope (факты из источников):
+### 4.2 Mandatory enabling capabilities (`user_visible_capability: false`)
 
-- Safety gates ([[Killer PRD]] §8, Roadmap §7.3) и deterministic checks —
-  обязательны как cross-cutting требования ко всем included capabilities, без
-  расширения списка.
-- Автономные действия без подтверждения пользователя запрещены (Roadmap §1.2
-  out of scope; Конституция).
+Обязательны для релиза, но не являются user-visible продуктовыми функциями
+(AYLA-DEC-0015):
 
-> **Открытый вопрос:** CAP-014 (Safety Policy Enforcement) и CAP-018 (AI
-> Orchestration and Tool Execution) не входят в Included-список Roadmap §1.4,
-> но safety enforcement и tool execution требуются сквозным сценарием.
-> Трактовка (cross-cutting требование vs расширение списка через §11) —
-> owner decision при approval.
+| # | Enabling capability | Capability ID | Release role | Ограничение MVP |
+|---|---|---|---|---|
+| 1 | Safety Policy Enforcement | CAP-014 | `mandatory-cross-cutting`, `mvp_scope: required` | Детерминированные safety gates ко всем product capabilities ([[Killer PRD]] §8, Roadmap §7.3) |
+| 2 | AI Orchestration and Tool Execution | CAP-018 | `enabling-technical-capability`, `mvp_scope: required` | Минимальный набор tools сквозного сценария (Roadmap §6.3) |
+| 3 | Audit and Observability | CAP-026 | `mandatory-cross-cutting` | Только критические события (consent, authorization, booking, safety) |
+| 4 | Provider monetary integration (Billing Eligibility) | CAP-022 | MVP-active | Только минимальный provider-side charge flow по §5.1; полноценный Billing — deferred (§5) |
+
+Дополнительное нормативное ограничение Included Scope (факт из источников):
+автономные действия без подтверждения пользователя запрещены (Roadmap §1.2
+out of scope; Конституция).
 
 ## 5. Deferred Capabilities
 
-Явно отложено (источник — Roadmap §1.4 Deferred; CAP-023 — факт по OD-CAP-4,
-остальные CAP-маппинги — proposal):
+Явно отложено (источник — Roadmap §1.4 Deferred; CAP-023 — по OD-CAP-4 в
+редакции AYLA-DEC-0015, остальные CAP-маппинги — proposal):
 
 | Deferred capability | Capability ID (proposal) | Основание |
 |---|---|---|
-| Payment Processing | CAP-023 | **Факт:** `mvp_scope: out`, `platform_scope: in`, `activation_status: deferred` — OD-CAP-4 (AYLA-DEC-0012), Registry §9 |
-| Полноценный Billing | CAP-022 | Roadmap §1.4 |
+| Payment Processing | CAP-023 | Полноценная payment capability deferred. В MVP допускается только минимальный provider-side charge flow для подписки и booking fee, определённый отдельным integration contract. Клиентская оплата, wallet, payouts, refunds и универсальный payment lifecycle не входят в MVP. |
+| Полноценный Billing (сверх §5.1) | CAP-022 | Roadmap §1.4; минимальный provider monetary integration MVP-active по AYLA-DEC-0015 (§4.2) |
 | Advanced Outcome Learning | CAP-007 | Roadmap §1.4; полноценное outcome learning — только если потребуется пилоту (Roadmap §1.2) |
 | Сложная Experimentation Platform | CAP-025 | Roadmap §1.4; базовые метрики §9 этим не отменяются |
 | Расширенный Marketplace Search | CAP-024 | Roadmap §1.4; весь marketplace — out (Roadmap §1.2) |
@@ -173,23 +177,38 @@ undetermined`; перевод MVP-active записей — отдельная �
 | Глубокая provider verification | часть CAP-009 | Roadmap §1.4 |
 | Автоматическая обработка health outcomes | CAP-006/CAP-007 | Roadmap §1.4; медицинская диагностика и автоматические выводы о здоровье запрещены ([[Killer PRD]] §9, Roadmap §1.2) |
 
+### 5.1 MVP Provider Monetary Boundary
+
+Факт — решение AYLA-DEC-0015 (owner decision 2026-07-27, OD-MVP-PAY-1):
+
+В MVP входит ограниченный денежный контур провайдера:
+
+- списание подписки;
+- списание booking fee 90 ₽;
+- обработка результата попытки списания;
+- обновление billing status;
+- применение eligibility gate;
+- минимальная reconciliation с платёжным провайдером.
+
+Этот контур **не означает активацию CAP-023 Payment Processing** и не создаёт
+универсальный payment domain.
+
+Вне scope остаются:
+
+- клиентская онлайн-оплата услуг;
+- wallet и внутренний баланс;
+- payouts;
+- refunds;
+- chargebacks;
+- split settlement как универсальная capability;
+- полноценный financial ledger.
+
 Также вне MVP (факты из [[Ayla MVP Product Thesis]] §7 и Roadmap §1.2/§1.3):
 
 - Telegram как канал (AYLA-DEC-0004);
-- внутренний баланс/кошелёк провайдера с выводом T+24ч — эпик этапа 2
-  (AYLA-DEC-0008);
 - сложная программа лояльности; несколько стран; продвинутые ML-модели;
   сложные модели обучения, долгосрочные cohort mechanics, глубокая
   оптимизация ranking, сложная monetization attribution.
-
-> **Открытый вопрос (расхождение источников, требует owner decision):**
-> Thesis §6 включает в MVP автосписание подписки и booking fee с провайдера
-> через сохранённую карту (AYLA-DEC-0007) и split per-master через YooKassa
-> (AYLA-DEC-0008), а CAP-023 Payment Processing имеет `mvp_scope: out`
-> (OD-CAP-4). Граница между «провайдерским денежным контуром пилота» и
-> deferred Payment Processing в источниках явно не проведена; до owner
-> decision этот документ трактует CAP-023 как deferred, а клиентскую
-> онлайн-оплату — как опциональную (AYLA-DEC-0006).
 
 ## 6. Required Integrations
 
@@ -206,9 +225,10 @@ undetermined`; перевод MVP-active записей — отдельная �
   backend допустим как модульный монолит).
 - **LLM provider** — через provider abstraction ayla-ai-core; определён
   model/provider fallback (Roadmap §9.1).
-
-> **Proposal (не факт):** интеграция с YooKassa не включается в Required
-> Integrations до закрытия открытого вопроса §5 о денежном контуре пилота.
+- **YooKassa** — обязательная интеграция только для provider-side charge
+  flow: подписка, booking fee 90 ₽, payment result callback и минимальная
+  reconciliation. Клиентская онлайн-оплата и полноценный Payment Processing
+  остаются вне MVP (AYLA-DEC-0015).
 
 ## 7. Required Channels
 
@@ -317,6 +337,28 @@ MVP-принципов Thesis §8.3.
 > Этот журнал отражает историю изменений документа и не является нормативной
 > частью спецификации. Нормативным считается текущее состояние разделов 1–12.
 
+### v0.2 (2026-07-27) — Применено AYLA-DEC-0015 (MVP Monetary Boundary)
+
+- **§5.1** добавлен: MVP Provider Monetary Boundary (provider-side charge
+  flow: подписка, booking fee 90 ₽, charge result, billing status,
+  eligibility gate, минимальная reconciliation) — без активации CAP-023.
+- **§5** строка Payment Processing переписана по AYLA-DEC-0015; строка
+  Billing уточнена: CAP-022 MVP-active только в части §5.1.
+- **§6** добавлена обязательная интеграция YooKassa (только provider-side
+  charge flow); статус proposal снят.
+- **§4** разделён на §4.1 Product capabilities (12 user-visible) и §4.2
+  Mandatory enabling capabilities: CAP-014 (`mandatory-cross-cutting`,
+  `mvp_scope: required`), CAP-018 (`enabling-technical-capability`,
+  `mvp_scope: required`), CAP-026, минимальный provider monetary integration
+  (CAP-022).
+- **§2** зафиксировано owner decision по персонам пилота (клиент, ищущий
+  услугу/специалиста; соло-мастер; малый салон до трёх мастеров); остальные
+  персоны Vision §11 — стратегические, не release blockers.
+- Закрыты открытые вопросы v0.1: денежный контур, статус CAP-014/CAP-018,
+  персоны пилота, интеграция YooKassa — по AYLA-DEC-0015 / owner decision
+  2026-07-27. Остаются открытыми: маппинг CAP-ID до волны 2 (§4) и правило
+  сокращения scope (§11).
+
 ### v0.1 (2026-07-27) — Initial draft
 
 - Документ создан по AYLA-DEC-0014 и [[Ayla MVP Documentation Roadmap]] §1.4.
@@ -332,7 +374,9 @@ MVP-принципов Thesis §8.3.
 ## 12. Approval
 
 **Status:** Draft — pending Product Owner review. Approval невозможен до
-закрытия открытых вопросов §4, §5 и выполнения предусловий §10 п. 2–3.
+выполнения предусловий §10 п. 2–3. Маппинг CAP-ID (§4, proposal) подлежит
+сверке при переводе записей Registry в MVP-active (волна 2, AYLA-DEC-0014) и
+не блокирует approval этого документа.
 
 Для approval необходимы:
 
