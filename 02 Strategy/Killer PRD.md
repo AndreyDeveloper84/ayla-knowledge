@@ -4,7 +4,7 @@ title: Killer PRD v1.4 — Сценарий с памятью в основе
 type: specification
 status: draft
 decision_status: proposed
-version: "1.4"
+version: "1.4.1"
 owner: Product Owner
 priority: P0
 knowledge_area:
@@ -32,7 +32,7 @@ security_sensitivity: medium
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-21
-updated: 2026-07-22
+updated: 2026-07-27
 review_cycle: before-major-change
 depends_on:
   - "[[Ayla Decision Log]]"
@@ -499,6 +499,10 @@ authorization_decision:
 | Authorization decision по purpose/data_category/consumer/operation | OD-K9 | Consent Scope Registry implementation; Composer integration test |
 | `canonical_status` в `.knowledge/schema.yaml` | OD-K11 | Schema amendment; validator update |
 | Декомпозиция diet_type/skin_sensitivities и запрет religion inference | OD-1 | Schema/contract amendment; Legal review |
+| Приоритет сценариев: четыре равноправных triggers | OD-K1 | §4 PRD; Owner Decisions §12 |
+| Economic-neutrality check как проверяемое правило ranking | OD-K3 | §5.3 Recommendation Composer; `ranking_economic_neutrality_alert` |
+| `useful_memory_coverage` — leading metric, а не North Star | OD-K4 | §7.1 Иерархия метрик; §7.4 Руководящий принцип |
+| Primary recommendation ≠ единственная; альтернативы по запросу/отказу | OD-K7 | §5.1 Recommendation Composer; §6.1 killer_moment; event schema |
 
 ---
 
@@ -644,6 +648,17 @@ OD-1 блокирует persistent processing и recommendation use затрон
 
 ## 14. Change Log
 
+### v1.4.1 — 2026-07-27
+
+- Исправлена финальная строка документа: «Конец документа — Killer PRD
+  v1.3.1» → «v1.4» (устаревший артефакт предыдущей версии).
+- Добавлены недостающие перекрёстные ссылки в traceability-таблицу §10 для
+  OD-K1, OD-K3, OD-K4, OD-K7 — ранее эти решения фигурировали только в
+  таблице §12 без привязки к конкретным разделам PRD, в отличие от
+  остальных OD-K.
+- Правки редакционные, не меняют содержание решений, блокеров канонизации
+  или acceptance criteria.
+
 ### v1.4 — 2026-07-22
 
 - Встроены owner-ответы OD-K5–OD-K11, OD-1 и OD-2 из `OD-answers.md`.
@@ -716,4 +731,4 @@ OD-1 блокирует persistent processing и recommendation use затрон
 
 ---
 
-**Конец документа — Killer PRD v1.3.1**
+**Конец документа — Killer PRD v1.4**
