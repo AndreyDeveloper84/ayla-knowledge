@@ -4,7 +4,7 @@ title: Ayla
 type: moc
 status: review
 activation_status: pending-infrastructure
-version: "1.1"
+version: "1.2"
 owner: Product Architecture
 priority: P0
 knowledge_area:
@@ -69,20 +69,44 @@ migration_source:
 3. [[Ayla Decision Log]]
 4. Этот Root MOC
 
-До миграции Glossary, Product Thesis и профильных спецификаций они не
-объявляются каноническими nodes этого репозитория.
+До перевода документа в `approved` его каноничность определяется
+frontmatter и validator output, а не наличием файла в vault.
 
 ## Current Canonical Set
+
+Reviewed nodes (прошли перенос и проверку):
 
 | Document | Version | Status | Authority |
 |---|---:|---|---|
 | [[Ayla Constitution]] | 2.2 | approved | фундаментальные права, принципы и ограничения |
-| [[Ayla Knowledge Architecture Specification]] | 1.3 | review / pending infrastructure | управление knowledge repository |
-| [[Ayla Decision Log]] | 0.2 | review / pending infrastructure | межрепозиторные решения Founder |
-| [[Ayla]] | 1.1 | review / pending infrastructure | навигация и migration state |
+| [[Document Quality Bar (W7)]] | 1.0 | approved | планка качества документов |
+| [[Ayla Knowledge Architecture Specification]] | 1.4 | review / pending infrastructure | управление knowledge repository |
+| [[Ayla Decision Log]] | 0.4 | review / pending infrastructure | межрепозиторные решения Founder |
+| [[Ayla Glossary]] | 2.1 | review / pending infrastructure | терминологический стандарт |
+| [[Ayla Domain and Metadata Registry]] | 1.0 | review / pending infrastructure | карта schema и ownership |
+| [[Ayla Product Vision]] | 1.4 | review / pending infrastructure | видение продукта и сегменты |
+| [[Ayla User Journey Specification]] | 1.2 | review / pending infrastructure | experience contract |
+| [[Ayla]] | 1.2 | review / pending infrastructure | навигация и migration state |
 
-Таблица отражает только уже перенесённые и проверенные документы. Она не
-считается release bundle.
+Draft / proposed nodes (в vault, НЕ канон; approval ограничен AYLA-DEC-0011):
+
+| Document | Version | Status | Назначение |
+|---|---:|---|---|
+| [[Ayla MVP Product Thesis]] | 0.4 | draft | product scope и economic boundaries |
+| [[Killer PRD]] | 1.4.1 | draft / proposed | killer flow и память |
+| [[ADR-0012 Dynamic User Model]] | 0.2 | draft / proposed | динамическая модель пользователя |
+| [[AMD-020 C5 Implementation Amendment]] | 0.8 | draft / proposed | поправка реализации C5 |
+| [[AMD-020 C5 Pilot Personal Context Export-Forget Contract]] | 0.8 | draft / proposed | export/forget контракт |
+| [[AMD-020 Pilot Scope Registry]] | 0.3 | review / proposed | memory ownership alignment |
+| [[Ayla Domain Context Map]] | 1.0 | draft / proposed | DDD-методология и контексты |
+| [[Ayla Core Domain Model Specification]] | 1.0 | draft / proposed | заглушка, требует наполнения |
+| [[Ayla Domain Capability Registry]] | 1.2 | draft / proposed | реестр capabilities (AYLA-DEC-0012) |
+| [[Ayla Repository Responsibility Matrix]] | 0.1 | draft / proposed | ответственность репозиториев |
+| [[Consent Scope Registry]] | 0.5 | draft | scope согласий |
+| [[Data Inventory Matrix]] | 1.0 | draft | классы данных и владение |
+
+Таблицы отражают фактическое состояние vault и не считаются
+release bundle.
 
 ## Decision Hierarchy
 
@@ -145,15 +169,19 @@ Implementation-local документ остаётся каноническим 
 
 ## Migration Queue
 
-Очередность P0/P1:
+Мигрировано 2026-07-19 — 2026-07-27: Ayla Glossary, Ayla Domain and
+Metadata Registry, Ayla Product Vision, Ayla MVP Product Thesis, Ayla
+User Journey Specification, Consent Scope Registry, Ayla Repository
+Responsibility Matrix, Ayla Domain Context Map (draft), Ayla Core Domain
+Model Specification (draft-заглушка), Ayla Domain Capability Registry
+(draft), Data Inventory Matrix (draft).
+
+Текущая очередность:
 
 | Order | Document | Reason | Intended outcome |
 |---:|---|---|---|
-| 1 | Ayla Glossary | устранить терминологическую неоднозначность Provider / Specialist | reviewed canonical node |
-| 2 | Ayla Domain and Metadata Registry | дать человекочитаемую карту schema и ownership | reviewed canonical node |
-| 3 | Ayla MVP Product Thesis | зафиксировать product scope и economic boundaries | reviewed canonical node |
-| 4 | Ayla User Journey Specification | связать experience contract с Constitution | reviewed canonical node |
-| 5 | Area MOC | завершить навигацию по заполненным областям | validated navigation |
+| 1 | Ayla Intent Model Specification | единственный отсутствующий predecessor по AYLA-DEC-0011; блокирует approval Capability Registry и Context Map | reviewed canonical node |
+| 2 | Area MOC | завершить навигацию по заполненным областям | validated navigation |
 
 Название в очереди не создаёт Knowledge Node и не означает approval.
 
@@ -258,6 +286,19 @@ Root MOC готов к approval, когда:
 - ссылки разрешаются без migration warnings.
 
 ## Change Log
+
+### v1.2 — 2026-07-27
+
+- Current Canonical Set синхронизирован с фактическим состоянием vault
+  и разделён на reviewed nodes и draft/proposed nodes;
+- Migration Queue очищена от выполненного (Glossary, Domain and Metadata
+  Registry, Product Vision, MVP Product Thesis, User Journey
+  Specification и другие мигрированы 2026-07-19 — 2026-07-27);
+- актуальная очередь: Ayla Intent Model Specification (predecessor по
+  AYLA-DEC-0011), Area MOC;
+- версии Decision Log (0.4) и Knowledge Architecture Specification (1.4)
+  актуализированы; Document Quality Bar и Product Vision добавлены в
+  reviewed set.
 
 ### v1.1 — 2026-07-18
 
