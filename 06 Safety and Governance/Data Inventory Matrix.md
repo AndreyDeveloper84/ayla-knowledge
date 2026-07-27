@@ -1,7 +1,7 @@
 ---
 node_id: ayla.governance.data-inventory-matrix
 title: Data Inventory Matrix
-type: safety-specification
+type: data-inventory-matrix
 status: draft
 version: "1.0"
 owner: Safety and Governance Domain

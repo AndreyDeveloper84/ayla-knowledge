@@ -366,6 +366,91 @@ class KnowledgeValidatorTests(unittest.TestCase):
         for fragment in forbidden_fragments:
             self.assertNotIn(fragment, body)
 
+    def test_schema_v1_12_document_types_are_accepted(self) -> None:
+        for doc_type in (
+            "domain-context-map",
+            "domain-specification",
+            "data-inventory-matrix",
+        ):
+            node = Node(
+                path=ROOT / "05 Architecture" / "Example.md",
+                metadata={
+                    "node_id": "ayla.example",
+                    "title": "Example",
+                    "type": doc_type,
+                    "source_kind": "canonical",
+                    "system_owner": ["ayla-platform"],
+                },
+                body="",
+            )
+            reporter = Reporter()
+
+            check_metadata(node, self.schema, reporter)
+
+            self.assertFalse(
+                any("unknown document type" in error for error in reporter.errors),
+                f"{doc_type} must be a known document type",
+            )
+
+    def test_domain_specification_has_no_required_sections(self) -> None:
+        from scripts.validate_knowledge import check_required_sections
+
+        node = Node(
+            path=ROOT / "05 Architecture" / "Example.md",
+            metadata={
+                "node_id": "ayla.example",
+                "title": "Example",
+                "type": "domain-specification",
+                "source_kind": "canonical",
+                "system_owner": ["ayla-platform"],
+            },
+            body="",
+        )
+        reporter = Reporter()
+
+        check_required_sections(node, self.schema, reporter)
+
+        self.assertEqual([], reporter.errors)
+
+    def test_owner_missing_from_owners_is_warning_not_error(self) -> None:
+        node = Node(
+            path=ROOT / "05 Architecture" / "Example.md",
+            metadata={
+                "node_id": "ayla.example",
+                "title": "Example",
+                "owner": "Domain Architecture",
+                "owners": ["Product Owner", "Platform Architecture"],
+                "source_kind": "canonical",
+                "system_owner": ["ayla-platform"],
+            },
+            body="",
+        )
+        reporter = Reporter()
+
+        check_metadata(node, self.schema, reporter)
+
+        self.assertFalse(any("owners" in error for error in reporter.errors))
+        self.assertTrue(any("owners" in warning for warning in reporter.warnings))
+
+    def test_owner_listed_in_owners_produces_no_warning(self) -> None:
+        node = Node(
+            path=ROOT / "05 Architecture" / "Example.md",
+            metadata={
+                "node_id": "ayla.example",
+                "title": "Example",
+                "owner": "Domain Architecture",
+                "owners": ["Product Owner", "Domain Architecture"],
+                "source_kind": "canonical",
+                "system_owner": ["ayla-platform"],
+            },
+            body="",
+        )
+        reporter = Reporter()
+
+        check_metadata(node, self.schema, reporter)
+
+        self.assertFalse(any("owners" in warning for warning in reporter.warnings))
+
 
 if __name__ == "__main__":
     unittest.main()

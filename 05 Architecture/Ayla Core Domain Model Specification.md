@@ -4,7 +4,7 @@ node_id: ayla.domain.core-domain-model
 title: Ayla Core Domain Model Specification
 title_ru: Спецификация основной доменной модели Ayla
 
-type: specification
+type: domain-specification
 status: draft
 decision_status: proposed
 version: "1.0"

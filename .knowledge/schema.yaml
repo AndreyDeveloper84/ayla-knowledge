@@ -1,7 +1,11 @@
-schema_version: "1.11"
+schema_version: "1.12"
 specification: "../00 Foundation/Ayla Knowledge Architecture Specification.md"
 
 schema_changes:
+  "1.12":
+    - register domain-context-map, domain-specification and data-inventory-matrix document types
+    - define owner vs system_owner semantics; allow optional informative owners array
+    - document classification x export_policy matrix for internal documents
   "1.11":
     - introduce canonical_status to separate source kind from canonical maturity
     - add product-requirements source_kind value
@@ -208,6 +212,18 @@ defaults:
   # before they are backfilled and reviewed.
   canonical_status: draft
 
+field_definitions:
+  owner: >-
+    Accountable organizational role for the document content, its accuracy
+    and its review. Not a system and not a repository.
+  owners: >-
+    Optional informative list of all roles sharing responsibility for the
+    document. The required owner field names the leading (accountable) role
+    and should be one of this list when the list is present.
+  system_owner: >-
+    Systems or repositories (from the system_owner enum) that own the
+    subject matter of the document. Not people and not roles.
+
 conditional_rules:
   domain_context:
     when_knowledge_area:
@@ -244,6 +260,18 @@ conditional_rules:
     when:
       classification: confidential
     allowed_export_policy:
+      - sanitized
+      - metadata-only
+      - prohibited
+  # Documents the standing convention for internal documents: every export
+  # policy value is admissible, so this rule carries no restriction and is
+  # not enforced by the validator. It replaces the rejected dialect value
+  # export_policy: internal-only (see AYLA-DEC-0013).
+  internal:
+    when:
+      classification: internal
+    allowed_export_policy:
+      - full
       - sanitized
       - metadata-only
       - prohibited
@@ -296,6 +324,12 @@ field_constraints:
       - medium
       - high
       - critical
+  owners:
+    optional: true
+    type: list
+    unique_items: true
+    # informative only: validator warns when owner is not an element
+    warn_unless_contains_field: owner
 
 lifecycle_transitions:
   idea: [draft, cancelled]
@@ -410,6 +444,26 @@ document_type_rules:
       - Business Alignment
       - Metrics
       - Constitutional Traceability
+      - Change Log
+  domain-context-map:
+    normative: true
+    require_sections:
+      - Document Status and Purpose
+      - Scope and Source Documents
+      - Context Mapping Method
+      - Domain Classification — Commentary
+  domain-specification:
+    normative: true
+    # require_sections intentionally deferred: the Core Domain Model
+    # Specification is an honest empty draft per AYLA-DEC-0013; sections
+    # are added together with the document template.
+  data-inventory-matrix:
+    normative: true
+    require_sections:
+      - Purpose
+      - Matrix
+      - Definitions
+      - Critical Boundaries
       - Change Log
   dashboard:
     normative: false

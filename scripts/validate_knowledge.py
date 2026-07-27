@@ -250,6 +250,12 @@ def check_metadata(
     ):
         reporter.error(node.label, "system_owner must be a non-empty list")
 
+    owners = metadata.get("owners")
+    if isinstance(owners, list) and owners and metadata.get("owner") not in owners:
+        reporter.warning(
+            node.label, "owner is not listed in the informative owners array"
+        )
+
     if metadata.get("priority") in {"P0", "P1"}:
         for field in ("owner", "review_cycle", "depends_on"):
             if field not in metadata:

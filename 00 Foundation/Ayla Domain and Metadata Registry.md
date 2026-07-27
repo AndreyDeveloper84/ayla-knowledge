@@ -42,7 +42,7 @@ migration_source:
   imported: 2026-07-19
 generated_from:
   path: .knowledge/schema.yaml
-  schema_version: "1.11"
+  schema_version: "1.12"
   command: python scripts/render_domain_registry.py
 ---
 
@@ -56,7 +56,7 @@ generated_from:
 
 Документ предоставляет авторам и reviewers человекочитаемое представление
 машинного metadata-контракта Ayla. Он не создаёт независимый набор enum:
-таблицы ниже детерминированно сгенерированы из schema v1.11.
+таблицы ниже детерминированно сгенерированы из schema v1.12.
 
 ## 2. Source of truth
 
@@ -136,6 +136,9 @@ schema и review migration impact.
 | `terminology-standard` | yes | `Purpose and authority`<br>`Правила использования`<br>`Key term authority matrix`<br>`Change process`<br>`Definition of Done`<br>`Change Log` |
 | `metadata-registry` | yes | `Purpose and authority`<br>`Source of truth`<br>`Required metadata fields`<br>`Controlled vocabularies`<br>`Lifecycle transitions`<br>`Document types`<br>`Relationship semantics`<br>`Ownership model`<br>`Conditional and safety rules`<br>`Update procedure`<br>`Definition of Done`<br>`Change Log` |
 | `user-journey-specification` | yes | `Purpose`<br>`Journey Operating Model`<br>`Journey Overview`<br>`Stage Specifications`<br>`Memory Interaction`<br>`Recommendation and Proactivity Gates`<br>`Cross-channel Experience`<br>`Business Alignment`<br>`Metrics`<br>`Constitutional Traceability`<br>`Change Log` |
+| `domain-context-map` | yes | `Document Status and Purpose`<br>`Scope and Source Documents`<br>`Context Mapping Method`<br>`Domain Classification — Commentary` |
+| `domain-specification` | yes | — |
+| `data-inventory-matrix` | yes | `Purpose`<br>`Matrix`<br>`Definitions`<br>`Critical Boundaries`<br>`Change Log` |
 | `dashboard` | no | — |
 | `source-placeholder` | no | — |
 
@@ -210,6 +213,14 @@ confidential:
   - sanitized
   - metadata-only
   - prohibited
+internal:
+  when:
+    classification: internal
+  allowed_export_policy:
+  - full
+  - sanitized
+  - metadata-only
+  - prohibited
 denied_ai_index:
   when:
     ai_indexing: denied
@@ -262,6 +273,11 @@ data_categories:
   - medium
   - high
   - critical
+owners:
+  optional: true
+  type: list
+  unique_items: true
+  warn_unless_contains_field: owner
 ```
 
 ### AI export policy

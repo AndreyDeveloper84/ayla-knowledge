@@ -4,7 +4,7 @@ node_id: ayla.domain.context-map
 title: Ayla Domain Context Map
 title_ru: Карта доменных контекстов Ayla
 
-type: architecture-specification
+type: domain-context-map
 status: draft
 decision_status: proposed
 version: "1.0"
