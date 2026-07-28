@@ -7,7 +7,7 @@ title_ru: Спецификация основной доменной модел�
 type: domain-specification
 status: draft
 decision_status: proposed
-version: "1.2.2"
+version: "1.2.3"
 
 owner: Domain Architecture
 owners:
@@ -462,45 +462,75 @@ resolved_at:
 superseded_by:
 ```
 
+Нормативный состав runtime output, intent types, slot requirements и инварианты контракта определяются [[Ayla Intent Model Specification]] (Output Contract); настоящий раздел определяет доменную роль, границу lifecycle и владение состоянием Intent.
+
+#### Internal resolution processing ≠ Intent status
+
+Обработка resolution проходит внутренние состояния:
+
+```text
+received → detected → resolving → first output produced
+```
+
+Эти состояния — не значения `Intent.status`: они не сериализуются, не являются orchestration state, не означают intent-level или execution readiness и не запускают downstream processing или side effects. Они существуют только для traces, logs, metrics, recovery и replay.
+
+`detected` — внутреннее lifecycle-состояние процесса resolution (owner ruling KM-IM-1). Оно **не отображается в `unresolved`**: отсутствие output ≠ status `unresolved`.
+
+`intent_id` создаётся при начале resolution, но `status` присваивается только после завершения первого resolution pass; до первого output объект недоступен business consumers. Запрещён default `status = unresolved` для NOT NULL поля (ложная семантика); допустимые реализационные варианты — отдельный processing state, nullable `status` или создание aggregate после первого pass — конкретный вариант не предписывается.
+
+#### Published Intent status
+
 Поле `status` принимает только значения Output Contract [[Ayla Intent Model Specification]]:
 
 ```text
 resolved | needs_clarification | unresolved | superseded | expired | blocked_safety
 ```
 
-Lifecycle (в терминах contract status):
+`unresolved` — consumer-meaningful результат **завершённого** resolution pass (resolver завершил проход без результата), а не признак того, что resolver ещё работает.
+
+Первый публикуемый output создаётся после первого resolution pass и принимает одно из: `resolved`, `needs_clarification`, `unresolved`, `blocked_safety`. Значения `superseded` и `expired` — не результаты resolution pass, а последующие lifecycle-переходы уже опубликованного Intent.
+
+Lifecycle опубликованного Intent (transition matrix по [[Ayla Intent Model Specification]]; семантика переходных событий — pending Domain Event Registry reconciliation, §24, Governance п. 6):
 
 ```text
-unresolved (interim) → needs_clarification → resolved
-        ↘                    ↘ expired
-        ↘ unresolved (terminal)
-        ↘ superseded
-        ↘ blocked_safety
+needs_clarification → resolved | unresolved | expired | superseded
+resolved            → superseded | expired
+unresolved          → superseded | expired
+blocked_safety      → superseded
 ```
 
-Маппинг состояний потока на contract status:
+#### Intent-level readiness
 
-| Состояние потока | Contract status (`Intent.status`) | Комментарий |
-|---|---|---|
-| detected | `unresolved` (interim) | Intent создан, resolution не завершён; не путать с терминальным `unresolved` |
-| clarifying | `needs_clarification` | Задан ровно один clarification-вопрос |
-| resolved | `resolved` | Intent передан в recommendation pipeline |
-| fulfilled | `resolved` | Выполнение действия — не статус Intent; фиксируется downstream (Appointment/Action), Intent остаётся `resolved` |
-| abandoned | `unresolved` (terminal) | Resolution прекращён (UNKNOWN после исчерпания clarification-подходов или отказ пользователя) |
-| superseded | `superseded` | Вытеснен новым intent (correction) |
-| expired | `expired` | `needs_clarification` без ответа до завершения сессии |
-| blocked_safety | `blocked_safety` | Непустые `safety_flags`; recommendation pipeline не запускается |
+`resolved` означает только intent-level readiness (распознанность типа по Output Contract) и ничего более:
 
-События `IntentDetected`, `IntentAbandoned` и `IntentFulfilled` (§11) фиксируют переходы потока и не являются значениями `Intent.status`.
+```text
+resolved ≠ action authorized ≠ action confirmed ≠ action executed ≠ action succeeded
+```
+
+Выполнение действия фиксируется owning downstream capability (Appointment/Action); Intent не меняет свой `status` по факту выполнения.
+
+#### Events
+
+- `IntentDetected` — internal technical/observability event: не integration contract, не запускает capabilities, не используется для attribution, не равен `IntentResolved`.
+- `IntentFulfilled` — производная корреляционная проекция от authoritative downstream event (например, `AppointmentCompleted`), а не самостоятельный факт выполнения.
+- Семантика `IntentResolved`, `IntentAbandoned`, `IntentFulfilled`, `IntentSuperseded`, `IntentExpired` — pending Domain Event Registry reconciliation (§24, Governance п. 6); `IntentResolved` как универсальное событие не использовать до этого решения.
 
 Инварианты:
 
-1. Intent не равен сообщению.
-2. Intent имеет evidence.
-3. Низкая уверенность требует clarification.
-4. Required slots заполняются до irreversible action.
-5. Intent не создает Appointment напрямую.
+1. Intent имеет стабильный `intent_id`.
+2. Query ≠ Intent: Intent не равен сообщению.
+3. Intent имеет evidence.
+4. Низкая уверенность требует clarification.
+5. Required slots заполняются до irreversible action.
 6. Sensitive Intent проходит safety policy.
+7. `detected` ∉ `Intent.status` и `detected` ↛ `unresolved`: внутреннее состояние resolver не отображается в контрактное значение.
+8. `unresolved` присваивается только после завершённого resolution pass.
+9. Output соответствует Output Contract [[Ayla Intent Model Specification]].
+10. `resolved` = intent-level readiness только.
+11. Intent не выполняет side effects и не создаёт Appointment напрямую; выполнение подтверждает owning downstream.
+12. Supersession сохраняет историю.
+13. Blocking safety предотвращает запуск downstream pipeline.
+14. Internal telemetry ≠ публичный контракт.
 
 ### 7.6. Service
 
@@ -905,7 +935,6 @@ RecordOutcome
 AI commands:
 
 ```text
-DetectIntent
 RequestIntentClarification
 ResolveIntent
 CreateRecommendation
@@ -925,6 +954,8 @@ Deferred (активация через change control [[Ayla MVP Scope and Rele
 ```text
 SubmitFeedback
 ```
+
+Примечание: `DetectIntent` исключён из реестра команд (KM-IM-1): `detected` — внутренний этап обработки `ResolveIntent`, а не создание опубликованного результата (§7.5).
 
 ## 11. Domain Events
 
@@ -966,7 +997,6 @@ ContextFactRecorded
 ContextFactConfirmed
 ContextFactCorrected
 ContextFactDeleted
-IntentDetected
 IntentClarificationRequested
 IntentResolved
 IntentSuperseded
@@ -993,6 +1023,7 @@ Technical events — системные факты инфраструктурн�
 
 ```text
 PendingAppointmentExpired
+IntentDetected
 ```
 
 Integration events — фиксируют факты на стыке контекстов:
@@ -1008,7 +1039,7 @@ Deferred (активация через change control [[Ayla MVP Scope and Rele
 FeedbackSubmitted
 ```
 
-Примечание: `IntentDetected`, `IntentAbandoned`, `IntentFulfilled` фиксируют переходы потока и не являются значениями `Intent.status` (§7.5).
+Примечание: `IntentDetected` — internal technical/observability candidate (KM-IM-1): не business и не integration event, не запускает capabilities, не используется для attribution, не равен `IntentResolved` (§7.5). `IntentFulfilled` — производная корреляционная проекция от authoritative downstream event, а не самостоятельный факт выполнения. Семантика `IntentResolved` — pending Domain Event Registry (как универсальное событие не использовать до решения); классификация `IntentAbandoned` (доменное событие vs analytics/session/derived label) — pending reconciliation (§24, Governance п. 6–7). `IntentDetected`, `IntentAbandoned`, `IntentFulfilled` фиксируют переходы потока и не являются значениями `Intent.status` (§7.5).
 
 ## 12. Systems of Record
 
@@ -1018,7 +1049,11 @@ FeedbackSubmitted
 | Consent | Consent Management | YES (purpose-bound authoritative cache с freshness, TTL и invalidation — [[AMD-020 Pilot Scope Registry]], [[Consent Scope Registry]]) | NO | NO |
 | Context Fact | Personal Context | proposal | proposal | proposal |
 | Inference (persistent) | Memory & Identity Domain | proposal | proposal | proposal |
-| Intent | Intent Understanding | proposal | proposal | proposal |
+| Intent aggregate (lifecycle/persistence) | Core Domain owner | proposal | proposal | proposal |
+| Intent Resolution Output Contract | Intent Model / AI Architecture | proposal | proposal | proposal |
+| Internal resolver processing state | AI Runtime (internal telemetry, без публичного контракта — §7.5) | proposal | proposal | NO |
+| Authoritative execution result | owning downstream capability | proposal | proposal | proposal |
+| Cross-intent attribution | Attribution / analytics | proposal | proposal | proposal |
 | Service | Service Catalog | proposal | proposal | proposal |
 | Provider | Provider Management | proposal | proposal | proposal |
 | Specialist | Provider Management | proposal | proposal | proposal |
@@ -1034,6 +1069,8 @@ FeedbackSubmitted
 | Payment result | external deferred (ограниченный контур по AYLA-DEC-0015 — см. §2.2, §17) | proposal | proposal | proposal |
 
 Разграничение ролей для Inference: AI Runtime — producer/processor, который генерирует Inference, но не становится его System of Record. Persistent Inference хранится в Memory & Identity Domain ([[AMD-020 Pilot Scope Registry]], Ownership Summary: Semantic Memory → Memory & Identity Domain). Ephemeral Inference (session-scoped) не имеет persistent System of Record и не переживает сессию.
+
+Разграничение ролей для Intent (KM-IM-1, §7.5): AI Runtime производит resolution, но не становится SoR для Appointment или completed action; authoritative execution result фиксирует owning downstream capability. Internal resolver processing state — внутренняя телеметрия AI Runtime и не является публичным доменным состоянием.
 
 Смысл колонок: Caching allowed — допускается ли кэширование состояния вне SoR; Snapshot allowed — допускается ли snapshot по правилам §13; Replicated — допускается ли реплика состояния в другом контуре. Пометка `proposal` означает, что значение не зафиксировано нормативным источником и требует решения владельца (§24).
 
@@ -1239,6 +1276,8 @@ Deferred / proposal:
 
 Дополнительные связи, не показанные на схеме: Appointment хранит `recommendation_id` (§7.12); Outcome ссылается на `appointment_id` и `recommendation_id` (§7.15); Attribution Link связывает Recommendation с Action через `recommendation_id` (§7.13); Consent ограничивает (gates) обработку Context Fact и Inference (§7.3, §7.4).
 
+Граница resolver (KM-IM-1): Intent Resolver processing (internal, §7.5) → produces → Intent Resolution Result / aggregate state; внутренние состояния resolver (`received`, `detected`, `resolving`) на схеме не отображаются и не являются доменными объектами.
+
 ## 20. Domain Dependency Graph
 
 ```text
@@ -1254,7 +1293,7 @@ Consent ──► Context Fact ──► Intent ──► Recommendation ──�
 Правила чтения графа:
 
 1. Consent не зависит ни от одного объекта. Consent гейтует только обработку на основании согласия — persistent context и personalization по [[Consent Scope Registry]]; факты service delivery обрабатываются на договорном основании и не требуют Consent.
-2. Inference является производной от Context Fact и не создаёт обратной зависимости.
+2. Inference является производной от Context Fact и не создаёт обратной зависимости. Граница: Intent Resolver processing (internal, §7.5) → produces → Intent Resolution Result / aggregate state; internal processing states в граф зависимостей не входят.
 3. Recommendation зависит от resolved Intent; Appointment зависит от Offering/Slot и — только для recommendation-originated appointments — от Recommendation (через `recommendation_id`; универсальная обязательность `recommendation_id` — открытый вопрос, §24, Architecture п. 9); Outcome зависит от Appointment.
 4. Обратных (циклических) зависимостей владения не допускается (§5, §8).
 
@@ -1269,6 +1308,9 @@ Consent ──► Context Fact ──► Intent ──► Recommendation ──�
 5. Inference никогда не становится Fact автоматически (§3.6): переход Inference → подтверждённый Context Fact возможен только через явное подтверждение (user confirmation / verification) с фиксацией provenance (§7.3, инварианты 1–2).
 6. Копирование поля не переносит ownership (§5); snapshot не становится новой authoritative версией (§13).
 7. LLM output не создаёт authoritative state ни для одного объекта модели (§3.5, §14.2).
+8. Internal processing state ≠ published domain state: внутренние состояния обработки (resolver, runtime) не входят в публичные контракты и не запускают downstream (§7.5, KM-IM-1).
+9. Readiness одного слоя не означает readiness downstream: `resolved` Intent — только intent-level readiness, не execution readiness (§7.5).
+10. Ни один internal resolver state не может быть представлен публичным контрактным значением с иным бизнес-смыслом (нарушение §3.10 One Canonical Meaning).
 
 ## 22. Bounded Context Ownership Matrix
 
@@ -1282,7 +1324,7 @@ Consent ──► Context Fact ──► Intent ──► Recommendation ──�
 | Consent | Consent Management | confirmed (AMD-020: Consent Records → Consent Domain; CAP-002) |
 | Context Fact | Personal Context | proposal |
 | Inference (persistent) | Memory & Identity Domain | confirmed (AMD-020, Ownership Summary: Semantic Memory → Memory & Identity Domain) |
-| Intent | Intent Understanding | proposal |
+| Intent | Intent Understanding (разделение владения: aggregate lifecycle/persistence vs Output Contract vs AI Runtime — §12, KM-IM-1) | proposal |
 | Service | Service Catalog | proposal |
 | Provider | Provider Management | proposal |
 | Specialist | Provider Management | proposal |
@@ -1329,7 +1371,7 @@ Consent ──► Context Fact ──► Intent ──► Recommendation ──�
 5. Нужен ли отдельный Attribution context в MVP.
 6. User, Service, Provider, Specialist, Service Offering, Attribution Link и Outcome не имеют определённых lifecycle и per-object commands/events — требуется дополнение до соответствия [[Ayla MVP Documentation Roadmap]] §4.3 (см. §18).
 7. Провенанс записи Change Log v1.1 («восстановленная MVP-aligned версия после удаления предыдущего файла») требует подтверждения владельца документа.
-8. Двойная семантика `Intent.status = unresolved` (interim vs terminal, §7.5): разделить на отдельные значения или зафиксировать текущую модель (v1.3, требует owner decision).
+8. ~~Двойная семантика `Intent.status = unresolved`~~ — **закрыт owner ruling KM-IM-1 (ACCEPTED, 2026-07-28)**: `detected` — internal resolver lifecycle, не входит в Output Contract; `unresolved` — только результат завершённого resolution pass (§7.5).
 9. `recommendation_id` обязателен для всех Appointment или только для recommendation-originated (§7.12, §20) (v1.3, требует owner decision).
 10. Action — полноценный доменный объект или generic `action_id` подлежит удалению из модели (§6.3, §7.13) (v1.3, требует owner decision).
 11. Финальный владелец Service Offering: Provider Management vs Service Catalog — конкретизация п. 1 до единственного owner context (v1.3, требует owner decision).
@@ -1366,7 +1408,8 @@ Consent ──► Context Fact ──► Intent ──► Recommendation ──�
 3. Кто owner tool schemas при конфликте consumers.
 4. Как синхронно обновляются pins consumers.
 5. Какой документ canonical для enum values.
-6. Согласование event names с [[Ayla MVP Documentation Roadmap]] и [[Ayla MVP User Journey Specification]] (включая CamelCase доменных событий vs snake_case audit events CSR §9.1) (v1.3, требует owner decision).
+6. Согласование event names с [[Ayla MVP Documentation Roadmap]] и [[Ayla MVP User Journey Specification]] (включая CamelCase доменных событий vs snake_case audit events CSR §9.1) (v1.3, требует owner decision). Семантика `IntentResolved` — pending Domain Event Registry; как универсальное событие не использовать до решения (KM-IM-1, §7.5).
+7. `IntentAbandoned` — доменное событие vs analytics/session/derived label (KM-IM-1, §7.5, §11) (v1.3, требует owner decision).
 
 ## 25. Approval
 
@@ -1387,3 +1430,4 @@ Consent ──► Context Fact ──► Intent ──► Recommendation ──�
 | 1.2 | 2026-07-28 | Пакет доработок по результатам независимого ревью. A: §7.2 и §8.1 — собственная схема полей Consent заменена ссылкой на [[Consent Scope Registry]] (нормативная структура scope/purpose/policy bindings выведена из документа); §12 — Inference SoR разделён на producer/processor (AI Runtime) и persistent storage (Memory & Identity Domain по [[AMD-020 Pilot Scope Registry]], Ownership Summary), добавлено пояснение про ephemeral Inference; строки Billing eligibility / Payment result приведены к «owning capability defined outside this document» (CAP-022) и «external deferred» без введения новых bounded contexts. B: добавлены §19 Entity Relationship Diagram, §20 Domain Dependency Graph, §21 Global Domain Invariants, §22 Bounded Context Ownership Matrix, §23 Domain Object ↔ Capability Mapping, §8.6–§8.7 Aggregate owns/references/does-not-own для Recommendation и Appointment; §10 Commands сгруппированы (User/System/AI/Administrative) и §11 Events сгруппированы (Business/Technical/Integration) без изменения состава; §12 дополнен колонками Caching allowed / Snapshot allowed / Replicated; бывшие §19–§21 перенумерованы в §24–§26 | Domain Architecture |
 | 1.2.1 | 2026-07-28 | Пакет «внутренние противоречия» + KM-CDM-6. (1) §7.2 — lifecycle/commands/events Consent приведены к актуальной модели [[Consent Scope Registry]] (состояния not_requested/granted/denied/revoked/expired, правило повторного согласия через новую consent record, добавлены DenyConsent/ConsentDenied), делегирование CSR усилено (lifecycle/commands/events нормативно в CSR §7–§9, здесь — сводка); (2) §20 правило 1 — Consent гейтует только обработку на основании согласия (persistent context, personalization), факты service delivery — на договорном основании; ASCII-схема помечена «consent-gated facts only»; (3) §20 правило 3 — зависимость Appointment от Recommendation смягчена до recommendation-originated, универсальность `recommendation_id` вынесена в §24 (Architecture п. 9); (4) §26 — вторая запись 1.1 переименована в 1.1.1, broken reference «§19» исправлена на «§24»; (5) §22 и §23 — добавлены статусы строк confirmed / proposal / unresolved с легендой; (6) §10/§11 — SubmitFeedback и FeedbackSubmitted вынесены в подраздел Deferred (активация через Scope Contract §11), состав сохранён; в §10/§11 добавлены DenyConsent/ConsentDenied для согласованности с §7.2; (7) §24 — добавлены пункты v1.3: двойная семантика Intent.status unresolved, обязательность `recommendation_id`, статус Action, владелец Service Offering, reschedule lifecycle Appointment (Architecture п. 8–12), active Outcome slice (Product п. 6), согласование event names (Governance п. 6) | Domain Architecture |
 | 1.2.2 | 2026-07-28 | Governance repair (без доменных решений): (1) §1 — добавлен Readiness-блок (все гейты No; статус Draft / Proposed — substantively developed, internally incomplete; блокирующие области: identity foundation, scheduling и Appointment, lifecycle completeness, Handoff Coverage Matrix, SoR owners); (2) §2.3 — пояснение `source_kind: canonical` (происхождение, не нормативная зрелость; нормативная сила только при `status: approved` — AYLA-DEC-0013, отклонение `canonical-candidate`); (3) frontmatter `depends_on` дополнен нормативными ссылками ([[Ayla MVP Scope and Release Contract]], [[Ayla MVP Documentation Roadmap]], [[Ayla Intent Model Specification]], [[Consent Scope Registry]], [[AMD-020 Pilot Scope Registry]], [[Ayla Domain Capability Registry]], [[Ayla Decision Log]]); (4) §17 — зарегистрирован cross-source contradiction P1-5 по Feedback (deferred по Scope Contract §5 vs production-blocking по master-reviews-feedback handoff; resolution owner Product Owner), пункт в §24 (Product п. 7); (5) §18 — Acceptance Criteria формализованы в таблицу CDM-AC-01…12 (Criterion / Status / Evidence / Blocker) без изменения содержания критериев | Domain Architecture |
+| 1.2.3 | 2026-07-28 | KM-IM-1 Intent lifecycle boundary (owner ruling, ACCEPTED): (1) §7.5 переработан — разделены internal resolution processing (`received → detected → resolving → first output produced`, не сериализуется, не orchestration/readiness) и published Intent status (6 значений Output Contract [[Ayla Intent Model Specification]]; `unresolved` — только результат завершённого pass; переход «detected → unresolved» и «unresolved (interim)» удалены; guard против default `status = unresolved` для NOT NULL); добавлены подразделы Intent-level readiness (`resolved` ≠ action authorized/confirmed/executed/succeeded) и Events; инварианты пересобраны (14); (2) §11 — `IntentDetected` переведён в technical/observability, `IntentResolved`/`IntentAbandoned` — semantics pending Domain Event Registry, `IntentFulfilled` — derived projection; (3) §10 — `DetectIntent` исключён (detected = внутренний этап `ResolveIntent`); (4) §12 — владение Intent разделено (aggregate lifecycle/persistence, Output Contract, internal resolver state, execution result, cross-intent attribution), AI Runtime не SoR для completed action; (5) §21 — добавлены инварианты 8–10 (internal ≠ published, readiness послойно, запрет подмены бизнес-смысла); (6) §19/§20 — зафиксирована граница Intent Resolver processing → produces → Intent Resolution Result; (7) §24 — Architecture п. 8 закрыт (KM-IM-1), Governance п. 6 дополнен, добавлен Governance п. 7 (`IntentAbandoned`). Статус документа и readiness-блокеры не изменены | Domain Architecture |
