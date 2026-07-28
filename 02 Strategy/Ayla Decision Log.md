@@ -4,7 +4,7 @@ title: Ayla Decision Log
 type: decision-log
 status: review
 activation_status: pending-infrastructure
-version: "1.6"
+version: "1.7"
 owner: Founder / Product Architecture
 priority: P0
 knowledge_area:
@@ -1224,7 +1224,117 @@ KM-IM-1 от 2026-07-27, зарегистрирован 2026-07-28)
   Registry (§9.1); Ayla MVP Scope and Release Contract; будущие API /
   event contracts волны 3 (AYLA-DEC-0014).
 
+### AYLA-DEC-0021 — Availability and Slot Model
+
+**Дата:** 2026-07-28 · **Статус:** действует
+
+- **Решение:**
+  1. **Bookable Slot — вычисляемая проекция без System of Record.**
+     Ключ слота — `(specialist_offering_assignment_id, starts_at)`;
+     assignment_id однозначно определяет tenant, membership, offering,
+     effective_duration и buffers (AYLA-DEC-0020). `slot_id` как
+     постоянный UUID доменной сущности не вводится; для API допустим
+     подписанный projection token с версией входных данных —
+     transport-артефакт, не SoR. Модель «slot as stored entity per
+     offering» отменяется. Кэш проекции — non-authoritative
+     optimization; не порождает доменных событий.
+  2. **System of Record:** Availability Calendar, Availability Rule,
+     Schedule Block, Slot Hold → Availability Management (CAP-010);
+     Bookable Slot — без SoR (derived); Appointment → Appointment
+     Management (CAP-011); внешняя запись YClients — внешняя система;
+     локальная проекция external busy → CAP-010 как Schedule Block с
+     полями `source`, `external_ref`, `source_updated_at`,
+     `observed_at`, `sync_status` и идемпотентным обновлением
+     существующего блока (дубли от повторных webhook запрещены).
+  3. **Slot Hold:** lifecycle `held → confirmed | expired | released`;
+     TTL 15 минут — платформенный параметр. ConfirmAppointment — одна
+     транзакция: блокировать hold/reservation → проверить статус и
+     TTL → повторно проверить актуальные Rule/Block/external busy →
+     создать Appointment → перевести hold в `confirmed` →
+     зафиксировать идемпотентный результат. Истёкший hold не
+     подтверждается; повторный confirm идемпотентен; нарушение
+     занятости → `SLOT_TAKEN`.
+  4. **Защита от двойной записи — DB-enforced по интервалам.** Обычный
+     UNIQUE INDEX недостаточен. Обязателен PostgreSQL exclusion
+     constraint по `tstzrange` ЛИБО единый Time Reservation ledger
+     (`reservation_kind = hold | appointment`, `resource_key`,
+     `occupied_range`, `active`) с exclusion constraint для активных
+     reservation одного ресурса; если Hold и Appointment — разные
+     таблицы, обязательна общая locking boundary для всех путей
+     занятия интервала.
+  5. **Timezone:** хранение UTC; recurring rules — local wall time +
+     IANA timezone календаря доступности (например `Europe/Moscow`);
+     границы дня — в timezone календаря; в MVP календарь один на
+     tenant и наследует `Tenant.default_timezone`; клиенту — время
+     места оказания услуги с явной зоной; timezone устройства — только
+     дополнительная display-проекция; timezone создания записи —
+     snapshot-поле; исторические Appointment не переписываются.
+  6. **Изменение расписания:** создание Schedule Block или изменение
+     Availability Rule немедленно переводит конфликтующие активные
+     hold в `released` с reason `AVAILABILITY_CHANGED` + audit +
+     уведомление активной booking session; Appointment автоматически
+     не изменяются — обязательные remediation items `needs_resolution`
+     (AYLA-DEC-0017 п. 7). События «слот исчез» не существует.
+  7. **G-CalendarSync:** несинхронизированный dual-source запрещён.
+     Определяются: max допустимый возраст синхронизации, поведение при
+     недоступном webhook/import, reconciliation job, мониторинг
+     расхождений, идемпотентность событий, обработка удаления/переноса
+     внешней записи, действие при неизвестном staff_id (quarantined +
+     уведомление), degraded mode. Freshness сверх лимита → Ayla не
+     подтверждает автоматически либо требует синхронной проверки
+     внешней системы; если проверка невозможна — отдельный временный
+     reason code (НЕ `SLOT_TAKEN`). Точный SLA — в integration
+     contract, не в доменном DEC.
+  8. **Offline/admin-записи:** Appointment создаётся без hold, с
+     обязательным audit и теми же overlap-проверками в той же locking
+     boundary; запись вне Availability Rule — явная override-команда с
+     actor и reason; пересечение с другой Appointment запрещено даже
+     override (политика parallel capacity не введена).
+  9. **Self-service мастера (split):** мастер инициирует availability
+     request в пределах своего tenant assignment; SICK_DAY —
+     немедленный эффективный Block `sick_day` + audit + уведомление
+     admin; vacation/planned leave/recurring change — через approval
+     workflow; свободный редактор расписания — deferred; модель и
+     authorization contracts поддерживают self-service requests уже
+     сейчас. Assignment-level `self_disabled` (AYLA-DEC-0020 п. 5) не
+     ограничивается.
+  10. **Горизонт и шаблон:** горизонт проекции 30 дней
+      (tenant-configurable параметр чтения); MVP-шаблон — день недели
+      × интервалы; date exceptions выражаются Schedule Block;
+      recurring weekly rules версионируются
+      (`effective_from`/`effective_until`): изменение будущего pattern
+      создаёт новую версию и не переписывает историческую;
+      произвольный RRULE — deferred.
+- **Основание:** хранимая per-offering модель слота не выражает
+  подтверждённые сценарии (external_busy без услуги, time-off,
+  замещение, hold в session flow) и расходится с эксплуатируемым
+  slots API, возвращающим вычисленные времена. Владелец Availability
+  Slot был unresolved (CDM §22/§24) — закрыт назначением CAP-010.
+  Сценарии подтверждены: master-time-off, master-mobile,
+  master-substitution, master-offboarding, customer-first-time,
+  salon-onboarding handoff (scenario sources, не канон); orch.txt
+  (G-CalendarSync, admin offline), stream1.txt (buffers), UX-T0.txt
+  (hold), booking-rest-contract (вычисляемые слоты, SLOT_TAKEN).
+- **Затрагивает:** Ayla Core Domain Model Specification (§7.10, §7.12,
+  §8, §10–§12, §19–§24 — v1.3); Ayla Domain Event Registry
+  (регистрация событий availability по AYLA-DEC-0025); Ayla MVP Scope
+  and Release Contract (§4.1); зависит от AYLA-DEC-0016, AYLA-DEC-0017,
+  AYLA-DEC-0020. Decision brief:
+  `99 Archive/proposals/decision-brief-availability-slot-model.md`.
+  Неблокирующие открытые пункты: retention блоков/hold; SLA — в
+  integration contract.
+
 ## Change Log
+
+### v1.7 — 2026-07-28
+
+- новая запись AYLA-DEC-0021 (Availability and Slot Model): вычисляемая
+  проекция без SoR; SoR-распределение CAP-010/CAP-011; Slot Hold с TTL
+  и транзакционным confirm; DB-enforced interval exclusion / Time
+  Reservation ledger; UTC + IANA timezone календаря; release holds при
+  изменении расписания + remediation; G-CalendarSync с
+  freshness/degraded/reconciliation; offline без обхода overlap;
+  self-service split; versioned weekly rules.
 
 ### v1.6 — 2026-07-28
 
