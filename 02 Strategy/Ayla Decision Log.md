@@ -4,7 +4,7 @@ title: Ayla Decision Log
 type: decision-log
 status: review
 activation_status: pending-infrastructure
-version: "1.3"
+version: "1.4"
 owner: Founder / Product Architecture
 priority: P0
 knowledge_area:
@@ -1026,7 +1026,118 @@ KM-IM-1 от 2026-07-27, зарегистрирован 2026-07-28)
   (PROVIDE_CONTEXT / CORRECT_CONTEXT — pipeline п. 2); Ayla Core Domain
   Model (Context Fact vs Inference, §6).
 
+### AYLA-DEC-0024 — Memory Contract: жизненный цикл персистентной памяти
+
+**Дата:** 2026-07-28 · **Статус:** действует
+
+- **Решение:**
+  1. **MemoryEntry.** Состав: `memory_id`, `subject_id`, `tenant_id`,
+     `category` (из whitelist, AYLA-DEC-0023), `value` типизированное
+     (`type`, `payload`, `display_text` — свободный текст как единственная
+     форма запрещён), `provenance` (`user_stated` |
+     `user_confirmed_inference`), `consent_scope`, `purpose_tags`,
+     `status`, `created_at`, `updated_at`, `effective_from`,
+     `superseded_by`, `expires_at`, `source_event_id`, `deletion_due_at`.
+     Видимость записи определяется `memory_scope` (`person | tenant |
+     provider`), выводимым из category policy. Запись иммутабельна.
+     `confidence` в canonical Memory Entry запрещён (допустим у
+     MemoryProposal и в audit metadata, не влияет на использование
+     факта).
+  2. **MemoryProposal — отдельная сущность.** Статусы:
+     `pending_confirmation | accepted | rejected | expired`; имеет TTL
+     и истекает при завершении сессии. До подтверждения это не память.
+     MemoryEntry начинается с `active`; статусы: `active | superseded |
+     expired | deletion_pending | deleted`. Цепочка:
+     `proposal.pending_confirmation → accepted → entry.active →
+     superseded | expired | deletion_pending → deleted`; superseded и
+     expired переходят в deletion_pending, если retention policy
+     требует физического удаления.
+  3. **Retrieval — только purpose-limited.** Контракт:
+     `MemoryRetrievalRequest {subject_id, tenant_id, consumer_id,
+     purpose, allowed_categories, session_id, correlation_id}`.
+     Возвращается пересечение: requested categories ∩ allowed for
+     purpose ∩ allowed by consent ∩ readable active entries
+     (`active AND consent_valid AND scope_match AND purpose_allowed AND
+     category_allowed AND not_expired AND not_revoked`). Инвариант:
+     retrieval без declared purpose запрещён; API вида
+     `get_all_memory(subject_id)` запрещён даже внутренним consumers;
+     retrieval аудируется (кто, цель, категории — без обязательного
+     логирования значений).
+  4. **Correction — immutable history.** Update-in-place запрещён;
+     смена active entry атомарна: old → `superseded`
+     (`superseded_by = new_id`), new → `active`. Обязателен
+     `supersession_reason` (`corrected | changed | consolidated |
+     policy_migration`). Category policy определяет cardinality
+     (`single | multi`); для single новая запись атомарно замещает
+     старую. Удаление без замены — НЕ supersession: запись переходит в
+     `deletion_pending`.
+  5. **Revocation — четыре слоя.** (а) Немедленный runtime effect:
+     read gate проверяет актуальное consent state — все затронутые
+     записи становятся unreadable немедленно, независимо от асинхронных
+     обновлений, кэшей и реплик. (б) Записи переводятся в
+     `deletion_pending` с `revoked_at`, `revocation_event_id`,
+     `deletion_due_at`. (в) Distributed deletion по всем копиям и
+     derived artifacts: retrieval cache, vector/search indexes,
+     recommendation profile, precomputed summaries, embeddings,
+     идентифицируемые analytics projections, локальные копии consumers.
+     Инвариант: отзыв применяется ко всем readable и derived
+     representations. (г) После удаления — только content-free
+     tombstone (`memory_id`, `subject_id`, `category`, `status:
+     deleted`, `deleted_at`, `deletion_reason`, `revocation_event_id`);
+     значение и производные исчезают. Физическое удаление — асинхронно
+     с дедлайном по retention manifest. Повторное согласие НЕ
+     восстанавливает старые записи — новая память создаётся только
+     через pipeline. Compliance audit records живут отдельно от Memory
+     domain, не содержат значения и недоступны personalization.
+  6. **Conversation State ≠ Persistent Memory** — разделение по
+     хранилищам и API: ConversationState (`session_id`, `subject_id`,
+     `temporary_slots`, `recent_context`, `unresolved_questions`,
+     `current_intents`, `expires_at`) — session-scoped, короткий TTL,
+     недоступен через Memory Retrieval API. Запрещены batch promotion,
+     automatic summarization и background copying из Conversation State
+     в Persistent Memory. Завершение сессии не создаёт память, не
+     является implicit consent и не подтверждает pending proposals.
+  7. **MemoryCategoryPolicy — machine-readable registry** для каждой
+     whitelist-категории: `category`, `allowed_provenance`,
+     `allowed_scopes`, `allowed_purposes`, `cardinality`, `default_ttl`,
+     `max_ttl`, `requires_explicit_confirmation`, `revocation_behavior`.
+  8. **TTL.** `expires_at` обязателен для категорий с TTL; бессрочность
+     разрешена только policy категории. Expired запись не читается;
+     expiration ≠ deletion — после expiration действует retention
+     policy. User-stated safety constraints подлежат периодическому
+     reconfirmation и не считаются вечной истиной.
+  9. **Идемпотентность.** `source_event_id` уникален в Memory Service
+     (или отдельный idempotency key) — один confirmation event не
+     создаёт двух записей.
+  10. **Ownership.** Memory Service (W3) — единственный владелец всех
+      state transitions. Consumers не могут INSERT/UPDATE MemoryEntry;
+      допустимы только: submit proposal, confirm proposal, request
+      correction, request deletion, retrieve by purpose.
+- **Основание:** без единого контракта жизненного цикла каждый документ
+  описывает память по-своему, а реализация расходится в разночтениях
+  «логическое vs физическое удаление», «чтение из кэша после отзыва»,
+  «ночное копирование диалогов в память». Контракт реализует
+  AYLA-DEC-0023 (whitelist), AYLA-DEC-0016 (subject_id, person-wide
+  deletion), AMD-020 (W3 exclusive write, gate) и Constitution
+  (inference ≠ fact, consent control).
+- **Затрагивает:** AMD-020 Pilot Scope Registry (уточнение gate и
+  deletion); Consent Scope Registry (revocation effects, category
+  policy); будущий MVP Memory Pipeline Contract (роадмап §3.4 — данный
+  DEC является его нормативным ядром); Ayla Domain Capability Registry
+  (CAP-001); Ayla Core Domain Model (Context Fact, §6, §12); retention
+  manifest (отдельный privacy/legal артефакт по AYLA-DEC-0016 п. 7).
+
 ## Change Log
+
+### v1.4 — 2026-07-28
+
+- новая запись AYLA-DEC-0024 (Memory Contract): MemoryEntry с
+  типизированным value и запретом confidence; MemoryProposal отдельно;
+  purpose-limited retrieval с запретом get_all; immutable correction с
+  cardinality policy; revocation в четыре слоя с distributed deletion и
+  content-free tombstone; Conversation State отделён с запретом
+  background promotion; MemoryCategoryPolicy registry; TTL;
+  идемпотентность; W3 — exclusive writer.
 
 ### v1.3 — 2026-07-28
 
