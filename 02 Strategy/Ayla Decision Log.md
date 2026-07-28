@@ -4,7 +4,7 @@ title: Ayla Decision Log
 type: decision-log
 status: review
 activation_status: pending-infrastructure
-version: "1.2"
+version: "1.3"
 owner: Founder / Product Architecture
 priority: P0
 knowledge_area:
@@ -962,7 +962,82 @@ KM-IM-1 от 2026-07-27, зарегистрирован 2026-07-28)
   (Availability/Slot — зависит от effective_duration assignment);
   миграция runtime per-master services (отдельный migration plan).
 
+### AYLA-DEC-0023 — Memory Whitelist (OQ-10): что Ayla имеет право помнить
+
+**Дата:** 2026-07-28 · **Статус:** действует
+
+- **Решение:**
+  1. **Форма whitelist — по категориям + нормативные примеры, не по
+     полям.** Новые поля автоматически наследуют политику своей
+     категории. Инвариант: поле не может существовать вне категории —
+     каждое persistable-поле обязано принадлежать ровно одной
+     whitelist-категории. Каждая категория имеет статус (allowed /
+     requires dedicated consent / forbidden), scope из Consent Scope
+     Registry и основание.
+  2. **Inference никогда не становится persistent memory
+     самостоятельно.** Допустим единственный pipeline:
+     user message → model inference → assistant asks for confirmation →
+     explicit user confirmation → memory candidate → whitelist check →
+     persist. Альтернативных путей не существует; автоматическое
+     сохранение inference запрещено. Неподтверждённый inference живёт
+     только в сессии.
+  3. **User-stated safety constraints — отдельная whitelist-категория.**
+     Разрешено хранить то, что пользователь сам сообщил как ограничение
+     («у меня аллергия на масло ши», «нельзя сильный прогрев»). Память
+     хранит утверждение пользователя, а не медицинский вывод:
+     `user_stated_safety_constraint: "Пользователь сообщил, что…"`, а не
+     `diagnosis: "…"`. Инвариант: Memory хранит user-stated constraints,
+     а не model-derived medical facts. Любые выводы модели о здоровье
+     («похоже, диабет», «вероятно, беременность») запрещены к
+     сохранению всегда.
+  4. **Красная зона — default deny.** По умолчанию запрещено всё
+     чувствительное; разрешается только то, что отдельным owner
+     decision внесено в whitelist. В MVP запрещены: диагнозы;
+     психическое здоровье; сексуальная жизнь; политические взгляды;
+     религия; этническое происхождение; биометрические данные; финансы;
+     содержимое личной переписки как память; live-location;
+     предположения модели; любые иные чувствительные категории без
+     отдельного owner decision.
+  5. **Расширение whitelist — только owner decision** с четырьмя
+     обязательными проверками новой категории: product_value (зачем
+     продукту), privacy_review (почему можно хранить), retention_policy
+     (сколько хранить), deletion_behavior (как удалять и что при отзыве
+     consent).
+  6. **Persistent Memory хранит только устойчивые пользовательские
+     факты.** Долгоживущие предпочтения и ограничения — да («любит
+     спортивный массаж», «не хочет процедур с маслом ши»); состояние
+     текущего разговора — нет («сегодня устал», «сегодня болит
+     голова»). Состояние сессии, временные намерения и контекст
+     разговора относятся к Conversation State и не являются Persistent
+     Memory.
+- **Граница трёх контуров (нормативная):** Conversation Context (живёт
+  в рамках текущего диалога) / Persistent Memory (то, что пользователь
+  осознанно разрешил помнить, в рамках whitelist) / Sensitive Knowledge
+  (принципиально не сохраняется).
+- **Основание:** OQ-10 — P0-узел: whitelist определяет границу продукта;
+  ошибка здесь требует переработки Memory Contract, Consent, Privacy,
+  Recommendation, Retrieval и UX. Решение превращает скелет из Consent
+  Scope Registry v1.0 (категории данных), Constitution (inference ≠
+  fact) и AMD-020 (memory gate) в явный нормативный контракт.
+- **Затрагивает:** Consent Scope Registry (согласование категорий и
+  scope); будущий Memory Contract (данный DEC — его §1-основание);
+  Ayla Domain Capability Registry (CAP-001); AMD-020 Pilot Scope
+  Registry; Killer PRD (memory thesis); Ayla Intent Model Specification
+  (PROVIDE_CONTEXT / CORRECT_CONTEXT — pipeline п. 2); Ayla Core Domain
+  Model (Context Fact vs Inference, §6).
+
 ## Change Log
+
+### v1.3 — 2026-07-28
+
+- новая запись AYLA-DEC-0023 (Memory Whitelist, OQ-10): whitelist по
+  категориям с наследованием политики полями; единственный pipeline
+  inference → confirmation → persist; user-stated safety constraints vs
+  запрет model-derived medical facts; красная зона default deny;
+  расширение только через owner decision с 4 проверками; persistent
+  memory — только устойчивые факты, не состояние сессии. Номер 0023
+  присвоен вне очереди: 0021/0022 зарезервированы planned-ссылками
+  DEC-0020 под Availability/Reschedule.
 
 ### v1.2 — 2026-07-28
 
