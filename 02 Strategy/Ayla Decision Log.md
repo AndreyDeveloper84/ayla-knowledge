@@ -4,7 +4,7 @@ title: Ayla Decision Log
 type: decision-log
 status: review
 activation_status: pending-infrastructure
-version: "0.9"
+version: "1.2"
 owner: Founder / Product Architecture
 priority: P0
 knowledge_area:
@@ -17,7 +17,7 @@ system_owner:
   - shared
 source_repository: ayla-knowledge
 created: 2026-07-18
-updated: 2026-07-27
+updated: 2026-07-28
 source_kind: canonical
 classification: internal
 data_sensitivity: none
@@ -628,7 +628,370 @@ reviewed-изменением после проверки commit миграци�
   изменяются. Decision brief:
   `99 Archive/proposals/decision-brief-tenant-membership-roles.md`.
 
+### AYLA-DEC-0018 — Phase 2 and Product Thesis Validation Gate (proposed)
+
+**Дата:** 2026-07-28 · **Статус:** proposed — pending Product Owner approval
+
+- **Тип:** product-architecture-decision. **Owner:** Product Owner.
+  **Scope:** MVP release model, memory-first product thesis, product
+  validation, persistent personalization. **Связанные решения:**
+  AYLA-DEC-0002, AYLA-DEC-0014.
+- **Предупреждение:** запись фиксирует варианты и рекомендацию, но не
+  изменяет approved release gates до owner approval и синхронного
+  обновления затрагиваемых документов (Consent Scope Registry §10,
+  Ayla MVP Scope and Release Contract §3, Ayla MVP User Journey
+  Specification) через отдельный Change Control.
+- **Контекст:** утверждённая MVP-модель (Consent Scope Registry §10,
+  Scope Contract §3) определяет два activation gate. Phase 1 — session-only
+  vertical slice без persistent memory, самостоятельный релизный gate.
+  Phase 2 — opt-in persistent preferences, не является условием релиза
+  Phase 1. Memory-first тезис (AYLA-DEC-0002) утверждает, что ценность
+  Ayla — в накопленном понимании пользователя: извлечь разрешённый
+  контекст → применить → получить outcome → скорректировать память →
+  улучшить повторное взаимодействие. Phase 1 проверяет техническую
+  работоспособность сквозного сценария (intent, recommendation,
+  explanation, booking, safety, session-only context), но не может
+  доказать: что Ayla помнит пользователя между journey; что повторный
+  journey точнее/короче; что память корректно обновляется после outcome;
+  что контекст не устаревает и не создаёт lock-in. Вопрос: считается ли
+  продуктовая гипотеза подтверждённой после успешного Phase 1 или для
+  этого обязателен Phase 2?
+- **Decision drivers:** (1) не блокировать технический запуск Phase 1;
+  (2) не объявлять memory-first гипотезу проверенной без памяти;
+  (3) не переписывать approved gates задним числом — разделять release
+  readiness, technical pilot success и product thesis validation;
+  (4) сохранить измеримость — отдельные проверяемые критерии валидации;
+  (5) не ослаблять consent/privacy — Phase 2 только при opt-in consent,
+  утверждённом whitelist, purpose limitation, retention, user memory
+  controls, audit и revocation.
+- **Option A — Phase 1 считается полным MVP Ayla.** Плюсы: простая
+  трактовка, быстрый пилот, нет зависимости от persistent memory
+  infrastructure. Минусы: booking flow ошибочно приравнивается к
+  memory-first продукту; накопительная ценность не проверяется; риск
+  заявить product evidence раньше проверки; Phase 2 может быть постоянно
+  отложена. Оценка: не рекомендуется.
+- **Option B — Phase 1 является только technical pilot; MVP — только
+  после Phase 2.** Плюсы: жёстко защищает memory-first тезис. Минусы:
+  меняет смысл утверждённых Phase 1 gates; блокирует технический запуск;
+  объединяет release readiness и product validation; требует немедленной
+  правки нескольких approved документов. Оценка: не рекомендуется для
+  текущей стадии.
+- **Option C — Phase 1 можно выпустить, но Product Thesis Validation
+  остаётся открытой до Phase 2 (рекомендуемый).** Phase 1 остаётся
+  самостоятельным техническим release gate; его успех подтверждает
+  работоспособность и безопасность session-only vertical slice, но не
+  memory-first гипотезу. Product Thesis Validation закрывается только
+  после Phase 2 и успешного Product Thesis Validation Scenario. Плюсы: не
+  блокирует запуск; не переписывает approved status Phase 1; честно
+  разделяет техническую и продуктовую валидацию; позволяет измерять
+  repeat-journey value. Минусы: два статуса (release validation и product
+  thesis validation) требуют отдельной отчётности; риск отложить Phase 2
+  — снижается отдельным milestone, owner-visible статусом, явными
+  acceptance criteria и запретом считать гипотезу подтверждённой до
+  Phase 2.
+- **Предлагаемое решение (Option C), нормативная формулировка:** Phase 1
+  остаётся самостоятельным техническим release gate. Его успешное
+  завершение подтверждает: работоспособность session-only vertical slice;
+  техническую интеграцию обязательных capabilities; корректность основного
+  user journey; safety и consent enforcement в пределах Phase 1. Оно НЕ
+  подтверждает memory-first продуктовую гипотезу. Product Thesis
+  Validation остаётся открытой, пока: активирован Phase 2; persistent
+  memory используется только при допустимом opt-in consent; реализован
+  утверждённый Memory Contract; применён утверждённый persistent-memory
+  whitelist; выполнен Product Thesis Validation Scenario; повторный
+  journey показывает измеримое улучшение; отсутствуют блокирующие
+  privacy/safety/memory-quality нарушения. `Phase 1 release readiness ≠
+  Product Thesis Validation`; `Phase 2 activation ≠ автоматическая
+  Product Thesis Validation` — само наличие памяти не доказывает ценность.
+- **Product Thesis Validation criteria** (числовые thresholds — за
+  Measurement Framework, этим решением не утверждаются):
+  - *Functional evidence:* подтверждённый Context Fact сохранён в Phase 2;
+    факт извлечён в следующем journey и применён в допустимом purpose;
+    влияние памяти прослеживается в recommendation evidence; пользователь
+    может увидеть/исправить применённый контекст; outcome порождает новый
+    Memory Proposal; correction, supersession и revocation работают
+    корректно.
+  - *User-value evidence:* повторный journey демонстрирует минимум одно
+    подтверждённое улучшение — меньше повторных вопросов; точнее
+    рекомендация; лучше соблюдение ограничений; лучше объяснение;
+    релевантнее выбор; меньше ручной коррекции.
+  - *Safety and privacy evidence (инварианты):* unauthorized context use
+    rate = 0; revoked fact use rate = 0; sensitive inference persistence
+    rate = 0; cross-tenant memory contamination rate = 0.
+  - *Anti-lock-in evidence:* память не повторяет безусловно прошлый выбор;
+    не подавляет релевантные альтернативы; не превращает preference в hard
+    constraint; не игнорирует новый intent или outcome; не препятствует
+    исправлению профиля.
+- **Consequences.** Позитивные: Phase 1 выпускается без искусственной
+  блокировки; честная картина зрелости продукта; memory-first тезис
+  получает самостоятельную проверку; MVP User Journey не меняет approved
+  gates самостоятельно. Негативные: дополнительный управленческий статус;
+  запрет фразы «гипотеза Ayla подтверждена» после session-only пилота;
+  требуются решения по OQ №10–12, Measurement Framework и отдельный
+  validation report.
+- **Required follow-up (после принятия):** (1) перевести запись в
+  accepted; (2) Consent Scope Registry §10 — уточнить: Phase 1 —
+  самостоятельный release gate; Phase 2 — обязательное условие Product
+  Thesis Validation; активация Phase 2 ≠ прохождение validation;
+  (3) Scope Contract — разделить Phase 1 release acceptance и Product
+  Thesis Validation acceptance, не делая Phase 2 условием релиза Phase 1;
+  (4) MVP User Journey — закрыть OQ №9, заменить оговорки ссылкой на
+  решение, сохранить Product Thesis Validation Scenario, 14 этапов не
+  менять; (5) Measurement Framework — baseline, pilot cohort, ground
+  truth, repeat-journey comparison, thresholds, validation report format;
+  (6) до проведения validation закрыть OQ №10–12, Memory Contract, MVP
+  Recommendation Contract и относящуюся часть Domain Event Registry.
+- **Non-decisions:** решение не активирует Phase 2; не расширяет memory
+  whitelist; не разрешает persistent storage без consent; не меняет
+  recommendation pipeline; не утверждает числовые метрики; не объявляет
+  Memory Contract принятым; не меняет Phase 1 implementation scope; не
+  повышает статус MVP User Journey; не подтверждает гипотезу без
+  validation evidence.
+- **Rejected interpretations:** «Phase 1 выпущен → гипотеза
+  подтверждена»; «Phase 2 включён → validation автоматически пройдена»;
+  «для выпуска Phase 1 обязательна persistent memory»; «persistent memory
+  можно включить до утверждения consent и whitelist»; «Product Thesis
+  Validation заменяет release acceptance».
+- **Acceptance criteria решения:** Product Owner явно выбрал опцию; до
+  approval approved-документы не изменены; release readiness отделена от
+  Product Thesis Validation; при Option C Phase 2 не условие релиза
+  Phase 1; validation не закрывается фактом активации Phase 2; consent,
+  whitelist, safety, privacy — обязательные предусловия; правки
+  approved-документов — только отдельным Change Control; MVP User Journey
+  обновляется только после принятия решения.
+- **Затрагивает (после approval, через Change Control):** Consent Scope
+  Registry §10; Ayla MVP Scope and Release Contract §3; Ayla MVP User
+  Journey Specification (OQ №9); Measurement Framework (planned).
+  Источник: OQ №9 [[Ayla MVP User Journey Specification]] v0.2.1.
+
+### AYLA-DEC-0019 — Intent Detected Lifecycle Boundary
+
+**Дата:** 2026-07-28 · **Статус:** действует (accepted; owner ruling
+KM-IM-1 от 2026-07-27, зарегистрирован 2026-07-28)
+
+- **Тип:** architecture-decision. **Owner:** Product Owner. **Scope:**
+  intent resolution, intent lifecycle, runtime contracts, orchestration
+  boundary. **Связанные элементы:** KM-IM-1, OQ-11
+  [[Ayla Intent Model Specification]].
+- **Контекст:** Core Domain Model ранее использовал состояние `detected`
+  как часть жизненного цикла Intent и мог отображать его в промежуточное
+  значение `unresolved`. Ayla Intent Model Specification определяет
+  публичный Intent Resolution Output Contract, создаваемый только после
+  первого resolution pass. Требовалась граница между внутренним
+  состоянием процесса Intent Resolution, опубликованным состоянием
+  Intent, orchestration state и execution readiness. Регистрация устраняет
+  collision: ссылка на это решение ошибочно указывала на AYLA-DEC-0016
+  (Subject Identity Model); AYLA-DEC-0016 не изменяется.
+- **Решение:** `detected` является внутренним lifecycle-состоянием
+  процесса Intent Resolution. `detected`: не входит в публичный Intent
+  Resolution Output Contract; не является значением `Intent.status`; не
+  сериализуется как опубликованный Intent Result; не является
+  orchestration state; не означает intent-level readiness; не означает
+  execution readiness; не подтверждает intent type; не запускает
+  downstream capabilities; не может быть основанием для side effects; не
+  отображается в `unresolved`. Первый публикуемый Intent Resolution
+  Output создаётся только после завершения первого resolution pass и
+  содержит consumer-meaningful intent-level результат. Допустимые
+  публикуемые состояния определяются Intent Model: `resolved`,
+  `needs_clarification`, `unresolved`, `blocked_safety`. Состояния
+  дальнейшего lifecycle (`superseded`, `expired`) применяются только к
+  уже опубликованному Intent в соответствии с утверждёнными контрактами.
+- **Normative boundary:**
+  `internal resolver lifecycle ≠ Intent Resolution Output ≠ orchestration
+  state ≠ execution state`; `detected ≠ unresolved`;
+  `Intent resolved ≠ action authorized ≠ action confirmed ≠ action
+  executed ≠ action succeeded`.
+- **Implementation impact:**
+  - *Intent Model:* семантика Output Contract не меняется; OQ-11 закрыт
+    этим решением; исправлена ошибочная ссылка AYLA-DEC-0016 →
+    AYLA-DEC-0019.
+  - *Core Domain Model (отдельная задача синхронизации, не выполняется
+    этой записью):* удалить mapping `detected → unresolved` (interim);
+    исключить `detected` из публичного `Intent.status`; разделить
+    internal resolver lifecycle и published Intent lifecycle; определить
+    класс `IntentDetected` через Domain Event Registry.
+  - *Runtime and orchestration:* consumers не получают `detected` как
+    contract output, не принимают orchestration decisions и не запускают
+    capability/side effect на его основании.
+  - *Observability:* `detected` допустим для traces, logs, latency
+    metrics, recovery, deterministic replay и внутренней диагностики; это
+    не превращает его в публичный domain или integration contract.
+- **Consequences.** Позитивные: устраняется двойная семантика
+  `unresolved`; публичный Intent Contract остаётся consumer-meaningful;
+  internal processing не протекает в orchestration; снижается риск
+  преждевременного capability dispatch; сохраняется внутренний tracing.
+  Негативные: Core Domain Model требует отдельного amendment;
+  implementation не может использовать `unresolved` как технический
+  default до первого resolution pass; требуется сверка event semantics.
+- **Non-decisions:** решение не удаляет `detected` из внутренней
+  реализации; не добавляет новый публичный status; не определяет
+  окончательное имя `IntentDetected`; не утверждает Domain Event
+  Registry; не определяет execution readiness; не меняет slot
+  requirements, правила safety, authorization или user confirmation
+  contracts.
+- **Rejected alternatives:** сделать `detected` публичным status
+  (consumers не могут принять содержательное решение на его основании);
+  отображать `detected` в `unresolved` (смешивает незавершённую обработку
+  с завершённым resolution pass); полностью удалить `detected`
+  (допустим для внутренней observability и processing lifecycle).
+- **Затрагивает:** [[Ayla Intent Model Specification]] (OQ-11 закрыт);
+  [[Ayla Core Domain Model Specification]] (отдельная задача
+  синхронизации — lifecycle, persistence, `IntentDetected`,
+  `IntentResolved`, `IntentAbandoned`, `IntentFulfilled`, ERD, global
+  invariants, Domain Event Registry dependencies).
+
+### AYLA-DEC-0020 — Service Offering ownership and Specialist assignment
+
+**Дата:** 2026-07-28 · **Статус:** действует
+
+- **Решение:**
+  1. **target_model.** Трёхуровневая коммерческая модель с разрешением
+     исполнителя через Membership → Profile: Catalog Service (смысловая
+     услуга) → Service Offering (коммерческое предложение) → Specialist
+     Offering Assignment → Specialist Membership → Specialist Profile.
+  2. **offering_owner.** Service Offering принадлежит Provider как
+     организации-владельцу коммерческого предложения. Offering несёт
+     `tenant_id` как границу изоляции и доступа, но Tenant не является
+     владельцем прайса; понятия не взаимозаменяемы (AYLA-DEC-0017).
+     Соло-мастер — Provider с одним active Specialist Membership;
+     отдельного доменного контура соло не существует.
+  3. **assignment_target.** Specialist Offering Assignment ссылается на
+     `specialist_membership_id`; модель `assignment.specialist_id`
+     запрещена. Assignment несёт price_override, duration_override,
+     booking_enabled, status и qualification_status со ссылкой
+     `qualification_evidence_ref`; assignment не является доказательством
+     квалификации. Effective values:
+     `effective_price = price_override ?? base_price`;
+     `effective_duration = duration_override ?? base_duration`.
+     `booking_allowed` — результат domain policy evaluation, а не поле
+     Assignment: offering active AND offering booking enabled AND
+     assignment active AND assignment booking enabled AND membership
+     active AND availability decision = available (определяется planned
+     AYLA-DEC-0021) AND qualification/safety requirements satisfied
+     (если применимая policy требует verified qualification).
+  4. **solo_auto_assignment.** Активация Offering соло-организации
+     невозможна без active Assignment на единственный eligible
+     Specialist Membership; draft Offering без assignment допустим.
+     Команда создания с немедленной активацией создаёт обе сущности
+     атомарно; асинхронное создание assignment запрещено. Для
+     организации с несколькими мастерами авто-assignment не
+     выполняется — назначение делает owner.
+  5. **specialist_permissions.** Specialist управляет собственной
+     доступностью (`active → self_disabled`); возврат — owner/admin,
+     для safety-sensitive услуг — только с подтверждением специалиста.
+     `base_price` специалисту запрещён; own `price_override` — только по
+     делегированному permission. Минимальный набор:
+     `offering.manage_base_price`,
+     `offering_assignment.manage_own_availability`,
+     `offering_assignment.manage_own_price_override`,
+     `offering_assignment.manage_any`.
+  6. **pricing_domain.** Offering price — Commerce / Catalog
+     Management, не Platform Billing (тариф подписки, комиссия Ayla,
+     реквизиты). Матрица: Owner — billing да, pricing да; Admin —
+     billing нет, pricing по permission policy; Specialist — billing
+     нет, own override по делегированию. Смысл AYLA-DEC-0017 п. 6 не
+     изменяется.
+  7. **yclients_mvp.** В MVP — guided/manual import с валидацией,
+     dry-run, отчётом о дублях и подтверждением owner; полная
+     авто-синхронизация deferred. Модель import-ready: ExternalMapping
+     (provider, external_entity_type, external_id, internal_entity_type,
+     internal_id), правила дедупликации, idempotency key. Импорт
+     создаёт 1 Offering + N Assignments, не N Offerings.
+  8. **appointment_contract.** Appointment хранит
+     `service_offering_id`, `specialist_assignment_id`,
+     `specialist_membership_id` и snapshots: `price_snapshot {amount,
+     currency}`, `effective_duration_snapshot`, `offering_title_snapshot`.
+     Канонический `specialist_id` как SoR-атрибут Appointment
+     запрещён: исполнитель определяется через
+     `specialist_membership_id`, глобальный профиль — через Membership →
+     Specialist Profile. Денормализованный `specialist_id` допустим
+     только в read models, search indexes и analytics как derived-поле:
+     не принимается в write commands и не участвует в доменных
+     инвариантах. Инвариант цепочки: `service_offering_id` и
+     `specialist_membership_id` в Appointment обязаны совпадать с
+     Offering и Membership, на которые ссылается
+     `specialist_assignment_id`; все три сущности принадлежат одному
+     tenant. Историческая запись не изменяется при изменении прайса.
+  9. **slot_calculation.** Слот рассчитывается от `effective_duration`
+     конкретного assignment; детальный алгоритм доступности и расчёта
+     слотов — отдельное решение (planned AYLA-DEC-0021).
+  10. **migration.** Переход per-master → целевая модель: candidate
+      grouping → confidence → preview → owner confirmation → commit.
+      Объединение только по названию запрещено; минимальные ключи:
+      organization, canonical service, branch/location, service
+      variant, currency.
+  11. **lifecycle.** Offering: `draft / active / paused / archived`;
+      Assignment transitions: `pending → {active, archived}`;
+      `active → {self_disabled, organization_disabled, suspended,
+      archived}`; `self_disabled → {active, organization_disabled,
+      suspended, archived}`; `organization_disabled → {active,
+      suspended, archived}`; `suspended → {active, archived}`;
+      `archived → {}`. `organization_disabled` — коммерческое решение
+      организации; `suspended` — принудительное ограничение
+      (compliance, qualification, safety, platform enforcement).
+      Offering paused → новые записи запрещены, assignments
+      сохраняются; membership terminated → assignments not bookable,
+      сохраняются для истории; archived не удаляется при наличии
+      записей.
+  12. **catalog_projection.** Клиент видит offering один раз
+      («от 1500 ₽», «60–90 минут», N специалистов); «от X» = min
+      effective_price активных assignments — derived projection, не
+      SoR.
+  13. **Non-goals.** Не входят: алгоритм слотов, наложение расписаний,
+      room/equipment, пакеты, акции/скидки, JSON Schema импорта,
+      полный permission-каталог.
+  14. **SoR и влияние на канон.** System of Record: Service Offering и
+      Specialist Offering Assignment → Provider Management (CAP-009,
+      business truth); CAP-019 — enforcement; CAP-008 — только
+      канонический Catalog Service; формулировка `Provider/Catalog
+      boundary` упраздняется. CDM v1.3 вносит пп. 1–13; области
+      «Offering owner» и «Offering lifecycle» снимаются из блокирующих
+      после публикации v1.3. Пустые записи AYLA-DEC-0021/0022 в
+      журнале не создаются; ссылки — «planned».
+- **Основание:** per-master модель услуг (текущая runtime-модель и
+  ранний CDM) дублирует прайс по числу мастеров, ломает единое
+  изменение цены салоном, плодит дубли при импорте YClients и сшивает
+  коммерческое предложение с конкретным человеком вопреки AYLA-DEC-0017
+  (профиль ≠ доступ ≠ связь с tenant). Разделение Offering/Assignment
+  устраняет дублирование, сохраняет per-master overrides и не требует
+  отдельной архитектуры для соло-мастера. Decision brief:
+  `99 Archive/proposals/decision-brief-offering-specialist-model.md`.
+- **Затрагивает:** Ayla Core Domain Model Specification (§7.7–7.9,
+  §7.12, §12 — v1.3); Ayla MVP Scope and Release Contract; Ayla Domain
+  Capability Registry (CAP-008, CAP-009); planned AYLA-DEC-0021
+  (Availability/Slot — зависит от effective_duration assignment);
+  миграция runtime per-master services (отдельный migration plan).
+
 ## Change Log
+
+### v1.2 — 2026-07-28
+
+- новая запись AYLA-DEC-0020 (Service Offering ownership and Specialist
+  assignment): трёхуровневая коммерческая модель, assignment →
+  membership, effective values, appointment contract без SoR
+  specialist_id, pricing ≠ Platform Billing, guided YClients import,
+  lifecycle transitions; записана немедленно по решению владельца —
+  planned DEC-0021 зависит от действующего решения, а не от proposal.
+
+### v1.1 — 2026-07-28
+
+- новая запись AYLA-DEC-0019 (Intent Detected Lifecycle Boundary,
+  accepted): регистрация ранее принятого owner ruling KM-IM-1 — `detected`
+  является внутренним lifecycle-состоянием Intent Resolution, не входит в
+  публичный Intent Resolution Output Contract, не отображается в
+  `unresolved`; устранена collision ошибочной ссылки на AYLA-DEC-0016;
+  AYLA-DEC-0016 (Subject Identity Model) не изменялся. Core Domain Model
+  синхронизируется отдельной задачей.
+
+### v1.0 — 2026-07-28
+
+- новая запись AYLA-DEC-0018 (Phase 2 and Product Thesis Validation Gate,
+  proposed — pending Product Owner approval): варианты A/B/C статуса
+  Phase 1/Phase 2 относительно проверки memory-first тезиса, рекомендация
+  Option C (Phase 1 — самостоятельный technical release gate; Product
+  Thesis Validation открыта до Phase 2 и успешного Product Thesis
+  Validation Scenario), validation criteria, non-decisions и follow-up.
+  Approved-документы до owner approval не изменяются.
 
 ### v0.9 — 2026-07-28
 
