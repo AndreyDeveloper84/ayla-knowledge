@@ -1226,7 +1226,7 @@ KM-IM-1 от 2026-07-27, зарегистрирован 2026-07-28)
 
 ### AYLA-DEC-0021 — Availability and Slot Model
 
-**Дата:** 2026-07-28 · **Статус:** действует
+**Дата:** 2026-07-28 · **Статус:** accepted (действует)
 
 - **Решение:**
   1. **Bookable Slot — вычисляемая проекция без System of Record.**
@@ -1310,19 +1310,31 @@ KM-IM-1 от 2026-07-27, зарегистрирован 2026-07-28)
   замещение, hold в session flow) и расходится с эксплуатируемым
   slots API, возвращающим вычисленные времена. Владелец Availability
   Slot был unresolved (CDM §22/§24) — закрыт назначением CAP-010.
-  Сценарии подтверждены: master-time-off, master-mobile,
-  master-substitution, master-offboarding, customer-first-time,
-  salon-onboarding handoff (scenario sources, не канон); orch.txt
-  (G-CalendarSync, admin offline), stream1.txt (buffers), UX-T0.txt
-  (hold), booking-rest-contract (вычисляемые слоты, SLOT_TAKEN).
+  Сценарии подтверждены scenario sources:
+  `2026-05-19-master-time-off-handoff.md`,
+  `2026-05-18-master-mobile-handoff.md`,
+  `2026-05-19-master-substitution-handoff.md`,
+  `2026-05-17-salon-onboarding-handoff.md`,
+  `2026-05-18-customer-first-time-handoff.md`,
+  `2026-05-19-master-offboarding-handoff.md` — handoff подтверждают
+  пользовательские сценарии, но сами по себе не являются
+  каноническими архитектурными контрактами; их внутренние модели и
+  события в настоящее решение не переносятся. Также: `orch.txt`
+  (G-CalendarSync, admin offline), `stream1.txt` (buffers),
+  `UX-T0.txt` (hold), booking-rest-contract (вычисляемые слоты,
+  SLOT_TAKEN).
 - **Затрагивает:** Ayla Core Domain Model Specification (§7.10, §7.12,
   §8, §10–§12, §19–§24 — v1.3); Ayla Domain Event Registry
   (регистрация событий availability по AYLA-DEC-0025); Ayla MVP Scope
-  and Release Contract (§4.1); зависит от AYLA-DEC-0016, AYLA-DEC-0017,
-  AYLA-DEC-0020. Decision brief:
+  and Release Contract (§4.1). **Зависит от:** AYLA-DEC-0016,
+  AYLA-DEC-0017, AYLA-DEC-0020, AYLA-DEC-0025. Decision brief:
   `99 Archive/proposals/decision-brief-availability-slot-model.md`.
-  Неблокирующие открытые пункты: retention блоков/hold; SLA — в
-  integration contract.
+- **Открытые вопросы:**
+  - **Q7 (retention):** открытый неблокирующий вопрос. До отдельного
+    решения запрещено физическое удаление терминальных hold, если это
+    разрушает аудит; конкретные сроки хранения не устанавливаются.
+  - **Q9 (CalendarSync SLA):** вынесен в обязательный integration
+    contract; числовые значения в настоящее решение не входят.
 
 ## Change Log
 
