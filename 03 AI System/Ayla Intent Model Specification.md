@@ -4,7 +4,7 @@ title: Ayla Intent Model Specification
 type: ai-specification
 status: approved
 decision_status: accepted
-version: "0.9"
+version: "0.9.2"
 owner: AI Architecture
 priority: P0
 knowledge_area:
@@ -169,8 +169,11 @@ Availability и Appointment capabilities могли действовать да�
   MAX-бот + MAX Mini App, AYLA-DEC-0004);
 - автоматические медицинские выводы из intent (запрещено — Roadmap §1.2,
   [[Killer PRD]] §9);
-- machine-readable реестры и contract-test fixtures — следующий шаг после
-  стабилизации контракта (OQ-9), не содержимое этого документа.
+- contract-test fixtures и исполняемые contract tests — не часть этого
+  документа; они принадлежат реализации ayla-ai-core (OQ-9);
+- machine-readable Intent Registry, Slot Registry и Output Schema —
+  канонические appendix этой спецификации в `03 AI System/Contracts/`
+  (OQ-9), не содержимое этого Markdown-документа.
 
 ## Inputs
 
@@ -249,14 +252,15 @@ Management; Personal Context whitelist) или обязательный нега
 | `ASK_ABOUT_PRICE` | Вопрос о стоимости услуги или booking fee | all_of: `service_ref` | `provider_name` | no | yes |
 | `ASK_ABOUT_AVAILABILITY` | Вопрос о свободных слотах услуги или специалиста | any_of: `availability_subject` | `service_ref`, `provider_name`, `time_window` | no | yes |
 | `PROVIDE_CONTEXT` | Пользователь добровольно сообщает факт о себе (предпочтение, ограничение) | all_of: `context_fact` | `fact_category` | yes | yes |
-| `CORRECT_CONTEXT` | Пользователь исправляет ранее сообщённый или сохранённый факт | all_of: `context_fact_ref`, `context_fact` | — | yes | yes |
+| `CORRECT_CONTEXT` | Пользователь исправляет факт текущей сессии (исправление persistent memory — через memory correction contract, Phase 2) | all_of: `context_fact_ref`, `context_fact` | — | yes | yes |
 | `REVOKE_CONSENT` | Пользователь отзывает согласие на использование данных | conditional: см. ниже | `consent_scope`, `revocation_mode` | no | yes |
 | `UNKNOWN` | Sentinel resolver'а: намерение не распознано или вне реестра MVP | — | — | no | yes |
 
 ### Slot Requirements
 
-Требования к слотам материализованы машинно-проверяемо (Proposal; форма
-пригодна для переноса в YAML-реестр, OQ-9):
+Требования к слотам материализованы машинно-проверяемо (канонический
+machine-readable вид — `03 AI System/Contracts/intent-registry.yaml`,
+OQ-9):
 
 - `all_of` — все перечисленные слоты обязаны удовлетворять порогу
   подтверждения; нарушение отражается в `missing_required_slots`.
@@ -1063,11 +1067,12 @@ Matrix) — см. OQ-8.
   resolution и capability routing; Communicative Class — для Journey, UX и
   аналитики. Маппинг Intent Type → Communicative Class хранится в
   machine-readable Intent Registry (OQ-9) и не заменяет `intent_type` в
-  resolver output. Стартовый маппинг MVP (Proposal): DISCOVER_SERVICE →
+  resolver output. Маппинг MVP (норма с v0.9): DISCOVER_SERVICE →
   goal; BOOK_APPOINTMENT → action; RESCHEDULE/CANCEL_APPOINTMENT →
   management; ASK_* → information; PROVIDE_CONTEXT → feedback;
   CORRECT_CONTEXT → correction; REVOKE_CONSENT → management;
-  FIND_SPECIALIST → goal/information — финализируется при каноне Journey.
+  FIND_SPECIALIST → information (owner ruling 2026-07-28: «найди/покажи/
+  кто делает» — запрос информации о специалистах).
 - **OQ-5. Поведение при неоднозначном REVOKE_CONSENT.** Спецификация
   устанавливает безопасный минимум: неоднозначный запрос →
   `revocation_mode = session_personalization_stop` + один уточняющий вопрос
@@ -1093,17 +1098,28 @@ Matrix) — см. OQ-8.
   MVP Architecture (Roadmap §5.1). Дословный `fragment` persistence'у не
   подлежит; форма `audit_evidence` требует data classification и retention
   policy (Roadmap §7.2).
-- **OQ-9. Machine-readable Intent Registry и contract-test fixtures:**
-  вынести реестр (intent type → slot requirements → downstream capability),
-  slot registry, JSON Schema output contract и набор fixtures
-  (resolution / clarification / correction / multi-intent / negative /
-  authorization / safety cases) в исполняемый пакет. Кандидат на волну 3
-  (технические контракты, AYLA-DEC-0014); до этого Markdown-разделы
-  § Intent Types и § Output Contract остаются источником.
-- **OQ-10. Вынос Slot Registry в отдельный документ:** выполняется, когда
-  слоты становятся общими для нескольких документов (Consent, Capability,
-  Journey); до этого реестр живёт в § Slots, владение значениями — по
-  маппингу «Владение значениями». Во избежание коллизий нумерации:
+- **OQ-9. Machine-readable Intent Registry и contract-test fixtures.**
+  Канонические machine-readable appendix этого документа (материализованы
+  в v0.9.1; версии реестров независимы — `registry_version`, совместимость
+  с контрактом указывается через `compatible_contract_version`):
+  - `03 AI System/Contracts/intent-registry.yaml` — реестр intent types,
+    slot requirements, execution class, маппинг Communicative Class
+    (закрытый OQ-4) и downstream capability, `intent_precedence`;
+  - `03 AI System/Contracts/slot-registry.yaml` — реестр слотов, data
+    categories, control metadata, SoR-владение;
+  - `03 AI System/Contracts/intent-output.schema.json` — JSON Schema
+    (draft 2020-12) output contract с инвариантами `allOf`.
+  Изменение реестров — через change control ayla-knowledge; при
+  расхождении нормативным является текст этого документа, реестры
+  синхронизируются с ним. Contract-test fixtures и исполняемые тесты —
+  implementation-owned артефакты ayla-ai-core (волна 3, AYLA-DEC-0014):
+  проверяют соответствие кода каноническим реестрам и схеме.
+- **OQ-10 (ЧАСТИЧНО ЗАКРЫТ). Slot Registry.** Machine-readable Slot
+  Registry материализован в `03 AI System/Contracts/slot-registry.yaml`
+  (v0.9.1+). Отложенным остаётся только вопрос о выделении
+  самостоятельной narrative-спецификации слотов — до появления
+  cross-document ownership и lifecycle semantics (слоты, общие для
+  Consent, Capability, Journey). Во избежание коллизий нумерации:
   «OQ-10» этого документа — всегда про Slot Registry; вопрос Memory
   Whitelist относится к Core Domain Model / Memory policy, не к этому
   документу.
@@ -1219,6 +1235,66 @@ Matrix) — см. OQ-8.
 
 > Журнал отражает историю изменений документа и не является нормативной частью
 > спецификации.
+
+### v0.9.2 (2026-07-28) — Targeted fixes пакета OQ-9 по приёмке (accept with targeted fixes)
+
+- **Provenance:** `source_version` обновлён до `"0.9.2"` в обоих YAML;
+  описания артефактов синхронизированы с версией спецификации.
+- **Non-goals:** устранено противоречие с OQ-9 — machine-readable
+  реестры объявлены каноническими appendix; в Non-goals остались только
+  contract-test fixtures и исполняемые тесты (ayla-ai-core).
+- **OQ-10:** частично закрыт — machine-readable Slot Registry
+  материализован; отложена только самостоятельная narrative-спецификация
+  слотов.
+- **OQ-4:** Communicative Class FIND_SPECIALIST финализирован —
+  `information` (owner ruling 2026-07-28); двойственность
+  «goal/information» устранена в спецификации и реестре; маппинг принят
+  как норма (пометка Proposal снята).
+- **Versioning реестров:** правило «registry_version всегда равна
+  contract_version» отменено; введены независимый `registry_version:
+  "1.0"` и `compatible_contract_version: "0.5"` в обоих YAML;
+  `contract_version` output contract не изменён.
+- **JSON Schema усилена:** `propertyNames` slots ограничены 18 именами
+  Slot Registry (`$defs/slot_name`); `missing_required_slots` и
+  `candidate_slots` ограничены тем же enum; `secondary_intents[].intent_type`
+  ограничен 11 продуктовыми типами (без UNKNOWN); для confirmed
+  reference-slots (`service_ref`, `time_slot`, `new_time_slot`,
+  `appointment_ref`) требуется непустой `entity_ref`; `evidence_refs` —
+  `minItems: 1` + `uniqueItems`; `evidence` — `uniqueItems`.
+- **Slot Registry:** `sor_owner` нормализован в `resolution_owner`
+  (единый namespace CAP-ID); для `consent_scope`/`revocation_mode`
+  добавлен `value_registry: consent-scope-registry`; `context_fact_ref`
+  ограничен фактами текущей сессии — исправление persistent memory
+  вынесено в memory correction contract Phase 2 (описание
+  CORRECT_CONTEXT сужено синхронно в спецификации и реестре).
+- Cross-file и смысловые проверки (существование evidence_refs,
+  уникальность evidence_id, соответствие slots intent type, пороги
+  подтверждения) осознанно оставлены contract tests ayla-ai-core —
+  JSON Schema отвечает за форму, тесты — за смысловые связи.
+- Статус документа не изменён (approved / accepted).
+
+### v0.9.1 (2026-07-28) — Материализация OQ-9: machine-readable appendix
+
+- Созданы канонические machine-readable артефакты в
+  `03 AI System/Contracts/` (canonical source — ayla-knowledge; валидатор
+  знаний их не проверяет, т.к. проверяет только `.md`):
+  - `intent-registry.yaml` — 11 продуктовых типов + UNKNOWN sentinel,
+    slot requirements (`all_of`/`any_of`/`conditional`), execution class,
+    Communicative Class (закрытый OQ-4), downstream capability,
+    `intent_precedence`;
+  - `slot-registry.yaml` — 18 слотов: типы, источники, data categories,
+    control metadata, SoR-владение, reference-признак;
+  - `intent-output.schema.json` — JSON Schema draft 2020-12 output
+    contract: все поля, enums и 9 инвариантов `allOf` (UNKNOWN-комбинации,
+    blocked_safety ⇔ blocking-коды, clarification consistency,
+    consent_scope_selection).
+- Версии реестров привязаны к контракту: `registry_version =
+  contract_version = "0.5"`; изменение — через change control; при
+  расхождении нормативен текст спецификации.
+- OQ-9 обновлён: реестры объявлены machine-readable appendix; fixtures и
+  contract tests — implementation-owned артефакты ayla-ai-core (канон
+  уходит в ai-core только после приёмки здесь).
+- Статус документа не изменён (approved / accepted).
 
 ### v0.9 (2026-07-28) — Owner approval и закрытие governance-вопросов
 

@@ -1,0 +1,208 @@
+# Ayla Intent Registry — machine-readable appendix к Ayla Intent Model Specification
+#
+# Canonical source: ayla-knowledge / 03 AI System/Contracts/intent-registry.yaml
+# Нормативный источник семантики: 03 AI System/Ayla Intent Model Specification.md (v0.9.2, approved)
+# Change control: изменение этого файла — через change control ayla-knowledge;
+#   additive-изменение = minor, изменение семантики = major (после заморозки "1.0").
+# registry_version версионирует ЭТОТ реестр независимо;
+# compatible_contract_version указывает совместимую версию runtime output contract.
+registry: ayla.intent-registry
+registry_version: "1.0"
+compatible_contract_version: "0.5"
+source_document: "03 AI System/Ayla Intent Model Specification.md"
+source_version: "0.9.2"
+status: approved
+updated: 2026-07-28
+
+# Класс исполнения определяет порог подтверждения слотов (requirement_satisfaction):
+#   read_only  — non-reference слоты: filled; reference слоты: однозначный entity_ref
+#   side_effect — все обязательные слоты: confirmed + явное подтверждение пользователя
+execution_classes: [read_only, side_effect]
+
+# Маппинг Intent Type → Journey Communicative Class (закрытый OQ-4):
+# ортогональные измерения; класс используется для Journey/UX/аналитики,
+# intent_type — для resolution и capability routing.
+communicative_classes: [goal, action, information, management, feedback, correction]
+
+intents:
+  DISCOVER_SERVICE:
+    kind: product
+    description: Пользователь выражает потребность и ищет подходящую услугу без конкретного исполнителя
+    examples: ["устала, хочу расслабиться"]
+    mvp_critical: true
+    safety_sensitive: true
+    execution_class: read_only
+    communicative_class: goal
+    downstream_capability: [CAP-004, CAP-008]  # Recommendation Formation, Service Catalog (proposal-маппинг Scope Contract §4)
+    slot_requirements:
+      all_of: [service_interest]
+      any_of: []
+    optional_slots: [time_preference, budget, provider_preference]
+
+  FIND_SPECIALIST:
+    kind: product
+    description: Просит найти, показать, сравнить или проверить специалиста; создание записи не запрошено
+    examples: ["найди Анну", "кто делает лимфодренажный массаж?"]
+    mvp_critical: true
+    safety_sensitive: false
+    execution_class: read_only
+    communicative_class: information  # «найди/покажи/кто делает» — запрос информации о специалистах (owner ruling 2026-07-28)
+    downstream_capability: [CAP-009]  # Provider Management
+    slot_requirements:
+      all_of: []
+      any_of:
+        - group_id: specialist_selector
+          slots: [provider_name, service_category]
+          minimum_present: 1
+    optional_slots: [provider_name, service_category]
+
+  BOOK_APPOINTMENT:
+    kind: product
+    description: Прямо просит создать запись, даже если часть параметров отсутствует
+    examples: ["запиши меня к Анне"]
+    mvp_critical: true
+    safety_sensitive: false
+    execution_class: side_effect
+    communicative_class: action
+    downstream_capability: [CAP-011]  # Appointment Management
+    slot_requirements:
+      all_of: [service_ref, time_slot]
+      any_of: []
+    optional_slots: [provider_name, comment]
+
+  RESCHEDULE_APPOINTMENT:
+    kind: product
+    description: Перенести существующую запись
+    mvp_critical: true
+    safety_sensitive: false
+    execution_class: side_effect
+    communicative_class: management
+    downstream_capability: [CAP-011]
+    slot_requirements:
+      all_of: [appointment_ref, new_time_slot]
+      any_of: []
+    optional_slots: [reason]
+
+  CANCEL_APPOINTMENT:
+    kind: product
+    description: Отменить существующую запись
+    mvp_critical: true
+    safety_sensitive: false
+    execution_class: side_effect
+    communicative_class: management
+    downstream_capability: [CAP-011]
+    slot_requirements:
+      all_of: [appointment_ref]
+      any_of: []
+    optional_slots: [reason]
+
+  ASK_ABOUT_SERVICE:
+    kind: product
+    description: Вопрос о содержании, длительности, подготовке, противопоказаниях услуги
+    mvp_critical: true
+    safety_sensitive: true
+    execution_class: read_only
+    communicative_class: information
+    downstream_capability: [CAP-008]
+    slot_requirements:
+      all_of: [service_ref]
+      any_of: []
+    optional_slots: []
+
+  ASK_ABOUT_PRICE:
+    kind: product
+    description: Вопрос о стоимости услуги или booking fee
+    mvp_critical: true
+    safety_sensitive: false
+    execution_class: read_only
+    communicative_class: information
+    downstream_capability: [CAP-008]
+    slot_requirements:
+      all_of: [service_ref]
+      any_of: []
+    optional_slots: [provider_name]
+
+  ASK_ABOUT_AVAILABILITY:
+    kind: product
+    description: Вопрос о свободных слотах услуги или специалиста
+    mvp_critical: true
+    safety_sensitive: false
+    execution_class: read_only
+    communicative_class: information
+    downstream_capability: [CAP-010]  # Availability
+    slot_requirements:
+      all_of: []
+      any_of:
+        - group_id: availability_subject
+          slots: [service_ref, provider_name]
+          minimum_present: 1
+    optional_slots: [service_ref, provider_name, time_window]
+
+  PROVIDE_CONTEXT:
+    kind: product
+    description: Пользователь добровольно сообщает факт о себе (предпочтение, ограничение)
+    mvp_critical: true
+    safety_sensitive: true
+    execution_class: side_effect  # запись контекста через CAP-001 по whitelist Roadmap §3.4
+    communicative_class: feedback
+    downstream_capability: [CAP-001]  # Personal Context
+    slot_requirements:
+      all_of: [context_fact]
+      any_of: []
+    optional_slots: [fact_category]
+
+  CORRECT_CONTEXT:
+    kind: product
+    description: Пользователь исправляет факт текущей сессии (persistent memory — через memory correction contract, Phase 2)
+    mvp_critical: true
+    safety_sensitive: true
+    execution_class: side_effect
+    communicative_class: correction
+    downstream_capability: [CAP-001]
+    slot_requirements:
+      all_of: [context_fact_ref, context_fact]
+      any_of: []
+    optional_slots: []
+
+  REVOKE_CONSENT:
+    kind: product
+    description: Пользователь отзывает согласие на использование данных
+    mvp_critical: true
+    safety_sensitive: false  # governance-critical, не safety-sensitive
+    execution_class: side_effect
+    communicative_class: management
+    downstream_capability: [CAP-002]  # Consent Management
+    slot_requirements:
+      all_of: []
+      any_of: []
+      conditional:
+        - when: {revocation_mode: consent_record_revocation}
+          all_of: [consent_scope]
+    optional_slots: [consent_scope, revocation_mode]
+    governance:
+      default_mode_on_ambiguity: session_personalization_stop
+      clarification_reason_for_scope_selection: consent_scope_selection
+      clarification_effect_for_scope_selection: allows_immediate_safe_action
+      destructive_fallback: prohibited  # resolver не выбирает scope и не отзывает по догадке (OQ-5)
+
+  UNKNOWN:
+    kind: sentinel  # не пользовательское намерение; не входит в метрики как обработанный тип
+    description: Намерение не распознано или вне реестра MVP
+    mvp_critical: true
+    safety_sensitive: false
+    execution_class: null
+    communicative_class: null
+    downstream_capability: []  # никогда не передаётся в recommendation pipeline, execution запрещён
+    slot_requirements:
+      all_of: []
+      any_of: []
+    optional_slots: []
+
+# Детерминированный disambiguation (§ Disambiguation and Precedence):
+# тип определяется по speech act / requested outcome, не по объекту запроса;
+# при конфликте измерений приоритет у запрошенного side effect.
+intent_precedence:
+  - when: {requested_side_effect: create_appointment}
+    resolve_as: BOOK_APPOINTMENT
+  - when: {requested_outcome: find_or_compare_provider}
+    resolve_as: FIND_SPECIALIST

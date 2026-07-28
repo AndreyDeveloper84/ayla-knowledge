@@ -1,0 +1,153 @@
+# Ayla Slot Registry — machine-readable appendix к Ayla Intent Model Specification
+#
+# Canonical source: ayla-knowledge / 03 AI System/Contracts/slot-registry.yaml
+# Нормативный источник семантики: 03 AI System/Ayla Intent Model Specification.md (v0.9.2, approved)
+# registry_version версионирует ЭТОТ реестр независимо;
+# compatible_contract_version указывает совместимую версию runtime output contract.
+# Intent Model владеет именами слотов, типами и правилами заполнения;
+# значениями (SoR) владеют доменные capabilities (поле resolution_owner).
+registry: ayla.slot-registry
+registry_version: "1.0"
+compatible_contract_version: "0.5"
+source_document: "03 AI System/Ayla Intent Model Specification.md"
+source_version: "0.9.2"
+status: approved
+updated: 2026-07-28
+
+# data_category — категория scope intent_understanding (Consent Scope Registry §5.1)
+# или control_metadata. Control metadata: извлекаются/классифицируются из сообщения,
+# но не являются personal context facts, не persistence'ятся независимо от результата
+# resolution и не относятся к user-context data categories (CSR §4).
+slots:
+  service_interest:
+    value_type: string  # категория seed catalog или свободная формулировка потребности
+    source: user_message
+    data_category: [explicit_goal, service_preference]
+    reference: false
+    resolution_owner: CAP-008
+
+  service_ref:
+    value_type: entity_reference  # идентификатор или однозначное название услуги
+    source: user_message + catalog
+    data_category: [service_preference]
+    reference: true               # требует однозначного entity_ref
+    resolution_owner: CAP-008
+
+  service_category:
+    value_type: enum  # категория из seed catalog
+    source: user_message + catalog
+    data_category: [service_preference]
+    reference: false
+    resolution_owner: CAP-008
+
+  provider_name:
+    value_type: string  # имя специалиста/салона как сказал пользователь
+    source: user_message
+    data_category: [provider_preference]
+    reference: false
+    resolution_owner: CAP-009
+
+  provider_preference:
+    value_type: string  # критерий выбора исполнителя
+    source: user_message
+    data_category: [provider_preference]
+    reference: false
+    resolution_owner: CAP-009
+
+  time_preference:
+    value_type: string  # свободное выражение времени («в пятницу вечером»)
+    source: user_message
+    data_category: [session_signal]
+    reference: false
+    resolution_owner: CAP-010
+
+  time_window:
+    value_type: interval  # интервал времени для availability-запроса
+    source: user_message
+    data_category: [session_signal]
+    reference: false
+    resolution_owner: CAP-010
+
+  time_slot:
+    value_type: entity_reference  # конкретный слот или однозначное время записи
+    source: user_message + availability
+    data_category: [session_signal]
+    reference: true
+    resolution_owner: CAP-010
+
+  new_time_slot:
+    value_type: entity_reference  # новое время при переносе
+    source: user_message + availability
+    data_category: [session_signal]
+    reference: true
+    resolution_owner: CAP-010
+
+  appointment_ref:
+    value_type: entity_reference  # ID или однозначное описание («моя запись в пятницу»)
+    source: user_message + appointment
+    data_category: [session_signal]
+    reference: true
+    resolution_owner: CAP-011
+
+  budget:
+    value_type: money_range  # бюджет в свободной форме; normalized_value: {amount_max, currency}
+    source: user_message
+    data_category: [explicit_goal]
+    reference: false
+    resolution_owner: null  # session-only, доменного SoR в MVP нет
+
+  comment:
+    value_type: string  # произвольный комментарий к записи
+    source: user_message
+    data_category: [session_signal]
+    reference: false
+    resolution_owner: CAP-011
+
+  reason:
+    value_type: string  # причина переноса/отмены
+    source: user_message
+    data_category: [session_signal]
+    reference: false
+    resolution_owner: CAP-011
+
+  context_fact:
+    value_type: string  # факт о пользователе (текст)
+    source: user_message
+    data_category: content_dependent  # зависит от содержания
+    reference: false
+    resolution_owner: CAP-001
+    persistence: whitelist_only  # только whitelist Roadmap §3.4 через CAP-001
+
+  context_fact_ref:
+    value_type: session_reference  # ссылка на исправляемый факт ТЕКУЩЕЙ сессии
+    source: session_dialog
+    data_category: content_dependent
+    reference: false
+    resolution_owner: CAP-001
+    scope_note: >-  # MVP Phase 1: исправляются только факты текущей сессии;
+      исправление persistent memory (MemoryEntry) — через отдельный memory
+      correction contract Memory Service, Phase 2 (см. DEC-0024).
+
+  fact_category:
+    value_type: enum  # категория факта из whitelist Roadmap §3.4
+    source: classification
+    data_category: control_metadata
+    reference: false
+    resolution_owner: CAP-001
+
+  consent_scope:
+    value_type: enum  # scope из Consent Scope Registry §5
+    source: user_message
+    data_category: control_metadata  # requested scope selector, не доказательство активного consent
+    reference: false
+    resolution_owner: CAP-002          # Consent Management
+    value_registry: consent-scope-registry  # canonical реестр допустимых значений
+
+  revocation_mode:
+    value_type: enum
+    values: [session_personalization_stop, consent_record_revocation]
+    source: classification  # классификация сообщения
+    data_category: control_metadata
+    reference: false
+    resolution_owner: CAP-002
+    value_registry: consent-scope-registry

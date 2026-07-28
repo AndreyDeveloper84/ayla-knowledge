@@ -1,0 +1,416 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ayla.local/schemas/intent-output.schema.json",
+  "title": "Ayla Intent Resolution Output Contract",
+  "description": "Machine-readable appendix к Ayla Intent Model Specification v0.9.1+ (approved). 10 обязательных полей — Roadmap §3.1 (заморожены); additive-поля — приняты в v0.9. contract_version этого контракта: 0.5 (pre-release).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "intent_id",
+    "intent_type",
+    "status",
+    "confidence",
+    "slots",
+    "missing_required_slots",
+    "evidence",
+    "requires_clarification",
+    "clarification_question",
+    "safety_flags",
+    "contract_version",
+    "unmet_slot_requirements",
+    "status_reason",
+    "clarification_reason",
+    "clarification_effect",
+    "secondary_intents"
+  ],
+  "$defs": {
+    "slot_name": {
+      "type": "string",
+      "enum": [
+        "service_interest",
+        "service_ref",
+        "service_category",
+        "provider_name",
+        "provider_preference",
+        "time_preference",
+        "time_window",
+        "time_slot",
+        "new_time_slot",
+        "appointment_ref",
+        "budget",
+        "comment",
+        "reason",
+        "context_fact",
+        "context_fact_ref",
+        "fact_category",
+        "consent_scope",
+        "revocation_mode"
+      ],
+      "comment": "Единый источник — Contracts/slot-registry.yaml; enum генерируется из него, не поддерживать вручную."
+    },
+    "product_intent_type": {
+      "type": "string",
+      "enum": [
+        "DISCOVER_SERVICE",
+        "FIND_SPECIALIST",
+        "BOOK_APPOINTMENT",
+        "RESCHEDULE_APPOINTMENT",
+        "CANCEL_APPOINTMENT",
+        "ASK_ABOUT_SERVICE",
+        "ASK_ABOUT_PRICE",
+        "ASK_ABOUT_AVAILABILITY",
+        "PROVIDE_CONTEXT",
+        "CORRECT_CONTEXT",
+        "REVOKE_CONSENT"
+      ],
+      "comment": "11 продуктовых типов; UNKNOWN — sentinel resolver, не secondary intent."
+    },
+    "slot_envelope": {
+      "type": "object",
+      "required": ["raw_value", "confirmation_status", "evidence_refs"],
+      "properties": {
+        "raw_value": {"type": "string"},
+        "normalized_value": true,
+        "entity_ref": {"type": ["string", "null"]},
+        "confirmation_status": {"type": "string", "enum": ["filled", "confirmed"]},
+        "evidence_refs": {
+          "type": "array",
+          "items": {"type": "string"},
+          "minItems": 1,
+          "uniqueItems": true,
+          "description": "evidence_id элементов evidence; минимум одно обоснование на значение."
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "intent_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Стабильный ID результата resolution в пределах сессии."
+    },
+    "intent_type": {
+      "type": "string",
+      "enum": [
+        "DISCOVER_SERVICE",
+        "FIND_SPECIALIST",
+        "BOOK_APPOINTMENT",
+        "RESCHEDULE_APPOINTMENT",
+        "CANCEL_APPOINTMENT",
+        "ASK_ABOUT_SERVICE",
+        "ASK_ABOUT_PRICE",
+        "ASK_ABOUT_AVAILABILITY",
+        "PROVIDE_CONTEXT",
+        "CORRECT_CONTEXT",
+        "REVOKE_CONSENT",
+        "UNKNOWN"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["resolved", "needs_clarification", "unresolved", "superseded", "expired", "blocked_safety"]
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Оценка надёжности структурированного вывода; пороги high/medium/low — runtime configuration ayla-ai-core (OQ-1)."
+    },
+    "slots": {
+      "type": "object",
+      "description": "Только активные значения (присутствие имплицитно = value_status active); имена — только из Slot Registry.",
+      "propertyNames": {"$ref": "#/$defs/slot_name"},
+      "additionalProperties": {"$ref": "#/$defs/slot_envelope"}
+    },
+    "missing_required_slots": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/slot_name"},
+      "uniqueItems": true,
+      "description": "Имена слотов all_of/conditional, не удовлетворяющих порогу intent type."
+    },
+    "evidence": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": ["evidence_id", "message_id", "fragment"],
+        "properties": {
+          "evidence_id": {"type": "string", "minLength": 1, "description": "Стабильный ID в пределах сессии, не индекс; глобальная уникальность — contract tests."},
+          "message_id": {"type": "string", "minLength": 1},
+          "fragment": {"type": "string", "minLength": 1, "description": "Дословная цитата; только session retention, persistence — через audit_evidence с fragment_hash."}
+        },
+        "additionalProperties": false
+      }
+    },
+    "requires_clarification": {"type": "boolean"},
+    "clarification_question": {"type": ["string", "null"]},
+    "safety_flags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["red_zone_conflict", "competence_boundary", "unsafe_service_request"]
+      },
+      "uniqueItems": true,
+      "description": "Только blocking decisions; состав кодов — собственность MVP Safety Policy (OQ-7)."
+    },
+    "unmet_slot_requirements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["requirement_id", "requirement_type", "candidate_slots", "minimum_present"],
+        "properties": {
+          "requirement_id": {"type": "string"},
+          "requirement_type": {"type": "string", "enum": ["any_of"]},
+          "candidate_slots": {
+            "type": "array",
+            "items": {"$ref": "#/$defs/slot_name"},
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "minimum_present": {"type": "integer", "minimum": 1}
+        },
+        "additionalProperties": false
+      }
+    },
+    "contract_version": {
+      "type": "string",
+      "const": "0.5",
+      "description": "Версия runtime output contract (pre-release 0.x до первой замороженной реализации)."
+    },
+    "status_reason": {
+      "type": ["string", "null"],
+      "enum": [
+        "low_confidence",
+        "out_of_scope",
+        "conflicting_slots",
+        "max_clarification_exceeded",
+        "intent_shift",
+        "session_expired",
+        "clarification_timeout",
+        "safety_gate_blocked",
+        "required_context_not_authorized",
+        null
+      ]
+    },
+    "clarification_reason": {
+      "type": ["string", "null"],
+      "enum": [
+        "intent_low_confidence",
+        "conflicting_slot",
+        "missing_required_slot",
+        "unmet_any_of_requirement",
+        "consent_scope_selection",
+        null
+      ]
+    },
+    "clarification_effect": {
+      "type": ["string", "null"],
+      "enum": ["blocks_current_action", "allows_immediate_safe_action", null]
+    },
+    "secondary_intents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["intent_type", "evidence_refs", "message_position"],
+        "properties": {
+          "intent_type": {"$ref": "#/$defs/product_intent_type"},
+          "evidence_refs": {"type": "array", "items": {"type": "string"}, "minItems": 1, "uniqueItems": true},
+          "message_position": {"type": "integer", "minimum": 1}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "allOf": [
+    {
+      "comment": "UNKNOWN: sentinel; status ограничен, status_reason обязателен",
+      "if": {"properties": {"intent_type": {"const": "UNKNOWN"}}},
+      "then": {
+        "properties": {
+          "status": {"enum": ["needs_clarification", "unresolved"]},
+          "status_reason": {"type": "string"}
+        }
+      }
+    },
+    {
+      "comment": "UNKNOWN + needs_clarification ⇒ clarification_reason = intent_low_confidence",
+      "if": {
+        "properties": {
+          "intent_type": {"const": "UNKNOWN"},
+          "status": {"const": "needs_clarification"}
+        }
+      },
+      "then": {"properties": {"clarification_reason": {"const": "intent_low_confidence"}}}
+    },
+    {
+      "comment": "UNKNOWN + unresolved ⇒ ограниченный набор status_reason",
+      "if": {
+        "properties": {
+          "intent_type": {"const": "UNKNOWN"},
+          "status": {"const": "unresolved"}
+        }
+      },
+      "then": {
+        "properties": {
+          "status_reason": {
+            "enum": ["out_of_scope", "max_clarification_exceeded", "required_context_not_authorized"]
+          }
+        }
+      }
+    },
+    {
+      "comment": "blocked_safety ⇔ непустые blocking-коды + safety_gate_blocked",
+      "if": {"properties": {"status": {"const": "blocked_safety"}}},
+      "then": {
+        "properties": {
+          "safety_flags": {"minItems": 1},
+          "status_reason": {"const": "safety_gate_blocked"}
+        }
+      },
+      "else": {"properties": {"safety_flags": {"maxItems": 0}}}
+    },
+    {
+      "comment": "resolved ⇒ status_reason = null",
+      "if": {"properties": {"status": {"const": "resolved"}}},
+      "then": {"properties": {"status_reason": {"const": null}}}
+    },
+    {
+      "comment": "терминальные статусы ⇒ status_reason обязателен",
+      "if": {"properties": {"status": {"enum": ["unresolved", "superseded", "expired"]}}},
+      "then": {"properties": {"status_reason": {"type": "string"}}}
+    },
+    {
+      "comment": "requires_clarification = true ⇒ вопрос, причина и эффект заполнены",
+      "if": {"properties": {"requires_clarification": {"const": true}}},
+      "then": {
+        "properties": {
+          "clarification_question": {"type": "string", "minLength": 1},
+          "clarification_reason": {"type": "string"},
+          "clarification_effect": {"type": "string"}
+        }
+      },
+      "else": {
+        "properties": {
+          "clarification_question": {"const": null},
+          "clarification_reason": {"const": null},
+          "clarification_effect": {"const": null}
+        }
+      }
+    },
+    {
+      "comment": "needs_clarification ⇒ intent-level уточнение, блокирующее действие",
+      "if": {"properties": {"status": {"const": "needs_clarification"}}},
+      "then": {
+        "properties": {
+          "requires_clarification": {"const": true},
+          "clarification_reason": {"enum": ["intent_low_confidence", "conflicting_slot"]},
+          "clarification_effect": {"const": "blocks_current_action"}
+        }
+      }
+    },
+    {
+      "comment": "consent_scope_selection ⇒ REVOKE_CONSENT, resolved, allows_immediate_safe_action",
+      "if": {"properties": {"clarification_reason": {"const": "consent_scope_selection"}}},
+      "then": {
+        "properties": {
+          "intent_type": {"const": "REVOKE_CONSENT"},
+          "status": {"const": "resolved"},
+          "clarification_effect": {"const": "allows_immediate_safe_action"}
+        }
+      }
+    },
+    {
+      "comment": "reference slot service_ref: confirmed ⇒ entity_ref обязателен",
+      "if": {
+        "properties": {
+          "slots": {
+            "required": ["service_ref"],
+            "properties": {"service_ref": {"properties": {"confirmation_status": {"const": "confirmed"}}}}
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "slots": {
+            "properties": {
+              "service_ref": {
+                "required": ["entity_ref"],
+                "properties": {"entity_ref": {"type": "string", "minLength": 1}}
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "comment": "reference slot time_slot: confirmed ⇒ entity_ref обязателен",
+      "if": {
+        "properties": {
+          "slots": {
+            "required": ["time_slot"],
+            "properties": {"time_slot": {"properties": {"confirmation_status": {"const": "confirmed"}}}}
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "slots": {
+            "properties": {
+              "time_slot": {
+                "required": ["entity_ref"],
+                "properties": {"entity_ref": {"type": "string", "minLength": 1}}
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "comment": "reference slot new_time_slot: confirmed ⇒ entity_ref обязателен",
+      "if": {
+        "properties": {
+          "slots": {
+            "required": ["new_time_slot"],
+            "properties": {"new_time_slot": {"properties": {"confirmation_status": {"const": "confirmed"}}}}
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "slots": {
+            "properties": {
+              "new_time_slot": {
+                "required": ["entity_ref"],
+                "properties": {"entity_ref": {"type": "string", "minLength": 1}}
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "comment": "reference slot appointment_ref: confirmed ⇒ entity_ref обязателен",
+      "if": {
+        "properties": {
+          "slots": {
+            "required": ["appointment_ref"],
+            "properties": {"appointment_ref": {"properties": {"confirmation_status": {"const": "confirmed"}}}}
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "slots": {
+            "properties": {
+              "appointment_ref": {
+                "required": ["entity_ref"],
+                "properties": {"entity_ref": {"type": "string", "minLength": 1}}
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}
