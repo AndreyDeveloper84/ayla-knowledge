@@ -4,7 +4,7 @@ title: Ayla Decision Log
 type: decision-log
 status: review
 activation_status: pending-infrastructure
-version: "0.8"
+version: "0.9"
 owner: Founder / Product Architecture
 priority: P0
 knowledge_area:
@@ -480,7 +480,167 @@ reviewed-изменением после проверки commit миграци�
   Contract по платежам, CAP-014/018, персонам пилота и YooKassa —
   закрыты.
 
+### AYLA-DEC-0016 — Subject Identity Model
+
+**Дата:** 2026-07-28 · **Статус:** действует
+
+- **Решение:**
+  1. Каноническая identity-модель — пять разделённых сущностей: Subject
+     (субъект персональных данных, consent и memory), User (человек в
+     бизнес-модели), Account (учётная запись входа), Identity Reference
+     (внешний идентификатор: MAX / Telegram / phone / email), Provider
+     Membership (связь человека с tenant — детали в AYLA-DEC-0017).
+  2. Кардинальность: в нормальном активном состоянии один Subject имеет
+     не более одного active User, один User принадлежит ровно одному
+     Subject; User 1—0..N Account; Account 1—0..N Identity Reference.
+     Исторические, merged и anonymized записи сохраняются и не обязаны
+     поддерживать физическую симметрию 1:1; удаление или деактивация User
+     не каскадирует в удаление Subject. `subject_id` во всех доменных
+     объектах ссылается на Subject и никогда не переписывается в
+     исторических записях.
+  3. Унификация идентификаторов на `user_id` запрещена: `user_id`,
+     `subject_id`, `account_id`, `identity_ref_id` — раздельные
+     идентификаторы с раздельными System of Record.
+  4. Merge, relink и person-wide deletion — отдельные управляемые
+     операции с audit events (`subject_merged`, `identity_ref_relinked`,
+     `subject_anonymized`), actor и reason. Автоматический merge запрещён.
+     Merge инициирует только уполномоченная support/privacy-функция по
+     подтверждённому запросу пользователя; владелец tenant не может
+     инициировать или подтверждать merge. До реализации consent resolver
+     (п. 5) merge запрещён.
+  5. Consent при merge: consent records не сливаются и не
+     переписываются, сохраняют исходный `subject_id` для аудита. Для
+     каждой комбинации `tenant_id + scope_id + policy version`
+     вычисляется новое effective-состояние: `granted + granted` →
+     `granted` при совместимой policy version; `granted + revoked`,
+     `granted + denied`, `granted + expired` → `needs_reconfirmation`.
+  6. Relink Identity Reference допустим только для reference в состоянии
+     `verified`.
+  7. Person-wide deletion управляется retention manifest: юридически
+     или договорно обязательные записи не удаляются автоматически, а
+     минимизируются, обезличиваются или сохраняются на установленный
+     срок с documented legal basis. Retention manifest — отдельный
+     privacy/legal артефакт, не часть настоящего решения.
+  8. MVP-срез: Subject, User, один Account-канал (MAX), Identity
+     Reference (`max_user_id`, `phone`), операции relink и person-wide
+     deletion. Merge, дополнительные каналы, multi-account UI и чтение
+     cross-tenant personalization — deferred (активация через Scope
+     Contract §11).
+  9. `ayla_user_id → subject_id` — interim mapping, не финальная
+     физическая модель. BotUser — interim runtime representation,
+     содержащий часть данных Account, Identity Reference и tenant-local
+     projection; не канонический эквивалент какой-либо одной сущности до
+     отдельного mapping audit. Немедленного рефакторинга runtime
+     решение не требует.
+  10. System of Record: Subject → Memory & Identity Domain; User,
+      Account, Identity Reference → Identity and Access (CAP-019).
+      Consent и Memory SoR не изменяются.
+  11. CDM v1.3 вносит сущности п. 1, кардинальность п. 2 и строки SoR
+      п. 10; область identity foundation снимается из блокирующих после
+      публикации v1.3.
+- **Основание:** CDM оперирует `subject_id` без определённого субъекта;
+  runtime уже реализует person-уровень (person-wide delete по всем
+  tenant'ам), канон отстаёт от эксплуатации. Унификация на `user_id`
+  делает смену телефона, merge и удаление учётной записи разрушающими
+  операциями над audit trail. Безусловная симметрия Subject↔User 1:1
+  отклонена: она делает удаление User каскадным для Subject и
+  несовместимой с сохранением merged/anonymized записей.
+- **Затрагивает:** Ayla Core Domain Model Specification; Ayla MVP Scope
+  and Release Contract (CAP-019 → MVP-active, ограниченный срез); Ayla
+  Domain Capability Registry (CAP-019); AMD-020 Pilot Scope Registry.
+  Consent Scope Registry не изменяется. Decision brief:
+  `99 Archive/proposals/decision-brief-subject-identity-model.md`.
+
+### AYLA-DEC-0017 — Tenant, Membership and Role Model
+
+**Дата:** 2026-07-28 · **Статус:** действует
+
+- **Решение:**
+  1. Каноническая модель доступа персонала — шесть разделённых
+     объектов: User (по AYLA-DEC-0016), Tenant, Provider, Provider
+     Membership, Role Assignment, Specialist Profile.
+  2. Tenant — самостоятельная сущность. В MVP один Provider связан
+     ровно с одним Tenant, но понятия не синонимы. Изменение
+     кардинальности Provider↔Tenant после MVP не должно требовать
+     переопределения identity и authorization contracts.
+  3. Профессиональный профиль мастера, его доступ к салону и связь с
+     tenant — три независимых факта: Specialist Profile привязан к User
+     и не содержит `provider_id`; связь с tenant — только Provider
+     Membership; доступ и полномочия — только Role Assignment внутри
+     active Membership.
+  4. Прямая привязка `Specialist.provider_id` отменяется. Один
+     Specialist Profile допускает любое число активных Membership в
+     разных Provider.
+  5. Membership создаёт owner tenant'а или уполномоченный platform
+     operator. Самостоятельная заявка мастера создаёт только
+     invitation/request в состоянии `requested` без доступа до
+     подтверждения owner. Lifecycle: `requested/invited → active ⇄
+     suspended → revoked`.
+  6. Роли MVP: `owner`, `admin`, `specialist`. Минимальный `admin`:
+     создание/изменение offline-записей; работа с расписанием;
+     операционные данные своего tenant; клиентские обращения в пределах
+     политики. Запрещено: управление ownership, billing/legal settings,
+     доступ к memory/wellness/consent клиента, назначение owner. Все
+     действия `admin` с чужими Appointment аудируются.
+  7. Revoke/expiry — терминальные, не удаляющие: Membership, история
+     Appointment, Offering и Specialist Profile сохраняются. Revoke
+     немедленно прекращает доступ и автоматически не изменяет
+     Appointment; для каждой будущей активной записи создаётся
+     обязательный remediation item со статусом `needs_resolution`
+     (состояние операционной задачи, не новый статус Appointment),
+     уведомление owner/admin и явное решение (сохранить / переназначить
+     / перенести / отменить) с actor, reason и уведомлением клиента. До
+     автоматизации — ручная процедура только при наличии списка
+     затронутых записей, ответственного, audit trail и подтверждения
+     обработки каждой записи.
+  8. Доступ персонала требует active Membership с подходящей Role
+     Assignment; JWT `active_tenant` проверяется против Membership на
+     каждый запрос. Ни одна tenant-роль не даёт доступа к memory,
+     context и consent клиентов.
+  9. Substitute workflow — deferred; модель обязана допускать
+     time-boxed Role Assignment, scoped access, один tenant, только
+     назначенные Appointment и автоматическое expiry.
+  10. У Provider всегда не менее одного active Membership с ролью
+      `owner`, пока Provider не `closed`. Повторный найм создаёт новый
+      Membership; реанимация revoked запрещена. Самозанятый —
+      вырожденный случай: один User, один Tenant, один Provider, один
+      Membership с ролями `owner` + `specialist`.
+  11. System of Record: Provider, Specialist Profile, Provider
+      Membership, Role Assignment → Provider Management (CAP-009)
+      владеет business truth; Identity and Access (CAP-019) владеет
+      enforcement и хранит только авторизационную проекцию
+      Membership/roles; Tenant → Identity and Access (CAP-019).
+  12. CDM v1.3 вносит изменения пп. 1–11; область Tenant/Membership
+      снимается из блокирующих после публикации v1.3.
+- **Основание:** прежняя модель сшивала профиль мастера, доступ и связь
+  с tenant в одной строке Specialist (`provider_id` + `user_id`), что
+  делало невыразимыми мастера в нескольких салонах, точечное отключение,
+  временный доступ и неразрушающий offboarding. Сценарии подтверждены
+  владельцем как platform requirements (master-mobile, substitution —
+  включая Q-MS6 и tenant selector, offboarding handoff-сценарии;
+  внешние документы недоступны в vault — owner direction; `orch.txt` —
+  admin вносит offline-записи). Runtime уже предполагает связь
+  человек↔tenant (`TenantUserRelationship`, аудит P1-1), которой нет в
+  модели. Зависит от AYLA-DEC-0016.
+- **Затрагивает:** Ayla Core Domain Model Specification; Ayla MVP Scope
+  and Release Contract (MVP-срез ролей); Ayla Domain Capability
+  Registry (CAP-009, CAP-019). AMD-020 и Consent Scope Registry не
+  изменяются. Decision brief:
+  `99 Archive/proposals/decision-brief-tenant-membership-roles.md`.
+
 ## Change Log
+
+### v0.9 — 2026-07-28
+
+- новые записи AYLA-DEC-0016 (Subject Identity Model: пять разделённых
+  сущностей, стабильный subject_id, управляемые merge/relink/deletion,
+  consent resolver с needs_reconfirmation, retention manifest отдельно,
+  interim-маппинги runtime) и AYLA-DEC-0017 (Tenant, Membership and
+  Role Model: Tenant отдельно, Provider 1:1 Tenant в MVP, роли
+  owner/admin/specialist, lifecycle Membership, remediation при revoke,
+  разделение SoR CAP-009/CAP-019); оформлены раздельно по решению
+  владельца, не монолитом; подготовлены по двум decision briefs после
+  owner review.
 
 ### v0.8 — 2026-07-27
 
