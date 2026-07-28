@@ -7,7 +7,7 @@ title_ru: Спецификация основной доменной модел�
 type: domain-specification
 status: draft
 decision_status: proposed
-version: "1.2.1"
+version: "1.2.2"
 
 owner: Domain Architecture
 owners:
@@ -45,6 +45,13 @@ depends_on:
   - "[[Ayla Product Vision]]"
   - "[[Ayla Repository Responsibility Matrix]]"
   - "[[Ayla Glossary]]"
+  - "[[Ayla MVP Scope and Release Contract]]"
+  - "[[Ayla MVP Documentation Roadmap]]"
+  - "[[Ayla Intent Model Specification]]"
+  - "[[Consent Scope Registry]]"
+  - "[[AMD-020 Pilot Scope Registry]]"
+  - "[[Ayla Domain Capability Registry]]"
+  - "[[Ayla Decision Log]]"
 
 related_documents:
   - Ayla Intent Model Specification
@@ -69,6 +76,17 @@ review_cycle: quarterly
 Документ определяет каноническую доменную модель Ayla: ключевые бизнес-понятия, их идентичность, владение состоянием, жизненные циклы, инварианты, команды и доменные события.
 
 Он описывает бизнес-смысл системы, а не конкретную реализацию в Django, PostgreSQL, REST API, Python-классах, LLM prompts или пользовательском интерфейсе.
+
+### Readiness
+
+| Гейт | Статус |
+|---|---|
+| Ready for technical review | No |
+| Ready for owner review | No |
+| Ready for approval | No |
+| Ready for canonicalization | No |
+
+Текущий статус: **Draft / Proposed — substantively developed, internally incomplete**. Блокирующие области: identity foundation (Subject/Tenant/Membership), scheduling и Appointment, lifecycle completeness, Handoff Coverage Matrix, SoR owners (§18, §22, §24).
 
 ## 2. Scope
 
@@ -103,6 +121,8 @@ review_cycle: quarterly
 Исключение из пункта «универсальный payment domain»: в MVP разрешён ограниченный provider-side monetary flow по AYLA-DEC-0015 ([[Ayla Decision Log]]) — списание подписки, списание booking fee 90 ₽, обработка результата списания, обновление billing status, применение provider eligibility и минимальная reconciliation с YooKassa. Всё остальное (клиентская онлайн-оплата, wallet, payouts, refunds, chargebacks, split-payment, полноценный payment lifecycle, financial ledger) остаётся deferred.
 
 ### 2.3. Normative Force
+
+`source_kind: canonical` описывает происхождение (место источника истины), а не нормативную зрелость; нормативная сила наступает только при `status: approved` (см. AYLA-DEC-0013, отклонение `canonical-candidate`).
 
 После получения статуса `approved` настоящий документ становится нормативным источником описания доменной модели Ayla.
 
@@ -1154,26 +1174,30 @@ Deferred / proposal:
 - universal ledger;
 - multi-country compliance model.
 
+**Cross-source contradiction record (P1-5): Feedback.** Core Scope: Feedback deferred ([[Ayla MVP Scope and Release Contract]] §5). Внешний источник (master-reviews-feedback handoff): production-blocking. Resolution owner: Product Owner. Activation prohibited until scope change через change control §11. См. §24 (Product, п. 7).
+
 Ограниченный monetary contour по AYLA-DEC-0015 ([[Ayla Decision Log]]): списание подписки, списание booking fee 90 ₽, обработка результата списания, обновление billing status, применение provider eligibility, минимальная reconciliation с YooKassa. Этот контур не считается активацией полной Payment Processing capability и не создаёт универсальный payment domain (§2.2).
 
 ## 18. Acceptance Criteria
 
-Документ готов к approval, когда:
+Документ готов к approval, когда все критерии в статусе PASSED:
 
-1. Все MVP-active objects имеют owner.
-2. Все объекты имеют stable ID.
-3. Aggregate roots подтверждены.
-4. Lifecycles не конфликтуют с Intent Model и MVP Scope.
-5. Systems of Record согласованы.
-6. Commands сопоставлены с API/tool contracts.
-7. Events сопоставлены с Event Registry.
-8. Consent rules согласованы с Consent Scope Registry.
-9. Safety rules согласованы с Safety Policy.
-10. Recommendation и Appointment связаны через recommendation_id.
-11. Нет скрытого ownership между contexts.
-12. Open questions закрыты или оформлены решениями.
+| ID | Criterion | Status | Evidence | Blocker |
+|---|---|---|---|---|
+| CDM-AC-01 | Все MVP-active objects имеют owner | PARTIAL | §22 (unresolved: Service Offering, Availability Slot, Recommendation, Attribution Link) | Yes |
+| CDM-AC-02 | Все объекты имеют stable ID | PASSED | §3.3 | No |
+| CDM-AC-03 | Aggregate roots подтверждены | PARTIAL | §8 (roots определены, не подтверждены владельцем) | Yes |
+| CDM-AC-04 | Lifecycles не конфликтуют с Intent Model и MVP Scope | PARTIAL | §7.5 (Intent — конфликт устранён); lifecycle coverage неполон — см. примечание ниже | Yes |
+| CDM-AC-05 | Systems of Record согласованы | PARTIAL | §12 (обновлён v1.2), §22 (статусы proposal/unresolved) | Yes |
+| CDM-AC-06 | Commands сопоставлены с API/tool contracts | FAILED | §10 (сопоставление не выполнено) | Yes |
+| CDM-AC-07 | Events сопоставлены с Event Registry | FAILED | §11 (Event Registry не создан — §24, Governance п. 6) | Yes |
+| CDM-AC-08 | Consent rules согласованы с Consent Scope Registry | PASSED | §7.2 (v1.2.1, KM-CDM-6) | No |
+| CDM-AC-09 | Safety rules согласованы с Safety Policy | FAILED | §24, Safety (открытые вопросы 1–4) | Yes |
+| CDM-AC-10 | Recommendation и Appointment связаны через recommendation_id | PASSED | §7.11, §7.12 (универсальность — §24, Architecture п. 9) | No |
+| CDM-AC-11 | Нет скрытого ownership между contexts | PARTIAL | §8.6–§8.7, §13, §22 | Yes |
+| CDM-AC-12 | Open questions закрыты или оформлены решениями | FAILED | §24 (пополнён в v1.2.1) | Yes |
 
-Текущий статус по критерию 4: Intent lifecycle приведён к status-enum Output Contract [[Ayla Intent Model Specification]] (§7.5) — конфликт устранён, критерий в части Intent выполнен.
+Текущий статус по критерию CDM-AC-04: Intent lifecycle приведён к status-enum Output Contract [[Ayla Intent Model Specification]] (§7.5) — конфликт устранён, критерий в части Intent выполнен.
 
 Полнота покрытия lifecycle и per-object commands/events по [[Ayla MVP Documentation Roadmap]] §4.3 на текущей версии выполнена **частично**: lifecycle определён для Consent, Context Fact, Inference, Intent, Availability Slot, Recommendation и Appointment; для User, Service, Provider, Specialist, Service Offering, Attribution Link и Outcome lifecycle и per-object commands/events не определены — см. §24 (Architecture, п. 6).
 
@@ -1319,6 +1343,7 @@ Consent ──► Context Fact ──► Intent ──► Recommendation ──�
 4. Какое окно assisted attribution использовать.
 5. Какие feedback types входят в пилот (только после активации Feedback через Scope Contract §11 — см. §7.14).
 6. Active Outcome slice: какие outcome types фиксируются в MVP и через какой источник (§7.15, §17) (v1.3, требует owner decision).
+7. Cross-source contradiction P1-5: Feedback deferred по Scope Contract §5 vs production-blocking по master-reviews-feedback handoff — resolution owner Product Owner, активация только через change control §11 (см. §17) (v1.3, требует owner decision).
 
 ### Privacy
 
@@ -1361,3 +1386,4 @@ Consent ──► Context Fact ──► Intent ──► Recommendation ──�
 | 1.1.1 | 2026-07-28 | Слияние с vault-версией 1.0: перенесены §2.3 Normative Force, §3.2 Technical Representations, §3.10 One Canonical Meaning, §3.11 Historical Consistency; Intent lifecycle (§7.5) приведён к status-enum Output Contract [[Ayla Intent Model Specification]] с маппинг-таблицей состояний потока; §4 подчинён [[Ayla Glossary]] (нормативная оговорка); Feedback переведён в deferred / proposal (§7.14, §17) — активация только через Scope Contract §11; `client_id` унифицирован к `subject_id` (§7.12); строки Billing eligibility / Payment result в §12 помечены как ограниченный контур по AYLA-DEC-0015; frontmatter приведён к schema v1.12 | Domain Architecture |
 | 1.2 | 2026-07-28 | Пакет доработок по результатам независимого ревью. A: §7.2 и §8.1 — собственная схема полей Consent заменена ссылкой на [[Consent Scope Registry]] (нормативная структура scope/purpose/policy bindings выведена из документа); §12 — Inference SoR разделён на producer/processor (AI Runtime) и persistent storage (Memory & Identity Domain по [[AMD-020 Pilot Scope Registry]], Ownership Summary), добавлено пояснение про ephemeral Inference; строки Billing eligibility / Payment result приведены к «owning capability defined outside this document» (CAP-022) и «external deferred» без введения новых bounded contexts. B: добавлены §19 Entity Relationship Diagram, §20 Domain Dependency Graph, §21 Global Domain Invariants, §22 Bounded Context Ownership Matrix, §23 Domain Object ↔ Capability Mapping, §8.6–§8.7 Aggregate owns/references/does-not-own для Recommendation и Appointment; §10 Commands сгруппированы (User/System/AI/Administrative) и §11 Events сгруппированы (Business/Technical/Integration) без изменения состава; §12 дополнен колонками Caching allowed / Snapshot allowed / Replicated; бывшие §19–§21 перенумерованы в §24–§26 | Domain Architecture |
 | 1.2.1 | 2026-07-28 | Пакет «внутренние противоречия» + KM-CDM-6. (1) §7.2 — lifecycle/commands/events Consent приведены к актуальной модели [[Consent Scope Registry]] (состояния not_requested/granted/denied/revoked/expired, правило повторного согласия через новую consent record, добавлены DenyConsent/ConsentDenied), делегирование CSR усилено (lifecycle/commands/events нормативно в CSR §7–§9, здесь — сводка); (2) §20 правило 1 — Consent гейтует только обработку на основании согласия (persistent context, personalization), факты service delivery — на договорном основании; ASCII-схема помечена «consent-gated facts only»; (3) §20 правило 3 — зависимость Appointment от Recommendation смягчена до recommendation-originated, универсальность `recommendation_id` вынесена в §24 (Architecture п. 9); (4) §26 — вторая запись 1.1 переименована в 1.1.1, broken reference «§19» исправлена на «§24»; (5) §22 и §23 — добавлены статусы строк confirmed / proposal / unresolved с легендой; (6) §10/§11 — SubmitFeedback и FeedbackSubmitted вынесены в подраздел Deferred (активация через Scope Contract §11), состав сохранён; в §10/§11 добавлены DenyConsent/ConsentDenied для согласованности с §7.2; (7) §24 — добавлены пункты v1.3: двойная семантика Intent.status unresolved, обязательность `recommendation_id`, статус Action, владелец Service Offering, reschedule lifecycle Appointment (Architecture п. 8–12), active Outcome slice (Product п. 6), согласование event names (Governance п. 6) | Domain Architecture |
+| 1.2.2 | 2026-07-28 | Governance repair (без доменных решений): (1) §1 — добавлен Readiness-блок (все гейты No; статус Draft / Proposed — substantively developed, internally incomplete; блокирующие области: identity foundation, scheduling и Appointment, lifecycle completeness, Handoff Coverage Matrix, SoR owners); (2) §2.3 — пояснение `source_kind: canonical` (происхождение, не нормативная зрелость; нормативная сила только при `status: approved` — AYLA-DEC-0013, отклонение `canonical-candidate`); (3) frontmatter `depends_on` дополнен нормативными ссылками ([[Ayla MVP Scope and Release Contract]], [[Ayla MVP Documentation Roadmap]], [[Ayla Intent Model Specification]], [[Consent Scope Registry]], [[AMD-020 Pilot Scope Registry]], [[Ayla Domain Capability Registry]], [[Ayla Decision Log]]); (4) §17 — зарегистрирован cross-source contradiction P1-5 по Feedback (deferred по Scope Contract §5 vs production-blocking по master-reviews-feedback handoff; resolution owner Product Owner), пункт в §24 (Product п. 7); (5) §18 — Acceptance Criteria формализованы в таблицу CDM-AC-01…12 (Criterion / Status / Evidence / Blocker) без изменения содержания критериев | Domain Architecture |
