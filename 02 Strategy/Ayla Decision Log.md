@@ -4,7 +4,7 @@ title: Ayla Decision Log
 type: decision-log
 status: review
 activation_status: pending-infrastructure
-version: "1.5"
+version: "1.6"
 owner: Founder / Product Architecture
 priority: P0
 knowledge_area:
@@ -628,19 +628,20 @@ reviewed-изменением после проверки commit миграци�
   изменяются. Decision brief:
   `99 Archive/proposals/decision-brief-tenant-membership-roles.md`.
 
-### AYLA-DEC-0018 — Phase 2 and Product Thesis Validation Gate (proposed)
+### AYLA-DEC-0018 — Phase 2 and Product Thesis Validation Gate
 
-**Дата:** 2026-07-28 · **Статус:** proposed — pending Product Owner approval
+**Дата:** 2026-07-28 · **Статус:** действует (accepted — Product Owner
+утвердил **Option C** 2026-07-28; зарегистрирован как proposed 2026-07-28)
 
 - **Тип:** product-architecture-decision. **Owner:** Product Owner.
   **Scope:** MVP release model, memory-first product thesis, product
   validation, persistent personalization. **Связанные решения:**
   AYLA-DEC-0002, AYLA-DEC-0014.
-- **Предупреждение:** запись фиксирует варианты и рекомендацию, но не
-  изменяет approved release gates до owner approval и синхронного
-  обновления затрагиваемых документов (Consent Scope Registry §10,
-  Ayla MVP Scope and Release Contract §3, Ayla MVP User Journey
-  Specification) через отдельный Change Control.
+- **Предупреждение:** Option C принят Product Owner 2026-07-28. Approved
+  release gates этим решением не переписываются задним числом: изменения
+  затрагиваемых документов (Consent Scope Registry §10, Ayla MVP Scope and
+  Release Contract §3, Ayla MVP User Journey Specification) выполняются
+  только через follow-up Change Control, перечисленный ниже.
 - **Контекст:** утверждённая MVP-модель (Consent Scope Registry §10,
   Scope Contract §3) определяет два activation gate. Phase 1 — session-only
   vertical slice без persistent memory, самостоятельный релизный gate.
@@ -730,17 +731,25 @@ reviewed-изменением после проверки commit миграци�
   требуются решения по OQ №10–12, Measurement Framework и отдельный
   validation report.
 - **Required follow-up (после принятия):** (1) перевести запись в
-  accepted; (2) Consent Scope Registry §10 — уточнить: Phase 1 —
-  самостоятельный release gate; Phase 2 — обязательное условие Product
-  Thesis Validation; активация Phase 2 ≠ прохождение validation;
+  accepted — **выполнено 2026-07-28**; (2) Consent Scope Registry §10 —
+  уточнить: Phase 1 — самостоятельный release gate; Phase 2 — обязательное
+  условие Product Thesis Validation; активация Phase 2 ≠ прохождение
+  validation — **pending: выполняется единым Change Control совместно с
+  п. 3 после cross-decision reconciliation с AYLA-DEC-0023/0024/0025**
+  (owner direction 2026-07-28: не открывать approved-документы дважды);
   (3) Scope Contract — разделить Phase 1 release acceptance и Product
-  Thesis Validation acceptance, не делая Phase 2 условием релиза Phase 1;
+  Thesis Validation acceptance, не делая Phase 2 условием релиза Phase 1 —
+  **pending: тот же единый Change Control, что п. 2**;
   (4) MVP User Journey — закрыть OQ №9, заменить оговорки ссылкой на
   решение, сохранить Product Thesis Validation Scenario, 14 этапов не
-  менять; (5) Measurement Framework — baseline, pilot cohort, ground
+  менять — **выполнено 2026-07-28 (MVP User Journey v0.2.2)**;
+  (5) Measurement Framework — baseline, pilot cohort, ground
   truth, repeat-journey comparison, thresholds, validation report format;
   (6) до проведения validation закрыть OQ №10–12, Memory Contract, MVP
-  Recommendation Contract и относящуюся часть Domain Event Registry.
+  Recommendation Contract и относящуюся часть Domain Event Registry —
+  **частично покрыто: AYLA-DEC-0023 (Memory Whitelist, OQ №10),
+  AYLA-DEC-0024 (Memory Contract), AYLA-DEC-0025 (Domain Event
+  Registry)**.
 - **Non-decisions:** решение не активирует Phase 2; не расширяет memory
   whitelist; не разрешает persistent storage без consent; не меняет
   recommendation pipeline; не утверждает числовые метрики; не объявляет
@@ -1216,6 +1225,16 @@ KM-IM-1 от 2026-07-27, зарегистрирован 2026-07-28)
   event contracts волны 3 (AYLA-DEC-0014).
 
 ## Change Log
+
+### v1.6 — 2026-07-28
+
+- AYLA-DEC-0018 переведён из proposed в **действует (accepted)**: Product
+  Owner утвердил **Option C** — Phase 1 остаётся самостоятельным
+  техническим release gate; Product Thesis Validation остаётся открытой до
+  Phase 2 и успешного Product Thesis Validation Scenario. Follow-up по
+  решению: уточнение Consent Scope Registry §10 и Scope Contract (отдельный
+  Change Control), закрытие OQ №9 в Ayla MVP User Journey Specification,
+  Measurement Framework, контракты OQ №10–12.
 
 ### v1.5 — 2026-07-28
 
