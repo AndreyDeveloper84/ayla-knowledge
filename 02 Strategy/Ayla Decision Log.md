@@ -4,7 +4,7 @@ title: Ayla Decision Log
 type: decision-log
 status: review
 activation_status: pending-infrastructure
-version: "1.4"
+version: "1.5"
 owner: Founder / Product Architecture
 priority: P0
 knowledge_area:
@@ -1127,7 +1127,104 @@ KM-IM-1 от 2026-07-27, зарегистрирован 2026-07-28)
   (CAP-001); Ayla Core Domain Model (Context Fact, §6, §12); retention
   manifest (отдельный privacy/legal артефакт по AYLA-DEC-0016 п. 7).
 
+### AYLA-DEC-0025 — Domain Event Registry: конвенция, классификация, ownership и envelope
+
+**Дата:** 2026-07-28 · **Статус:** действует
+
+- **Решение:**
+  1. **Реестр обязателен.** Создаётся
+     `05 Architecture/Ayla Domain Event Registry.md` (type:
+     specification). Размещение — не в 04 Domain Models: реестр задаёт
+     cross-domain и cross-repository контракт. Ownership: Architecture /
+     Event Governance владеет форматом реестра и глобальными правилами;
+     bounded context — семантикой своего события; authoritative
+     producer — payload schema; breaking change требует cross-repo
+     review.
+  2. **Конвенция имён — единая.** Lowercase dot-separated past-tense
+     fact: `<domain>.<entity>.<fact>` (или `<entity>.<fact>` для
+     малого домена): `appointment.created`, `consent.revoked`,
+     `memory.deleted`. Смешение форм (`ConsentGranted`,
+     `consent_granted`, `consent.granted`) запрещено — одна
+     каноническая форма. Событие — факт в прошедшем времени, не
+     команда: `CompleteAppointment` (команда) ≠ `appointment.completed`
+     (факт). Legacy aliases — временный compatibility mapping, не
+     второе полноценное событие. Роадмап §6.4 приводится к конвенции.
+  3. **Классификация — две независимые оси** (не одно
+     взаимоисключающее поле): `semantic_class` (`domain_fact` |
+     `technical_signal`) и `publication_scope` (`internal` |
+     `cross_context` | `cross_repository` | `external`). Бизнес-факт
+     может одновременно быть интеграционным контрактом
+     (`appointment.completed` = domain_fact + cross_repository).
+     Technical signals: запрещены как основание для доменных действий,
+     изменения состояния и side effects; разрешены для observability
+     (logs, tracing, metrics, monitoring, debugging, replay
+     diagnostics).
+  4. **Ownership.** Ровно один authoritative producer на событие —
+     компонент, владеющий фактом: `appointment.*` → Appointment
+     context, `consent.*` → Consent Domain, `intent.*` → Intent
+     Resolution owner, `memory.*` → Memory Service. Вторичные
+     семантические producer'ы запрещены (аналитика не вправе сама
+     решить, что запись завершена). Transport relays (outbox publisher,
+     broker adapter, integration relay, CDC) допустимы, но не
+     становятся владельцами и обязаны сохранять canonical name,
+     producer identity, event_id, payload version, occurred_at.
+  5. **Envelope — единый.** Обязательные поля: `event_id`,
+     `event_name`, `event_version` (целочисленная major wire-версия),
+     `occurred_at`, `published_at`, `producer {service,
+     bounded_context, instance_id}`, `subject {entity_type,
+     entity_id}`, `tenant_id`, `correlation_id`, `causation_id`,
+     `idempotency_key`, `data`, `metadata`.
+  6. **Версионирование и deprecation.** Canonical event name стабилен.
+     Additive change (новое необязательное поле) — обратно совместим,
+     имя и версия прежние. Breaking payload change — major version
+     (`event_version: 1 → 2`), имя может сохраниться. Изменение
+     семантики факта — новое событие или раздельные факты
+     (`recommendation.dispatched` ≠ `recommendation.displayed`).
+     Переименование — новое canonical имя + legacy alias + deprecation
+     window; доменный producer публикует только canonical, legacy
+     consumers обслуживает compatibility layer; alias удаляется только
+     после миграции всех зарегистрированных consumers.
+  7. **Расхождения — отдельные решения.** Consent: канон
+     `consent.granted` / `consent.revoked` (legacy: `ConsentGranted`,
+     `consent_granted`). Intent: общее событие завершения resolution
+     pass — **`intent.resolution_produced`** (первый
+     consumer-meaningful output; конкретный результат — в payload
+     `resolution_status`: resolved / needs_clarification / unresolved /
+     blocked_safety); `intent.resolved` как общее событие не
+     используется — двусмысленно. `intent.detected` —
+     `technical_signal`, `internal`, `domain_trigger_allowed: false`,
+     не integration contract (KM-IM-1). Appointment: канон
+     `appointment.*`; `booking.*` — legacy (compatibility adapter для
+     `booking_id` → `appointment_id`).
+  8. **Первый MVP-срез.** 11 событий роадмапа §6.4 проходят
+     семантический review, не механическое переименование — каждое
+     проверяется: какой факт произошёл; кто единственный producer; в
+     какой точке транзакции возникает; что значит «доставлено» и
+     «обработано»; какие consumers вправе опираться.
+     `qualified_action.attributed` и семейство `recommendation.*`
+     (generated / dispatched / displayed / opened / accepted) требуют
+     предварительной дефиниции семантики до включения.
+- **Основание:** расхождения имён уже обнаружены в каноне и коде
+  (`ConsentGranted` vs `consent_granted`; `booking.rescheduled` с
+  `booking_id`; неопределённый класс `IntentDetected`). При росте
+  числа документов и consumers разные имена одного факта приводят к
+  потерянным событиям, двойной обработке и несовместимым контрактам.
+- **Затрагивает:** создаваемый Ayla Domain Event Registry; Ayla MVP
+  Documentation Roadmap (§6.4 — приведение к конвенции); Ayla Core
+  Domain Model (§11); Ayla Intent Model Specification; Consent Scope
+  Registry (§9.1); Ayla MVP Scope and Release Contract; будущие API /
+  event contracts волны 3 (AYLA-DEC-0014).
+
 ## Change Log
+
+### v1.5 — 2026-07-28
+
+- новая запись AYLA-DEC-0025 (Domain Event Registry): dot-separated
+  past-tense naming; две оси классификации (semantic_class ×
+  publication_scope); один authoritative producer + transport relays;
+  единый envelope; правила versioning/deprecation; канон consent.*,
+  intent.resolution_produced, appointment.* (booking.* — legacy);
+  MVP-срез через семантический review.
 
 ### v1.4 — 2026-07-28
 
