@@ -4,7 +4,7 @@ title: Ayla Decision Log
 type: decision-log
 status: review
 activation_status: pending-infrastructure
-version: "1.7"
+version: "1.8"
 owner: Founder / Product Architecture
 priority: P0
 knowledge_area:
@@ -1336,7 +1336,116 @@ KM-IM-1 от 2026-07-27, зарегистрирован 2026-07-28)
   - **Q9 (CalendarSync SLA):** вынесен в обязательный integration
     contract; числовые значения в настоящее решение не входят.
 
+### AYLA-DEC-0022 — Appointment Reschedule and Replacement Model
+
+**Дата:** 2026-07-28 · **Статус:** accepted (действует)
+
+- **Решение:**
+  1. Reschedule — не статус, а версионируемая операция. Same-ID
+     (сохранение `appointment_id`, монотонная `version`, иммутабельная
+     Appointment Revision на каждое изменение) допустим только при: тот
+     же tenant; тот же `service_offering_id`; неизменные цена и
+     длительность; тот же payment/consent scope; не terminal state.
+     Статус `rescheduled` не вводится.
+  2. Матрица операций (финальная): дата/время → same-ID; специалист в
+     том же Offering при неизменной цене/длительности и явном согласии
+     клиента → same-ID (принятие замены мастера — reschedule
+     acceptance, не новый Consent); небизнесовые метаданные → same-ID
+     при неизменных сумме, способе/статусе оплаты и доходе мастера;
+     другая услуга/Offering, изменение клиентской цены (всегда,
+     включая снижение), изменение длительности, изменение payment
+     boundary, новый юридический/медицинский/информационный Consent →
+     replacement (в любом статусе, включая `requested`); другой
+     tenant → cancel + новый booking flow без cross-tenant lineage;
+     terminal state → запрещено.
+  3. Replacement: старая запись → `cancelled` с
+     `cancellation_reason=replaced_by_reschedule`; новая запись несёт
+     `reschedule_of` (непосредственный предок, ациклично, тот же
+     tenant), `root_appointment_id`, `reschedule_count` (наследуется
+     +1).
+  4. Новая сущность Reschedule Proposal (`appointment_id`,
+     `proposed_assignment_id`, `proposed_starts_at`,
+     `proposed_price_snapshot`, `actor`, `reason`, `expires_at`;
+     status: `pending | accepted | declined | expired | withdrawn`):
+     обязательна для смены мастера, master re-offer,
+     substitute-предложений, late-window и сверх-лимитных запросов. До
+     принятия исходная запись действующая, старое время занято, новая
+     Reservation с ограниченным TTL, `appointment.rescheduled` не
+     публикуется; принятие — атомарная 7-шаговая транзакция;
+     отказ/expiry — исходная неизменна.
+  5. Late-window: запрос позднее чем за 1 час до `starts_at` — manual
+     reschedule request (proposal, решение owner/admin вручную,
+     исходная запись действующая до решения); порог — product default
+     MVP, не доменный инвариант.
+  6. Лимит переносов — policy, не инвариант: MVP default 3 успешных
+     self-service reschedule на lineage; далее — owner/admin review с
+     actor/reason; запись не блокируется и не отменяется; tenant
+     override — deferred.
+  7. Attribution: origin/provenance сохраняются; Attribution Link не
+     переписывается; при переносе той же услуги attribution
+     продолжается по lineage; при другой услуге `recommendation_id`
+     наследуется только после проверки исполнения той же
+     Recommendation; attribution eligibility — явное решение. Billing:
+     reschedule не создаёт charge; replacement может породить charge
+     после собственного завершения; один completed outcome в lineage →
+     не более одного booking fee; billing проверяет lineage по
+     `root_appointment_id`.
+  8. Calendar mode tenant: `ayla_primary` | `external_primary`;
+     несинхронизированный dual-source запрещён. В `external_primary`
+     (MVP): перенос — во внешней системе; Ayla импортирует результат с
+     `external_ref` (external_id, source timestamps, sync metadata);
+     конфликт — в пользу подтверждённой внешней версии; stale →
+     degraded mode (AYLA-DEC-0021); внешние изменения нормализуются
+     по матрице п. 2 (время-only → same-ID Revision с
+     actor=external_system; Offering/цена/длительность/consent/
+     payment → replacement); запись внешних изменений как Revision без
+     разбора запрещена.
+  9. События по AYLA-DEC-0025: same-ID → `appointment.rescheduled`;
+     replacement → канонические lifecycle-события старой и новой
+     записи; `booking.*` — legacy; единственный producer — CAP-011.
+     `no_show` — только из действующей `confirmed`.
+  10. Concurrency: 7-шаговая транзакция с hold по AYLA-DEC-0021,
+      `expected_version`, повторной проверкой Rule/Block/external
+      freshness; при любом отказе старая запись и reservation без
+      изменений.
+  11. CDM v1.3 вносит: правки §7.12 (поля п. 3 + `origin` enum 7
+      значений + условный `recommendation_id`), сущности Appointment
+      Revision и Reschedule Proposal, lifecycle, §12 SoR-строки; §24
+      Architecture п. 9 и п. 12 закрываются.
+- **Основание:** прежняя модель (статус `rescheduled`, отсутствие
+  origin/price_snapshot/истории, безусловный `recommendation_id`)
+  была внутренне противоречива и не различала изменение параметров
+  обязательства и смену его сущности. Подтверждённые сценарии
+  (customer-first-time, master-time-off, master-substitution,
+  master-offboarding, salon-onboarding handoff — scenario sources, не
+  канон) требуют re-offer с acceptance, remediation без автопереноса
+  и нормализации внешних изменений. Reconciliation с MVP User Journey
+  v0.3-final пройдена 2026-07-28: противоречий нет, UX-ветки
+  reschedule/cancel/late-window/substitute/external reschedule —
+  явный deferral с traceability table.
+- **Затрагивает:** Ayla Core Domain Model Specification (§7.12, §6,
+  §12, §24 — v1.3); Ayla Domain Event Registry (регистрация
+  `appointment.rescheduled` и lifecycle-событий replacement);
+  Ayla MVP User Journey Specification (deferral-таблица);
+  биллинг-контур AYLA-DEC-0015 (проверка lineage по
+  `root_appointment_id`); зависит от AYLA-DEC-0016, AYLA-DEC-0017,
+  AYLA-DEC-0020, AYLA-DEC-0021, AYLA-DEC-0025. Decision brief:
+  `99 Archive/proposals/decision-brief-appointment-reschedule-model.md`.
+  Миграция runtime-спеки customer-cancellation-reschedule — отдельный
+  трек вне vault.
+
 ## Change Log
+
+### v1.8 — 2026-07-28
+
+- новая запись AYLA-DEC-0022 (Appointment Reschedule and Replacement
+  Model): same-ID vs replacement матрица; упразднение статуса
+  `rescheduled`; Appointment Revision и Reschedule Proposal;
+  late-window как manual request; лимит как policy threshold;
+  attribution/billing по lineage (≤1 fee на completed outcome);
+  calendar mode вместо универсального YClients-SoR; 7-шаговая
+  транзакция; канонизировано после reconciliation с MVP User Journey
+  v0.3-final (вариант Б — deferral).
 
 ### v1.7 — 2026-07-28
 
