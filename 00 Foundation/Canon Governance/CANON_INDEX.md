@@ -48,7 +48,9 @@ SUPERSEDED
 
 | Document | Layer | Canonical file | Status | Supersedes | Notes |
 |---|---|---|---|---|---|
-| Ayla Product Essence | Essence | `00 Foundation\Ayla Product Essence.md` | CANONICAL | — | Высший продуктовый источник. Owner approved 2026-07-29. Canonical working version is stored in ayla-knowledge. External D: copy is non-authoritative. |
+| Ayla Product Essence v1.0 | Essence | `00 Foundation\Ayla Product Essence.md` | CANONICAL | — | Высший продуктовый источник. Owner approved 2026-07-29. Canonical working version is stored in ayla-knowledge. External D: copy is non-authoritative. Остаётся CANONICAL до утверждения v1.1; в SUPERSEDED не переводить до owner approval v1.1. |
+| Ayla Product Essence v1.1 | Essence | — | MISSING / CREATE IN LDT WINDOW | v1.0 (after approval) | Semantic patch по AYLA-DEC-0026 (Living Digital Twin). Готовится в Living Digital Twin Window; до owner approval — кандидат. |
+| Ayla Living Digital Twin Manifesto | Foundation | `00 Foundation\Ayla Living Digital Twin Manifesto.md` (планируемый) | MISSING / CREATE AFTER ESSENCE V1.1 APPROVAL | — | Ниже Product Essence; не может её переопределять. Первоначальный статус после создания: DRAFT. |
 | Ayla MVP Reset Roadmap | Operational | `02 Strategy\Ayla MVP Reset Roadmap.md` | CANONICAL | — | Операционный источник порядка перестройки и выпуска. Owner approved 2026-07-29. Canonical working version is stored in ayla-knowledge. External D: copy is non-authoritative. Не переопределяет Product Essence и не занимает места в иерархии между Essence и Product Vision. |
 | Product Vision | Foundation | `01 Product\Ayla Product Vision.md` | — | — | Кандидат. Дубликаты в `D:\Проекты\Ayla` сверяются на Intake. |
 | Product Thesis | Foundation | `02 Strategy\Ayla MVP Product Thesis.md` | — | — | Кандидат. Дубликаты в `D:\Проекты\Ayla` сверяются на Intake. |

@@ -28,6 +28,9 @@ review_cycle: monthly
 **Window:** Foundation Canon Window
 **Статус окна:** NOT_OPENED
 **Gate:** FOUNDATION_NOT_STARTED
+**Blocker:** BLOCKED_BY_ESSENCE_V1_1 (AYLA-DEC-0026)
+
+> Окно не открывается до owner approval Product Essence v1.1, которая готовится в Living Digital Twin Foundation Window. После approval v1.1: Authoritative sources и `FOUNDATION_INPUT_MANIFEST.md` обновляются на v1.1, v1.0 переводится в SUPERSEDED.
 
 ## Mission
 

@@ -29,7 +29,10 @@ review_cycle: monthly
 
 ```text
 Current gate: FOUNDATION_NOT_STARTED
+Blocker: TOP_LEVEL_ESSENCE_REVISION_REQUIRED
 ```
+
+Блокер введён по AYLA-DEC-0026: перед открытием Foundation Canon Window требуется подготовить и утвердить Product Essence v1.1 (Living Digital Twin ruling). До утверждения v1.1: v1.0 остаётся CANONICAL, v1.1 — кандидат.
 
 ## Модель источников
 
@@ -42,7 +45,8 @@ Current gate: FOUNDATION_NOT_STARTED
 
 | Workstream | Gate | Window | Last handoff |
 |---|---|---|---|
-| Foundation | NOT_STARTED | Foundation Canon Window (не открыто) | — |
+| Foundation | BLOCKED_BY_ESSENCE_V1_1 | Foundation Canon Window (не открыто) | — |
+| Living Digital Twin (Essence v1.1) | READY_TO_OPEN | Living Digital Twin Foundation Window (подготовлено, не открыто) | — |
 | Domain | BLOCKED | — | — |
 | UX | BLOCKED | — | — |
 | AI architecture | BLOCKED | — | — |

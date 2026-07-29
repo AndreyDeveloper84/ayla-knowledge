@@ -27,6 +27,8 @@ review_cycle: monthly
 
 Входной манифест Foundation Canon Window. KB = `C:\Users\user\PycharmProjects\Ayla\ayla-knowledge`. Канонические рабочие версии двух высших источников хранятся в KB; копии на `D:\Проекты\Ayla` — внешние исходные, non-authoritative.
 
+> **BLOCKED_BY_ESSENCE_V1_1 (AYLA-DEC-0026):** окно заблокировано до owner approval Product Essence v1.1. После approval строка Essence в REQUIRED заменяется на v1.1, и в применимые входы добавляется AYLA-DEC-0026.
+
 ## REQUIRED
 
 ```text
