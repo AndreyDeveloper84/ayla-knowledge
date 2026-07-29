@@ -2,9 +2,9 @@
 node_id: ayla.product.mvp-user-journey
 title: Ayla MVP User Journey Specification
 type: user-journey-specification
-status: draft
-decision_status: proposed
-version: "0.3"
+status: approved
+decision_status: accepted
+version: "1.0"
 owner: Product Owner
 priority: P0
 knowledge_area:
@@ -26,13 +26,14 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-27
-updated: 2026-07-28
+updated: 2026-07-29
 review_cycle: monthly
 depends_on:
   - "[[Ayla Constitution]]"
   - "[[Ayla User Journey Specification]]"
   - "[[Ayla MVP Scope and Release Contract]]"
   - "[[Ayla MVP Documentation Roadmap]]"
+  - "[[Ayla Intent Model Specification]]"
 related:
   - "[[Consent Scope Registry]]"
   - "[[Ayla Domain Capability Registry]]"
@@ -41,12 +42,13 @@ related:
 
 # Ayla MVP User Journey Specification
 
-> **Статус:** Draft v0.3-final — proposed. Это **не канонизация**: документ
-> является производным MVP-срезом [[Ayla User Journey Specification]] по
-> решению AYLA-DEC-0014 ([[Ayla MVP Documentation Roadmap]] §2.1) и не
-> заменяет полную спецификацию. Нормативную силу документ получает только
-> после approval Product Owner; до этого все положения имеют статус
-> `proposed`.
+> **Статус:** Approved v1.0 (2026-07-29, Product Owner). Документ принят
+> после устранения обязательного замечания F1 (синхронизация этапов 4–5 с
+> утверждённой [[Ayla Intent Model Specification]]) и внесения ремарки F2;
+> положения имеют нормативную силу в границах MVP. Документ остаётся
+> производным MVP-срезом [[Ayla User Journey Specification]] по решению
+> AYLA-DEC-0014 ([[Ayla MVP Documentation Roadmap]] §2.1) и не заменяет
+> полную спецификацию.
 >
 > **Соглашение о метках.** Утверждения, дословно или близко следующие из
 > канонических источников, помечены как *(факт — источник §)*. Предложения,
@@ -304,14 +306,16 @@ memory в Phase 1 технически отключена (факт — CSR §10
 | actor | Ayla |
 | trigger | Получено пользовательское сообщение с потребностью |
 | пользовательская цель | Чтобы Ayla поняла, чего пользователь хочет достичь, а не только что написал (Query vs Intent — факт, полная UJS Stage 3) |
-| системное действие | Извлечь intent и slots из сообщения; определить confidence; проверить safety constraints до перехода к рекомендации (факт — полная UJS, Stage 3 Intent Extraction / Safety Check). Поддерживаемые intent types, required/optional slots и confidence levels определяет Ayla Intent Model Specification (planned, Roadmap §3.1 — документ в разработке, не материализован). **(proposal, v0.2)** Для разрешения ссылок на прошлый опыт («как в прошлый раз», «к ней», «снова») допускается targeted memory retrieval до окончательного разрешения intent — в пределах активного scope |
+| системное действие | Извлечь intent и slots из сообщения; определить confidence; проверить safety constraints до перехода к рекомендации (факт — полная UJS, Stage 3 Intent Extraction / Safety Check). Поддерживаемые intent types, required/optional slots и confidence levels определяет [[Ayla Intent Model Specification]] v0.9.2 (approved/accepted: 11 продуктовых intent types + sentinel `UNKNOWN`) и её machine-readable contracts — `03 AI System/Contracts/intent-registry.yaml`, `slot-registry.yaml`, `intent-output.schema.json` (contract_version 0.5) (факт — Intent Model § Intent Types, § Output Contract). **(proposal, v0.2)** Для разрешения ссылок на прошлый опыт («как в прошлый раз», «к ней», «снова») допускается targeted memory retrieval до окончательного разрешения intent — в пределах активного scope |
 | отображаемое состояние | Формулировка понимания с уровнем уверенности через язык (факт — полная UJS, Stage 3 Confidence) |
-| ошибка | `INTENT_UNRESOLVED` — intent не распознан или confidence ниже порога |
+| ошибка | `INTENT_UNRESOLVED` — intent не распознан или confidence ниже порога (соответствует `intent_type = UNKNOWN` со `status = unresolved` / `needs_clarification`; `UNKNOWN` — resolver sentinel, execution по нему запрещён — факт, Intent Model § Intent Types, § Output Contract) |
 | fallback | Переход к этапу 5 (Clarification); при повторной неудаче — см. Negative Scenarios №1 |
 | domain event | `intent.resolution_produced` (канон — AYLA-DEC-0025 / Domain Event Registry v0.2 §6.1; результат — в payload `resolution_status`; legacy: `IntentResolved`) |
 | owning capability | CAP-003 — Intent Understanding |
 
-Минимальный набор intent types (факт — Roadmap §3.1): DISCOVER_SERVICE,
+Минимальный набор intent types (факт — [[Ayla Intent Model Specification]]
+§ Intent Types / intent-registry.yaml; первичное требование — Roadmap §3.1):
+DISCOVER_SERVICE,
 FIND_SPECIALIST, BOOK_APPOINTMENT, RESCHEDULE_APPOINTMENT,
 CANCEL_APPOINTMENT, ASK_ABOUT_SERVICE, ASK_ABOUT_PRICE,
 ASK_ABOUT_AVAILABILITY, PROVIDE_CONTEXT, CORRECT_CONTEXT, REVOKE_CONSENT,
@@ -322,7 +326,7 @@ UNKNOWN.
 | Поле | Значение |
 |---|---|
 | actor | Ayla ↔ User |
-| trigger | `requires_clarification`: недостаточно обязательных слотов или низкий confidence (факт — Roadmap §3.1 output contract; полная UJS, Context Sufficiency Gate) |
+| trigger | `requires_clarification`: недостаточно обязательных слотов или низкий confidence (факт — [[Ayla Intent Model Specification]] § Output Contract / § Confidence and Clarification: поле `requires_clarification` и пять случаев его установки; полная UJS, Context Sufficiency Gate) |
 | пользовательская цель | Ответить на минимум вопросов и получить решение, а не анкету |
 | системное действие | Задать минимально необходимый вопрос; не более 5 вопросов за сессию Discovery (факт — полная UJS, Stage 2 Maximum Questions); при отказе отвечать — продолжить с имеющимся контекстом, обозначив неопределённость (факт — полная UJS, Handling Incomplete Answers). **(proposal, v0.2)** Clarification suppression: не задавать вопрос, ответ на который уже содержится в актуальном разрешённом факте; устаревший или конфликтующий факт не заменяет уточнение (см. Memory Interaction, Context Sufficiency Model) |
 | отображаемое состояние | clarification required |
@@ -330,6 +334,18 @@ UNKNOWN.
 | fallback | Переформулировать вопрос с примерами; fast path «просто запиши меня» не обходит safety evaluation и явное подтверждение действия (факт — полная UJS, Context Sufficiency Gate) |
 | analytics event | `clarification_requested` **(proposal)**; вклад в clarification rate (факт — Roadmap §9.2) |
 | owning capability | CAP-003 — Intent Understanding |
+
+Два независимых ограничения уточняющих вопросов (ремарка F2, v1.0): **UX
+Discovery** — не более 5 вопросов за всю discovery-сессию (факт — полная
+UJS, Stage 2 Maximum Questions): правило пользовательского взаимодействия,
+ограничивает суммарное число вопросов к пользователю; **Intent
+Resolution** — не более 2 последовательных clarification-подходов по
+одному intent, после чего resolver обязан вернуть `intent_type = UNKNOWN`,
+`status = unresolved` (факт — [[Ayla Intent Model Specification]]
+§ Confidence and Clarification): правило AI runtime, ограничивает цикл
+уточнения одного intent. Правила действуют на разных уровнях: первое
+ограничивает UX-сессию в целом, второе — разрешение конкретного intent;
+одно не заменяет и не отменяет другое.
 
 ### Этап 6. Context retrieval
 
@@ -1099,11 +1115,30 @@ CSR §2, полная UJS Memory Proposal; остальное — **proposal**, 
    Registry в MVP-active (AYLA-DEC-0014). Кандидат-решение из review:
    разделить Basic Feedback Capture (MVP-active) и Advanced Outcome
    Learning (deferred).
-7. **Зависимость от Ayla Intent Model Specification (planned).** Этапы 4–5
-   ссылаются на output contract intent resolution, который фиксируется в
-   документе, находящемся в разработке параллельно; после его
-   материализации формулировки этапов 4–5 требуют сверки. Wikilink
-   намеренно не установлен до создания документа.
+7. **(ЗАКРЫТ — v1.0, 2026-07-29). Зависимость от Ayla Intent Model
+   Specification.** Документ материализован и утверждён:
+   [[Ayla Intent Model Specification]] v0.9.2 (status approved,
+   decision_status accepted) + machine-readable contracts
+   `03 AI System/Contracts/` (intent-registry.yaml и slot-registry.yaml —
+   registry_version 1.0, compatible_contract_version 0.5;
+   intent-output.schema.json — contract_version 0.5). Wikilink установлен,
+   документ добавлен в depends_on. Выполнена обещанная сверка этапов 4–5 с
+   утверждённым Output Contract — противоречий не выявлено:
+   - триггер этапа 5 `requires_clarification` соответствует полю
+     `requires_clarification` Output Contract и пяти случаям его установки
+     (Intent Model § Confidence and Clarification);
+   - ошибка этапа 4 `INTENT_UNRESOLVED` соответствует
+     `intent_type = UNKNOWN` (resolver sentinel, не пользовательское
+     намерение; execution по нему запрещён) в комбинации со
+     `status = unresolved` / `needs_clarification`; fallback на этап 5 и
+     Negative Scenario №1 сохраняется;
+   - «уровень уверенности через язык» (отображаемое состояние этапа 4)
+     совместим: числовой confidence остаётся внутри output contract,
+     пользователю показывается вербализованная уверенность;
+   - граница clarification vs execution readiness: Intent Model определяет
+     только intent-level readiness; execution readiness (authorization,
+     user confirmation) вычисляется orchestration/capability layer — в
+     Journey это этапы 6+; пересечения ответственности нет.
 8. **(ЧАСТИЧНО РЕШЁН — v0.3-final).** Domain Event Registry v0.1 создан
    (`05 Architecture/Ayla Domain Event Registry.md`, актуальная редакция —
    v0.2). Миграция выполняется для active canonical event names
@@ -1186,6 +1221,29 @@ CSR §2, полная UJS Memory Proposal; остальное — **proposal**, 
       используется только во втором значении (deferral-ветка).
 
 ## Change Log
+
+### v1.0 (2026-07-29) — Approval: синхронизация с Intent Model (F1), ремарка о лимитах clarification (F2)
+
+- **F1 (обязательное замечание owner review):** этап 4 — ссылка на
+  «Ayla Intent Model Specification (planned, в разработке)» заменена на
+  утверждённую [[Ayla Intent Model Specification]] v0.9.2
+  (approved/accepted) и machine-readable contracts
+  `03 AI System/Contracts/` (intent-registry.yaml, slot-registry.yaml,
+  intent-output.schema.json, contract_version 0.5); триггер этапа 5
+  перепривязан от Roadmap §3.1 к Output Contract Intent Model; ошибка
+  этапа 4 `INTENT_UNRESOLVED` связана с `UNKNOWN` sentinel.
+- **Open Question №7 закрыт** с задокументированным результатом сверки
+  этапов 4–5 с утверждённым Output Contract (`requires_clarification`,
+  `UNKNOWN`/`INTENT_UNRESOLVED`, confidence через язык, граница
+  clarification vs execution readiness) — противоречий не выявлено.
+- **F2:** этап 5 — добавлена ремарка о двух независимых ограничениях:
+  не более 5 вопросов за discovery-сессию (UX-правило, полная UJS Stage 2)
+  и не более 2 последовательных clarification-подходов по одному intent
+  (AI runtime, Intent Model § Confidence and Clarification).
+- Frontmatter: depends_on дополнен [[Ayla Intent Model Specification]].
+- **Статус повышен: draft/proposed → approved/accepted** (Product Owner,
+  2026-07-29; вердикт review — accept после устранения F1). Остальные
+  Open Questions остаются в трекинге своих целевых артефактов.
 
 ### v0.3-final (2026-07-28) — Owner rulings 2026-07-28 (финализация MVP primary-booking journey)
 
