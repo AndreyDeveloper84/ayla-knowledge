@@ -46,7 +46,7 @@ Blocker: TOP_LEVEL_ESSENCE_REVISION_REQUIRED
 | Workstream | Gate | Window | Last handoff |
 |---|---|---|---|
 | Foundation | BLOCKED_BY_ESSENCE_V1_1 | Foundation Canon Window (не открыто) | — |
-| Living Digital Twin (Essence v1.1) | ESSENCE_V1_1_READY_FOR_OWNER_REVIEW | Living Digital Twin Foundation Window (кандидат v1.1 на ветке `canon/essence-v1.1-candidate`, merge до approval запрещён) | LIVING_DIGITAL_TWIN_ALIGNMENT_REPORT.md |
+| Living Digital Twin (Essence v1.1) | ESSENCE_V1_1_READY_FOR_OWNER_REVIEW | Living Digital Twin Foundation Window (кандидат v1.1 на ветке `canon/essence-v1.1-candidate`; owner review #1 CHANGES_REQUESTED P1=5 — revision применён, `9e0a15d`; merge до approval запрещён) | LIVING_DIGITAL_TWIN_ALIGNMENT_REPORT.md |
 | Domain | BLOCKED | — | — |
 | UX | BLOCKED | — | — |
 | AI architecture | BLOCKED | — | — |

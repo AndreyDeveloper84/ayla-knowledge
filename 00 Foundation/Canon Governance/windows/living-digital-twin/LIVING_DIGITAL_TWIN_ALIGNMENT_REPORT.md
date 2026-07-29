@@ -159,3 +159,59 @@ v1.0 на основной ветке не изменена и остаётся 
 - Инварианты: человек — главный герой; Twin — отражение и главный визуальный интерфейс; Transformation Goal — центральная доменная сущность; Ayla — помощник и оркестратор; booking — не центр.
 - Технические детали (schema, API, UI-контролы, thresholds) из Essence исключены.
 - Валидация на ветке кандидата: 0 errors, 21 warnings (все warnings существующие, новых нет). `git diff --check` чист; trailing double-space line breaks из заголовка и §4 v1.0 заменены на обычные строки (editorial, требование чистого diff).
+
+## Owner Review Revision Pass
+
+### Review Verdict
+
+```text
+OWNER REVIEW: CHANGES_REQUESTED
+P0: 0
+P1: 5
+Owner Decisions Required: NONE
+```
+
+### Required Changes Applied
+
+Все пять обязательных правок применены в commit `9e0a15d` (ветка `canon/essence-v1.1-candidate`):
+
+1. **P1-1 Product Promise (§2)** — абсолютная формулировка «каждый раз открывая Ayla» заменена на устойчивую верхнеуровневую: «Главный пользовательский опыт Ayla начинается с самого человека…». Twin сохранён в ключевых сценариях; технические и служебные экраны выведены из-под UX-обязательства. Основание: OWNER_REVIEW_P1_1, MVP_BOUNDARY_CLARIFICATION.
+2. **P1-2 Killer Feature (§6)** — «точка объединения всех доменов продукта» заменена на «согласованное отражение состояния, прогресса и данных из разных областей продукта». Twin объединяет восприятие, не владеет доменами; Transformation Goal остаётся доменным центром. Основание: OWNER_REVIEW_P1_2, INTERNAL_CONSISTENCY.
+3. **P1-3 Архитектурное определение (§20)** — «центральная долгоживущая визуальная модель продукта» заменена на «основная долгоживущая визуальная модель пользователя». Слово «центральная» закреплено только за Transformation Goal; Twin явно моделирует пользователя. Основание: OWNER_REVIEW_P1_3, TERMINOLOGY_ALIGNMENT.
+4. **P1-4 Иерархия документов (§21)** — линейная схема заменена нелинейной: Manifesto, Vision, Thesis, Principles — sibling-документы под Essence; MVP Scope строится на совокупности Vision+Thesis+Principles. Manifesto — authoritative input, не родитель Vision/Thesis/Principles. Основание: OWNER_REVIEW_P1_4, STRUCTURAL_INTEGRATION.
+5. **P1-5 MVP-граница (§18)** — вводный текст делегирует точный состав реализации в MVP Scope; требования разделены на Core value (6), Trust and control (7), Conditional input (видео — только при подтверждённой необходимости). Список «MVP не обязан включать» сохранён. Основание: OWNER_REVIEW_P1_5, MVP_BOUNDARY_CLARIFICATION.
+
+### Additional Editorial Clarifications
+
+1. **§12 Product loop** — «визуальный и измеримый прогресс» → «визуальный прогресс и подтверждённые изменения состояния» (не обещать обязательную измеримость любого прогресса).
+2. **§14 Explainable Transformation** — «основания для наблюдаемого изменения» → «доступные данные, основания интерпретации и ограничения вывода» (снижение риска ложной причинности).
+3. **Frontmatter dependency (9.3)** — проверена `.knowledge/schema.yaml`: поля для owner decision references нет (relationships: depends_on, supersedes, implements, adr — только для ADR-типов, related, conflicts_with). Schema не изменена; неподдерживаемое поле не добавлено; `depends_on` для Owner Decision не используется. Ссылка на AYLA-DEC-0026 сохранена в статусном блоке документа («Основание: AYLA-DEC-0026»).
+
+### Remaining P0
+
+0
+
+### Remaining P1
+
+0
+
+### Candidate Status
+
+```text
+Document: Ayla Product Essence
+Version: 1.1
+Status: READY_FOR_OWNER_REVIEW
+Branch: canon/essence-v1.1-candidate
+Commits: 6327947 (initial candidate) → 9e0a15d (owner review revision)
+File: 00 Foundation\Ayla Product Essence.md
+Merge: запрещён до owner approval
+```
+
+### Verification
+
+- Проверки перед правками: ветка `canon/essence-v1.1-candidate`, базовый commit `6327947` — совпали.
+- Все 5 P1 и 2 editorial-правки применены; исходная матрица Alignment Pass не переписывалась.
+- Frontmatter кандидата не изменён: `version: "1.1"`, `status: review`, `canonical_status: candidate`; filename и `node_id` стабильны.
+- Валидация после правок: 0 errors, 21 warnings (все существующие, новых нет); `git diff --check` чист.
+- Product Essence v1.0 на основной ветке не изменена; schema, validator, запрещённые файлы не затронуты; unrelated changes не staged.
+- Merge и push не выполнялись; CANONICAL не присвоен; blocker не снят.
