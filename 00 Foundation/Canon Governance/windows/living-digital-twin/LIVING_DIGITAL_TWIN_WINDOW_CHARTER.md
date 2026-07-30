@@ -31,11 +31,54 @@ review_cycle: monthly
 ```text
 Phase A: COMPLETE
 Essence v1.1: CANONICAL (owner approved 2026-07-30; merge f148e55)
-Phase B: READY_TO_OPEN
+Phase B: OPEN / INITIALIZED (2026-07-30)
 Manifesto: NOT_STARTED
 ```
 
-Phase B (Manifesto) открывается только отдельной командой владельца.
+Phase B открыта командой владельца 2026-07-30. Manifesto ещё не создан — содержательная работа выполняется только внутри Living Digital Twin Foundation Window.
+
+## Phase B — Living Digital Twin Manifesto
+
+### Status
+
+OPEN / INITIALIZED
+
+### Mission
+
+Подготовить `00 Foundation\Ayla Living Digital Twin Manifesto.md` (первоначальный статус DRAFT), раскрывающий: зачем Ayla нужен Living Digital Twin; почему пользователь должен узнавать себя; как сохраняется идентичность; что такое Authentic Future; как Twin живёт во времени; как разделяются факт, реконструкция, оценка, прогноз и цель; как объясняется трансформация; какой контроль остаётся у пользователя; какие trust/safety-принципы обязательны; где проходит граница MVP и long-term vision; как Manifesto направляет downstream Domain/UX/AI/Safety/Engineering; чего Manifesto не должен определять.
+
+Manifesto находится ниже Product Essence v1.1, не может её переопределять и не заменяет Product Vision, Product Thesis, Product Principles, MVP Scope, User Journey, Domain Model, UX-, AI/ML- и Engineering-спецификации.
+
+### Authoritative Inputs
+
+Ayla Product Essence v1.1 (authoritative source); AYLA-DEC-0026 (только в пределах своего scope, не переопределяет Essence); LDT Alignment Report (трассировка, не источник истины выше Essence); LDT Window Charter; LDT Input Manifest; LDT Outline. Полный перечень и режимы доступа — `LIVING_DIGITAL_TWIN_INPUT_MANIFEST.md` (раздел Phase B).
+
+### Allowed Outputs
+
+Manifesto может устанавливать: обязательные продуктовые принципы; язык и терминологию; trust boundaries; philosophical and product constraints; downstream obligations; запреты на identity drift, deceptive precision, body shaming; обязательность user control; distinction of data/state classes; границу MVP vs long-term на уровне принципов.
+
+### Forbidden Scope
+
+Manifesto не должен содержать: API/database schemas; model architecture и выбор провайдера; ML thresholds и exact similarity scores; SLA; exact UI layouts и animation timing; endpoint contracts; storage design; retention implementation; detailed consent workflow; backlog; release plan; точные acceptance-метрики без утверждённой measurement model.
+
+### Subagent Policy
+
+Subagents: FORBIDDEN. Могут быть разрешены только отдельной командой владельца или Charter amendment.
+
+### Completion Criteria
+
+1. Manifesto создан как `DRAFT`.
+2. Manifesto не противоречит Product Essence v1.1.
+3. Все обязательные принципы (Mission, 12 пунктов) покрыты.
+4. Нет P0 conflicts.
+5. Нет скрытых MVP guarantees.
+6. Validation проходит с 0 errors.
+7. Manifesto передан на Product Owner review.
+8. Phase B не закрывается до owner approval или отдельного owner ruling о статусе DRAFT.
+
+### Owner Review Gate
+
+Итог Phase B — Manifesto DRAFT на Product Owner review. Переходы статуса документа (DRAFT → выше) выполняет только оркестратор по owner ruling; окно самостоятельно статус не повышает.
 
 ## Mission
 

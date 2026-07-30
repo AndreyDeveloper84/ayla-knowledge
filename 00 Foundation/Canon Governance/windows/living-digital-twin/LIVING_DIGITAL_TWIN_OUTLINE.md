@@ -56,31 +56,33 @@ Supersedes after approval: v1.0
 
 Инварианты patch: человек — главный герой; Twin — отражение, не герой; Ayla — помощник и оркестратор; инструменты (Booking, Food, Water, Fitness, Procedures, Sleep и др.) остаются инструментами; прогноз — не обещание; желаемая цель — не автоматически вероятный результат.
 
-## Часть B — Living Digital Twin Manifesto (после approval v1.1)
+## Часть B — Living Digital Twin Manifesto (Phase B: OPEN / INITIALIZED, 2026-07-30)
 
-Файл: `00 Foundation\Ayla Living Digital Twin Manifesto.md`. Первоначальный статус: DRAFT. Находится ниже Product Essence и не может её переопределять.
+Файл: `00 Foundation\Ayla Living Digital Twin Manifesto.md`. Первоначальный статус: DRAFT. Находится ниже Product Essence v1.1 и не может её переопределять. Содержимое разделов на этапе открытия Phase B не пишется.
 
-Предварительная структура (ruling §15):
+Целевая структура будущего Manifesto (утверждена при открытии Phase B; заменяет предварительную структуру из ruling §15):
 
-```text
-1. Purpose
-2. Definition
-3. Human as the protagonist
-4. Primary visual interface
-5. Principle of Recognition
-6. Identity Preservation
-7. Authentic Future
-8. Living Timeline
-9. Fact vs Observation vs Reconstruction vs Prediction vs Goal
-10. Explainable Transformation
-11. User Control and Correction
-12. Identity Drift and Failure States
-13. Privacy and Consent
-14. Body Dignity and Anti-Shaming
-15. MVP Boundary
-16. Long-Term Vision
-17. Quality Gates
-18. Downstream Implications
+```markdown
+# Ayla Living Digital Twin Manifesto
+
+## 1. Purpose
+## 2. The Human Is the Protagonist
+## 3. What Living Digital Twin Is
+## 4. What Living Digital Twin Is Not
+## 5. Principle of Recognition
+## 6. Identity Preservation
+## 7. Authentic Future
+## 8. Living Timeline
+## 9. State and Evidence Separation
+## 10. Explainable Transformation
+## 11. User Control
+## 12. Consent and Data Dignity
+## 13. Body Dignity and Anti-Shaming
+## 14. MVP Principles
+## 15. Long-Term Vision Boundaries
+## 16. Downstream Obligations
+## 17. Decision Tests
+## 18. Canonical Relationship
 ```
 
 ## Порядок работ окна
