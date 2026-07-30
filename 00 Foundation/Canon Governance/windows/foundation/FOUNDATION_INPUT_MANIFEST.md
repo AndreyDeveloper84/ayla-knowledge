@@ -2,8 +2,8 @@
 node_id: ayla.foundation.canon-governance.foundation-input-manifest
 title: FOUNDATION_INPUT_MANIFEST
 type: specification
-status: draft
-version: "0.1"
+status: approved
+version: "1.0"
 owner: Product Owner
 knowledge_area:
   - foundation
@@ -19,56 +19,61 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-29
-updated: 2026-07-29
+updated: 2026-07-30
 review_cycle: monthly
 ---
 
 # FOUNDATION_INPUT_MANIFEST
 
-Входной манифест Foundation Canon Window. KB = `C:\Users\user\PycharmProjects\Ayla\ayla-knowledge`. Канонические рабочие версии двух высших источников хранятся в KB; копии на `D:\Проекты\Ayla` — внешние исходные, non-authoritative.
-
-> **UNBLOCKED (2026-07-30):** Product Essence v1.1 утверждена и является CANONICAL — REQUIRED ссылается на неё (тот же стабильный файл). AYLA-DEC-0026 входит в применимые Owner Decisions окна. Окно NOT_OPENED / READY_TO_OPEN.
+Входной манифест Foundation Canon Window (OPEN / INITIALIZED, 2026-07-30). Каноническая база — репозиторий `ayla-knowledge`, ветка `agent/ux-mvp`.
 
 ## REQUIRED
 
 ```text
-KB\00 Foundation\Ayla Product Essence.md              — высший продуктовый источник (CANONICAL v1.1, owner approved 2026-07-30)
-KB\02 Strategy\Ayla MVP Reset Roadmap.md              — операционный источник (CANONICAL)
-KB\01 Product\Ayla Product Vision.md                  — кандидат Product Vision
-KB\02 Strategy\Ayla MVP Product Thesis.md             — кандидат Product Thesis
-KB\01 Product\User Journeys\Ayla MVP User Journey Specification.md — кандидат MVP User Journey
+00 Foundation\Ayla Product Essence.md                          — v1.1 CANONICAL, высший источник
+00 Foundation\Ayla Living Digital Twin Manifesto.md            — v1.0 CANONICAL, согласующий input для LDT-тем
+00 Foundation\Canon Governance\CANON_INDEX.md
+00 Foundation\Canon Governance\CANON_WORKSTREAM_STATUS.md
+00 Foundation\Canon Governance\OWNER_DECISION_REGISTER.md      — read-only для окна
+00 Foundation\Canon Governance\CANON_CONFLICT_REGISTER.md
 ```
 
-## OPTIONAL IF CONFLICT
+Рабочие версии документов scope (классифицированы в `FOUNDATION_DOCUMENT_STATUS.md`):
 
 ```text
-KB\02 Strategy\Ayla MVP Scope and Release Contract.md — legacy-вход; новый MVP Scope создаётся from new canon
-KB\02 Strategy\Killer PRD.md                          — LEGACY REFERENCE ONLY
-D:\Проекты\Ayla\Killer_PRD_v1.1_RU.md                 — LEGACY REFERENCE ONLY
-KB\00 Foundation\Ayla Constitution.md                 — conditional reference (ограничения), не шаблон Principles
-KB\00 Foundation\Ayla Glossary.md                     — при терминологических конфликтах
-KB\00 Foundation\Document Quality Bar (W7).md         — критерий качества при финализации
-KB\02 Strategy\Ayla Decision Log.md                   — поиск ранее принятых решений; без автоимпорта
-KB\01 Product\User Journeys\Ayla User Journey Specification.md — предшествующая версия Journey
-D:\Проекты\Ayla\Ayla_Product_Vision.md (+ дубликат "(1)")      — cross-location сверка версий Vision
-D:\Проекты\Ayla\Ayla_MVP_Product_Thesis.md (+ "(1)", "(2)")    — cross-location сверка версий Thesis
-D:\Проекты\Ayla\Ayla_User_Journey_v1.0_FINAL_FULL.md           — cross-location сверка версий Journey
+01 Product\Ayla Product Vision.md
+02 Strategy\Ayla MVP Product Thesis.md
+Product Principles — файл отсутствует (создаётся в окне)
+02 Strategy\Ayla MVP Scope and Release Contract.md
+01 Product\User Journeys\Ayla MVP User Journey Specification.md
 ```
 
-## DO NOT LOAD
+## CONDITIONAL
+
+Читать только при конкретном unresolved вопросе; каждое чтение записывается (File / Reason / Question resolved / Influence on Foundation document):
 
 ```text
-KB\00 Foundation\Ayla Domain Capability Registry.md
-KB\00 Foundation\Ayla Domain and Metadata Registry.md
-KB\00 Foundation\Ayla Knowledge Architecture Specification.md
-KB\00 Foundation\Ayla Repository Responsibility Matrix.md
-KB\01 Product\UX MVP\** (весь каталог)
-KB\03 AI System\**, KB\05 Architecture\**, KB\06 Safety and Governance\**
-KB\99 Archive\**, KB\scripts\**, KB\tests\**
-D:\Проекты\Ayla\Ayla_Product_Essence_v1.0.md — внешняя исходная копия, non-authoritative
-D:\Проекты\Ayla\Ayla_MVP_Reset_Roadmap.md    — внешняя исходная копия, non-authoritative
-D:\Проекты\Ayla — всё остальное: Constitution v2.0/v2.1, все .docx и .ini,
-Consent_Scope_Registry* (все версии), Domain-документы, schema-v1.2*,
-repomix-output.xml, каталог aibot, изображения, Killer_PRD.md (устаревшая),
-Glossary v1.1_REVIEW, «Объяснение сложных терминов»
+02 Strategy\Killer PRD.md
+Strategy-документы (02 Strategy: Decision Log, Documentation Roadmap, MVP Reset Roadmap)
+05 Architecture\Ayla MVP Recommendation Contract.md
+06 Safety and Governance\Consent Scope Registry.md
+06 Safety and Governance\Data Inventory Matrix.md
+Safety-документы (06 Safety and Governance)
+Domain-документы (05 Architecture: Core Domain Model, Domain Event Registry и др.)
+UX-документы (01 Product\UX MVP)
+AI-документы (03 AI System)
+Architecture-документы (05 Architecture)
+Roadmaps
+```
+
+## FORBIDDEN BY DEFAULT
+
+```text
+legacy-копии вне канонического репозитория
+D:\-копии (все)
+99 Archive\**
+полные кодовые базы, tests, backlog
+handoff dumps, agent scratch files
+старые candidate worktrees
+внешние продуктовые заметки
 ```

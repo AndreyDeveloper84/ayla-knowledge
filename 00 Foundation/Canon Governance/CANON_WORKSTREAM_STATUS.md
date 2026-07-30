@@ -28,11 +28,12 @@ review_cycle: monthly
 Статус рабочих направлений канонизации.
 
 ```text
-Current gate: FOUNDATION_NOT_STARTED
+Current gate: FOUNDATION_IN_PROGRESS
 Blocker: NONE
+Current Foundation document: Product Vision
 ```
 
-Блокер `TOP_LEVEL_ESSENCE_REVISION_REQUIRED` снят 2026-07-30: Product Essence v1.1 утверждена владельцем (candidate `9e0a15d`, merge в `agent/ux-mvp`) и является CANONICAL; v1.0 — SUPERSEDED (Git history).
+Foundation Canon Window открыто 2026-07-30 после завершения Living Digital Twin Phase B (Essence v1.1 CANONICAL, Manifesto v1.0 CANONICAL). Порядок канонизации: Vision → Thesis → Principles → MVP Scope → User Journey (см. `windows\foundation\FOUNDATION_CANONIZATION_SEQUENCE.md`).
 
 ## Модель источников
 
@@ -45,7 +46,7 @@ Blocker: NONE
 
 | Workstream | Gate | Window | Last handoff |
 |---|---|---|---|
-| Foundation | UNBLOCKED / READY_TO_OPEN | Foundation Canon Window (NOT_OPENED) | — |
+| Foundation | OPEN / INITIALIZED | Foundation Canon Window (открыто 2026-07-30; текущий документ — Product Vision; subagents FORBIDDEN) | — |
 | Living Digital Twin (Essence v1.1) | ESSENCE_V1_1_CANONICAL | Living Digital Twin Foundation Window (Phase A: COMPLETE; owner approved 2026-07-30, merge в `agent/ux-mvp`) | LIVING_DIGITAL_TWIN_ALIGNMENT_REPORT.md |
 | Living Digital Twin Manifesto Phase B | COMPLETE | Manifesto CANONICAL / v1.0 (owner approval RECORDED 2026-07-30); subagents NOT_USED | LIVING_DIGITAL_TWIN_ALIGNMENT_REPORT.md |
 | Domain | BLOCKED | — | — |

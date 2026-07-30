@@ -2,8 +2,8 @@
 node_id: ayla.foundation.canon-governance.foundation-window-charter
 title: FOUNDATION_WINDOW_CHARTER
 type: specification
-status: draft
-version: "0.1"
+status: approved
+version: "1.0"
 owner: Product Owner
 knowledge_area:
   - foundation
@@ -19,94 +19,102 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-29
-updated: 2026-07-29
+updated: 2026-07-30
 review_cycle: monthly
 ---
 
 # FOUNDATION_WINDOW_CHARTER
 
 **Window:** Foundation Canon Window
-**Статус окна:** UNBLOCKED / NOT_OPENED / READY_TO_OPEN
-**Gate:** FOUNDATION_NOT_STARTED
-**Blocker:** NONE (BLOCKED_BY_ESSENCE_V1_1 снят 2026-07-30 после owner approval Essence v1.1)
 
-> Окно готово к открытию отдельной командой владельца. Высший источник — Product Essence v1.1 (CANONICAL); v1.0 — SUPERSEDED (Git history).
+## Status
+
+```text
+Foundation Window: OPEN / INITIALIZED (2026-07-30)
+Current gate: FOUNDATION_IN_PROGRESS
+Current Foundation document: Product Vision
+```
 
 ## Mission
 
-Привести пять Foundation-документов — Product Vision, Product Thesis, Product Principles, MVP Scope, MVP User Journey — в состояние `READY_FOR_OWNER_REVIEW`, согласованное с Product Essence и MVP Reset Roadmap.
+Привести пять Foundation-документов — Product Vision, Product Thesis, Product Principles, MVP Scope, User Journey — в каноническое состояние, согласованное с Ayla Product Essence v1.1 и Living Digital Twin Manifesto v1.0. Содержательная работа над каждым документом выполняется последовательно, по одному документу за раз, в отдельных документных окнах.
 
-## Authoritative sources
+## Authoritative Inputs
 
-- **Product Essence v1.1** (`00 Foundation\Ayla Product Essence.md`) — высший продуктовый источник. Статус: `CANONICAL` (owner approved 2026-07-30, basis AYLA-DEC-0026). v1.0 — SUPERSEDED (Git history). Внешние копии не authoritative.
-- **MVP Reset Roadmap** (`02 Strategy\Ayla MVP Reset Roadmap.md`) — операционный источник порядка перестройки и выпуска. Статус: `CANONICAL` (owner approved 2026-07-29). Не переопределяет Product Essence и не занимает места в иерархии между Essence и Product Vision. Внешняя копия на `D:` не authoritative.
-- **Approved Owner Decisions** — обязательные точечные решения строго в пределах своего scope. Owner Decision не может неявно переопределять Product Essence.
+- **Ayla Product Essence v1.1** (`00 Foundation\Ayla Product Essence.md`) — высший продуктовый источник; побеждает при любом конфликте.
+- **Living Digital Twin Manifesto v1.0** (`00 Foundation\Ayla Living Digital Twin Manifesto.md`) — обязательный согласующий input для LDT-положений Foundation-документов; sibling под Essence, не родитель Vision/Thesis/Principles.
+- **Approved Owner Decisions** (AYLA-DEC-0026 и последующие) — обязательны строго в пределах своего scope; не переопределяют Essence.
+- Реестры Canon Governance: CANON_INDEX, CANON_WORKSTREAM_STATUS, OWNER_DECISION_REGISTER (read-only для окна), CANON_CONFLICT_REGISTER.
 
-Модель не линейная: каждый источник авторитетен в своей роли.
+Полный перечень входов и режимы доступа — `FOUNDATION_INPUT_MANIFEST.md`.
 
-## Files in scope
-
-Пять Foundation-документов (см. `FOUNDATION_INPUT_MANIFEST.md`). Product Principles и MVP Scope отсутствуют — их создание входит в scope:
-
-- **Product Principles — MISSING / CREATE.** Ayla Constitution используется только как conditional reference для проверки применимых ограничений; не шаблон и не основа для автоматического переноса.
-- **MVP Scope — MISSING / CREATE FROM NEW CANON.** Создаётся сверху вниз от: 1) Product Essence; 2) MVP Reset Roadmap; 3) обновлённого Product Vision; 4) Product Thesis; 5) Product Principles; 6) утверждённых Owner Decisions. `Killer PRD` — LEGACY REFERENCE ONLY: читать для поиска применимых требований, ранее принятых решений, рисков и сценариев; запрещено использовать как родительский документ, основной черновик или основу структуры.
-
-## Files out of scope
-
-Domain-, UX-, AI-, Engineering-, API-, Safety/Governance-документы; реестры `00 Foundation` (кроме conditional references из манифеста); код, scripts, tests; каталог `99 Archive`.
-
-## Work phases
-
-1. **Foundation Intake and Alignment Pass** — классификация, конфликты, зависимости, разделение AUTO / Owner Decision. Без переписывания документов.
-2. **Owner Decision batch** — только по конфликтам, прошедшим лестницу разрешения P0.
-3. **Canonical rewrite** — по одному документу сверху вниз.
-4. **Consistency review** — сквозная проверка пяти документов.
-5. **Handoff** — `FOUNDATION_HANDOFF.md` и статус `FOUNDATION_READY_FOR_OWNER_REVIEW`.
-
-## Subagent policy
-
-Фаза 1 — субагенты запрещены. Фазы 3–4 — допустимы только read/analyze-субагенты с явным списком файлов, без права записи вне scope.
-
-## Owner Decision boundary
-
-P0 не равен Owner Decision автоматически. Перед эскалацией каждый P0 проверяется на разрешимость через: 1) Product Essence; 2) утверждённые Owner Decisions; 3) удаление/замену legacy-положения; 4) явную границу MVP/post-MVP; 5) более простое обратимое решение; 6) редакционное/структурное исправление. Owner Decision создаётся только когда после этих проверок остаются минимум два разумных варианта, materially меняющих продукт, MVP, главный journey, обязательства, safety/privacy, критический контракт или срок выпуска.
-
-## Duplicate resolution rule
-
-Primary candidate среди версий Vision / Thesis / Journey не выбирается по имени файла. Intake определяет его по: frontmatter; version; status; modified date (вспомогательный сигнал); ссылкам на решения; полноте; соответствию Product Essence; отсутствию устаревших положений. Intake возвращает: рекомендуемую primary candidate, таблицу различий, доказательство выбора, значимые расхождения. Это не Owner Decision, если версии не содержат альтернативных стратегических направлений. Сверка охватывает обе локации: KB (`ayla-knowledge`) и `D:\Проекты\Ayla`.
-
-## Acceptance criteria
-
-- Все пять документов имеют статус `READY_FOR_OWNER_REVIEW` в `CANON_INDEX.md`.
-- Ноль открытых P0-конфликтов (разрешены или оформлены как Owner Decisions).
-- Каждый документ ссылается на версию Product Essence.
-- Дубликаты и устаревшие версии помечены `LEGACY` / `DUPLICATE` / `SUPERSEDED`.
-- Окно не присваивает статус `CANONICAL` самостоятельно.
-
-## Gate model
+## Documents in Scope
 
 ```text
-FOUNDATION_NOT_STARTED
-FOUNDATION_ALIGNMENT_IN_PROGRESS
-FOUNDATION_ALIGNMENT_COMPLETE
-OWNER_DECISIONS_REQUIRED
-FOUNDATION_CANONICALIZATION_IN_PROGRESS
-FOUNDATION_READY_FOR_OWNER_REVIEW
-FOUNDATION_COMPLETE
+Product Vision      — 01 Product\Ayla Product Vision.md (v1.4, review)
+Product Thesis      — 02 Strategy\Ayla MVP Product Thesis.md (v0.4, draft)
+Product Principles  — файл отсутствует (MISSING / CREATE)
+MVP Scope           — 02 Strategy\Ayla MVP Scope and Release Contract.md (v0.2, draft)
+User Journey        — 01 Product\User Journeys\Ayla MVP User Journey Specification.md (v1.0, approved до LDT-канона)
 ```
 
-P0 не считается разрешённым только потому, что он оформлен как открытый Owner Decision.
+Фактические статусы и next actions — `FOUNDATION_DOCUMENT_STATUS.md`.
 
-**FOUNDATION_ALIGNMENT_COMPLETE** — допустимы: P0-конфликты со статусом `ESCALATED`; связанные Owner Decisions со статусом `OPEN`; отсутствие canonical rewrite до получения решений.
+## Canonization Sequence
 
-**OWNER_DECISIONS_REQUIRED** — обязательно: каждый эскалированный P0 связан с конкретным Owner Decision; каждый Owner Decision содержит точный scope; окно не продолжает canonical rewrite в затронутой области до решения владельца.
+```text
+1. Product Vision
+2. Product Thesis
+3. Product Principles
+4. MVP Scope
+5. User Journey
+```
 
-**FOUNDATION_READY_FOR_OWNER_REVIEW** — обязательно: ноль P0 со статусом `OPEN`; ноль P0 со статусом `ESCALATED`; все применимые Owner Decisions имеют статус `DECIDED`; решения применены к пяти Foundation-документам; consistency review завершён; пять документов имеют статус `READY_FOR_OWNER_REVIEW`.
+Порядок не меняется без отдельного owner ruling. Обоснование — `FOUNDATION_CANONIZATION_SEQUENCE.md`.
 
-**FOUNDATION_COMPLETE** — дополнительно обязательно: итоговый Foundation-пакет одобрен Product Owner; пять Foundation-документов получили статус `CANONICAL`; создан `FOUNDATION_HANDOFF.md`; в `CANON_WORKSTREAM_STATUS.md` зафиксировано открытие следующего разрешённого gate.
+## Allowed Outputs
 
-Результат работы окна: `FOUNDATION_READY_FOR_OWNER_REVIEW`. Переход в `FOUNDATION_COMPLETE` выполняется только через owner approval.
+- обновлённые/созданные версии пяти Foundation-документов (через отдельные документные окна, по одному);
+- статусные обновления `FOUNDATION_DOCUMENT_STATUS.md` и реестров;
+- записи конфликтов в CANON_CONFLICT_REGISTER (через оркестратора);
+- эскалации Owner Decisions по лестнице разрешения (см. CANON_CONFLICT_REGISTER);
+- handoff-документы окна.
 
-## Required handoff
+## Forbidden Scope
 
-Обновлённый `CANON_INDEX.md`; закрытые записи `CANON_CONFLICT_REGISTER.md`; список созданных Owner Decisions; `FOUNDATION_HANDOFF.md` с сигналом `FOUNDATION_READY_FOR_OWNER_REVIEW`.
+- переопределение Product Essence v1.1 или Manifesto v1.0;
+- изменение Domain-, UX-, AI-, Safety-, Architecture-, API-документов и кода;
+- открытие Domain/UX/AI/Engineering workstreams;
+- присвоение статуса CANONICAL без отдельного review и owner approval;
+- параллельная работа над несколькими Foundation-документами без отдельного разрешения владельца;
+- изменение schema/validator;
+- push без отдельного указания.
+
+## Subagent Policy
+
+```text
+FORBIDDEN
+```
+
+Субагенты могут быть разрешены позже только отдельной owner-командой и по одному документу.
+
+## Owner Review Gates
+
+- Каждый документ проходит: authoring/alignment → consistency review → `READY_FOR_OWNER_REVIEW` → owner approval → CANONICAL (статус присваивает оркестратор, не окно).
+- P0-конфликты обрабатываются по лестнице разрешения (6 шагов, см. CANON_CONFLICT_REGISTER); Owner Decision создаётся только при materially unresolved выборе.
+- Gate-модель Foundation: `FOUNDATION_IN_PROGRESS → FOUNDATION_READY_FOR_OWNER_REVIEW → FOUNDATION_COMPLETE` (детальные критерии состояний — CANON_WORKSTREAM_STATUS).
+
+## Completion Criteria
+
+1. Все пять документов имеют статус CANONICAL (каждый — после отдельного owner approval).
+2. Каждый документ согласован с Essence v1.1 и (в LDT-темах) с Manifesto v1.0 и ссылается на них.
+3. Ноль открытых P0-конфликтов; применимые Owner Decisions — DECIDED и применены.
+4. Sibling-иерархия сохранена: Manifesto не стал родителем Vision/Thesis/Principles.
+5. MVP Scope определяет релизный состав; User Journey — путь пользователя без технической реализации.
+6. Validation 0 errors; предупреждения не выросли без обоснования.
+7. `FOUNDATION_DOCUMENT_STATUS.md` и реестры отражают итоговое состояние.
+8. Создан handoff и зафиксировано открытие следующего разрешённого gate.
+
+## Stop Conditions
+
+Окно останавливается и возвращает blocker report, если: требуется изменить Essence или Manifesto; выявлен materially unresolved продуктовый выбор (эскалация владельцу); требуется schema/validator change; конфликт реестров требует отдельного ruling; изменение выходит за allowed scope.
