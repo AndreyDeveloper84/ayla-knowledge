@@ -41,8 +41,8 @@ review_cycle: monthly
 Рабочие версии документов scope (классифицированы в `FOUNDATION_DOCUMENT_STATUS.md`):
 
 ```text
-01 Product\Ayla Product Vision.md
-02 Strategy\Ayla MVP Product Thesis.md
+01 Product\Ayla Product Vision.md                — CANONICAL v2.0 (approved source; owner approved 2026-07-30)
+02 Strategy\Ayla MVP Product Thesis.md           — CURRENT INPUT FOR NEXT WINDOW (Product Thesis Canon Window)
 Product Principles — файл отсутствует (создаётся в окне)
 02 Strategy\Ayla MVP Scope and Release Contract.md
 01 Product\User Journeys\Ayla MVP User Journey Specification.md

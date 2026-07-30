@@ -2,8 +2,8 @@
 node_id: ayla.strategy.product-vision
 title: Ayla — Product Vision
 type: foundation
-status: review
-canonical_status: candidate
+status: approved
+canonical_status: approved
 version: "2.0"
 owner: Product Owner
 original_author: Андрей Тихонов
@@ -54,17 +54,17 @@ open_schema_question: >
 **Версия:** 2.0
 **Дата исходной редакции:** 30 марта 2026
 **Дата ревизии:** 30 июля 2026
-**Статус:** Review — structured revision v1.4 → v2.0: документ приведён в
-соответствие с Ayla Product Essence v1.1, Living Digital Twin Manifesto v1.0
-и AYLA-DEC-0026; кандидат на канонизацию (canonical_status: candidate), не
-утверждён владельцем
+**Статус:** CANONICAL — Product Owner approved 2026-07-30
+(APPROVE_WITH_NON_BLOCKING_EDITORIAL_NOTES); canonized through Main Canon
+Orchestrator. Документ приведён в соответствие с Ayla Product Essence v1.1,
+Living Digital Twin Manifesto v1.0 и AYLA-DEC-0026
 **Автор исходной редакции:** Андрей Тихонов
 
 > **Примечание о статусе:** v2.0 — структурированная ревизия, выполненная в
-> Product Vision Canon Window внутри Foundation Canon Window. Документ не
-> является CANONICAL и ожидает internal consistency review и owner approval.
-> Версия v1.4 доступна через Git history; физический архивный дубликат не
-> создаётся.
+> Product Vision Canon Window внутри Foundation Canon Window, утверждена
+> Product Owner 2026-07-30 и канонизирована. Документ находится ниже
+> Ayla Product Essence v1.1 и не может её переопределять. Версия v1.4
+> доступна через Git history; физический архивный дубликат не создаётся.
 
 ## Назначение документа
 

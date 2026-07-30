@@ -30,9 +30,10 @@ review_cycle: monthly
 ## Status
 
 ```text
-Foundation Window: OPEN / INITIALIZED (2026-07-30)
+Foundation Window: OPEN (открыто 2026-07-30)
 Current gate: FOUNDATION_IN_PROGRESS
-Current Foundation document: Product Vision
+Product Vision stage: COMPLETE — v2.0 CANONICAL (owner approval recorded 2026-07-30)
+Current Foundation document: Product Thesis
 ```
 
 ## Mission
@@ -51,8 +52,8 @@ Current Foundation document: Product Vision
 ## Documents in Scope
 
 ```text
-Product Vision      — 01 Product\Ayla Product Vision.md (v1.4, review)
-Product Thesis      — 02 Strategy\Ayla MVP Product Thesis.md (v0.4, draft)
+Product Vision      — 01 Product\Ayla Product Vision.md (v2.0, CANONICAL — COMPLETE)
+Product Thesis      — 02 Strategy\Ayla MVP Product Thesis.md (v0.4, draft — CURRENT)
 Product Principles  — файл отсутствует (MISSING / CREATE)
 MVP Scope           — 02 Strategy\Ayla MVP Scope and Release Contract.md (v0.2, draft)
 User Journey        — 01 Product\User Journeys\Ayla MVP User Journey Specification.md (v1.0, approved до LDT-канона)

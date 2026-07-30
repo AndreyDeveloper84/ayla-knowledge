@@ -28,11 +28,11 @@ review_cycle: monthly
 Зафиксированный порядок канонизации Foundation-документов. Не меняется без отдельного owner ruling.
 
 ```text
-1. Product Vision
-2. Product Thesis
-3. Product Principles
-4. MVP Scope
-5. User Journey
+1. Product Vision      — COMPLETE / CANONICAL (v2.0, owner approved 2026-07-30)
+2. Product Thesis      — CURRENT / NEXT
+3. Product Principles  — PENDING
+4. MVP Scope           — PENDING
+5. User Journey        — PENDING
 ```
 
 ## Обоснование
@@ -51,4 +51,4 @@ User Journey отвечает — как человек проходит клю�
 
 - Работа ведётся по одному документу за раз, в отдельном документном окне; следующий документ не начинается до owner approval предыдущего или отдельного разрешения владельца.
 - Над всеми пятью документами стоят Ayla Product Essence v1.1 и Living Digital Twin Manifesto v1.0 (для LDT-тем); sibling-иерархия сохраняется.
-- Текущий документ: **Product Vision**.
+- Текущий документ: **Product Thesis**.
