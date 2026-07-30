@@ -31,17 +31,25 @@ review_cycle: monthly
 ```text
 Phase A: COMPLETE
 Essence v1.1: CANONICAL (owner approved 2026-07-30; merge f148e55)
-Phase B: OPEN / INITIALIZED (2026-07-30)
-Manifesto: NOT_STARTED
+Phase B: COMPLETE (2026-07-30)
+Manifesto: CANONICAL / v1.0
 ```
 
-Phase B открыта командой владельца 2026-07-30. Manifesto ещё не создан — содержательная работа выполняется только внутри Living Digital Twin Foundation Window.
+Phase B завершена 2026-07-30: Manifesto подготовлен, прошёл consistency review, утверждён Product Owner и канонизирован.
 
 ## Phase B — Living Digital Twin Manifesto
 
 ### Status
 
-OPEN / INITIALIZED
+COMPLETE
+
+Completion basis:
+
+- Manifesto drafted (`23dea7c`);
+- consistency review passed (`70e5e11`; P0=0, P1=0, P2=0);
+- Product Owner approval recorded (APPROVE_WITH_NON_BLOCKING_EDITORIAL_NOTES, 2026-07-30);
+- approved P3 cleanup completed (P3-1, P3-2 в `b072a05`);
+- Manifesto canonized (v1.0, canonical_status: approved).
 
 ### Mission
 

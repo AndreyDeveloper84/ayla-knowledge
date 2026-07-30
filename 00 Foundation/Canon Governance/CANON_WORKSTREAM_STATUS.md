@@ -47,7 +47,7 @@ Blocker: NONE
 |---|---|---|---|
 | Foundation | UNBLOCKED / READY_TO_OPEN | Foundation Canon Window (NOT_OPENED) | — |
 | Living Digital Twin (Essence v1.1) | ESSENCE_V1_1_CANONICAL | Living Digital Twin Foundation Window (Phase A: COMPLETE; owner approved 2026-07-30, merge в `agent/ux-mvp`) | LIVING_DIGITAL_TWIN_ALIGNMENT_REPORT.md |
-| Living Digital Twin Manifesto Phase B | OPEN / INITIALIZED | открыто 2026-07-30; Manifesto NOT_STARTED (файл не создан); subagents FORBIDDEN | — |
+| Living Digital Twin Manifesto Phase B | COMPLETE | Manifesto CANONICAL / v1.0 (owner approval RECORDED 2026-07-30); subagents NOT_USED | LIVING_DIGITAL_TWIN_ALIGNMENT_REPORT.md |
 | Domain | BLOCKED | — | — |
 | UX | BLOCKED | — | — |
 | AI architecture | BLOCKED | — | — |

@@ -227,3 +227,7 @@ Merge: запрещён до owner approval
 - Remaining P0: 0
 - Remaining P1: 0
 - Manifesto Phase B: READY_TO_OPEN
+
+## Final Canonization — Phase B
+
+Living Digital Twin Manifesto v1.0 approved and canonized on 2026-07-30.

@@ -2,9 +2,9 @@
 node_id: ayla.foundation.living-digital-twin-manifesto
 title: Ayla Living Digital Twin Manifesto
 type: foundation
-status: draft
-canonical_status: candidate
-version: "0.1"
+status: approved
+canonical_status: approved
+version: "1.0"
 owner: Product Owner
 priority: P0
 depends_on:
@@ -29,16 +29,16 @@ review_cycle: monthly
 
 # Ayla Living Digital Twin Manifesto
 
-**Статус:** DRAFT
-**Версия:** 0.1
+**Статус:** CANONICAL
+**Версия:** 1.0
 **Подготовлено:** Living Digital Twin Manifesto Authoring Window
-**Основание:** Ayla Product Essence v1.1; AYLA-DEC-0026
+**Основание:** Ayla Product Essence v1.1; AYLA-DEC-0026; Product Owner approval 2026-07-30
 **Владелец:** Product Owner
 **Слой:** Foundation
 **Роль:** обязательные продуктовые принципы Living Digital Twin
 
-> Этот документ находится ниже Ayla Product Essence v1.1 и не может её переопределять.
-> До owner approval документ не является CANONICAL.
+> Документ утверждён Product Owner и является каноническим в пределах своего scope.
+> Он находится ниже Ayla Product Essence v1.1 и не может её переопределять.
 
 ## 1. Purpose
 

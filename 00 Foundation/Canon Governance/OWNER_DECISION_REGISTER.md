@@ -83,3 +83,7 @@ Status:         DECIDED
 Примечание по ID: предпочтительный `AYLA-DEC-0012` занят в `02 Strategy\Ayla Decision Log.md` (owner directions по Domain Capability Registry); по правилу ruling использован следующий свободный — `AYLA-DEC-0026` (Decision Log занимает диапазон до `AYLA-DEC-0025`).
 
 Источник: `D:\Проекты\Ayla\OWNER_RULING_LIVING_DIGITAL_TWIN_PRIMARY_VISUAL_INTERFACE.md` (owner ruling, 2026-07-29). Owner Decision не переопределяет Product Essence; изменение Essence выполняется через подготовку v1.1 с отдельным owner approval.
+
+**Implementation / Canonization note (2026-07-30):**
+
+> Living Digital Twin Manifesto v1.0 approved by Product Owner on 2026-07-30 (APPROVE_WITH_NON_BLOCKING_EDITORIAL_NOTES). Final consistency review passed with P0=0, P1=0, P2=0. Two non-blocking editorial notes (P3-1, P3-2) were applied in commit `b072a05`. Manifesto canonized under Product Essence v1.1. Это исполнительная отметка к AYLA-DEC-0026, не новое продуктовое решение.
