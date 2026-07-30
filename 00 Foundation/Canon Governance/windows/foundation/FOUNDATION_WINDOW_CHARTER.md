@@ -26,11 +26,11 @@ review_cycle: monthly
 # FOUNDATION_WINDOW_CHARTER
 
 **Window:** Foundation Canon Window
-**Статус окна:** NOT_OPENED
+**Статус окна:** UNBLOCKED / NOT_OPENED / READY_TO_OPEN
 **Gate:** FOUNDATION_NOT_STARTED
-**Blocker:** BLOCKED_BY_ESSENCE_V1_1 (AYLA-DEC-0026)
+**Blocker:** NONE (BLOCKED_BY_ESSENCE_V1_1 снят 2026-07-30 после owner approval Essence v1.1)
 
-> Окно не открывается до owner approval Product Essence v1.1, которая готовится в Living Digital Twin Foundation Window. После approval v1.1: Authoritative sources и `FOUNDATION_INPUT_MANIFEST.md` обновляются на v1.1, v1.0 переводится в SUPERSEDED.
+> Окно готово к открытию отдельной командой владельца. Высший источник — Product Essence v1.1 (CANONICAL); v1.0 — SUPERSEDED (Git history).
 
 ## Mission
 
@@ -38,7 +38,7 @@ review_cycle: monthly
 
 ## Authoritative sources
 
-- **Product Essence** (`00 Foundation\Ayla Product Essence.md`) — высший продуктовый источник. Статус: `CANONICAL` (owner approved 2026-07-29). Внешняя копия на `D:` не authoritative.
+- **Product Essence v1.1** (`00 Foundation\Ayla Product Essence.md`) — высший продуктовый источник. Статус: `CANONICAL` (owner approved 2026-07-30, basis AYLA-DEC-0026). v1.0 — SUPERSEDED (Git history). Внешние копии не authoritative.
 - **MVP Reset Roadmap** (`02 Strategy\Ayla MVP Reset Roadmap.md`) — операционный источник порядка перестройки и выпуска. Статус: `CANONICAL` (owner approved 2026-07-29). Не переопределяет Product Essence и не занимает места в иерархии между Essence и Product Vision. Внешняя копия на `D:` не authoritative.
 - **Approved Owner Decisions** — обязательные точечные решения строго в пределах своего scope. Owner Decision не может неявно переопределять Product Essence.
 

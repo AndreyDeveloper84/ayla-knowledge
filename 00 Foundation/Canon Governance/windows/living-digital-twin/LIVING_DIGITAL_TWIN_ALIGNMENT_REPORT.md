@@ -215,3 +215,15 @@ Merge: запрещён до owner approval
 - Валидация после правок: 0 errors, 21 warnings (все существующие, новых нет); `git diff --check` чист.
 - Product Essence v1.0 на основной ветке не изменена; schema, validator, запрещённые файлы не затронуты; unrelated changes не staged.
 - Merge и push не выполнялись; CANONICAL не присвоен; blocker не снят.
+
+## Final Owner Approval
+
+- Product Owner verdict: APPROVED
+- Approval date: 2026-07-30
+- Approved candidate commit: 9e0a15d
+- Canonical merge commit: f148e55f8272dc1de2a683b4cb1d3b7ded8c280c
+- Final version: 1.1
+- Final status: CANONICAL
+- Remaining P0: 0
+- Remaining P1: 0
+- Manifesto Phase B: READY_TO_OPEN

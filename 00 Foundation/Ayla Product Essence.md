@@ -2,8 +2,8 @@
 node_id: ayla.foundation.product-essence
 title: Ayla Product Essence
 type: foundation
-status: review
-canonical_status: candidate
+status: approved
+canonical_status: approved
 version: "1.1"
 owner: Product Owner
 priority: P0
@@ -22,22 +22,22 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-29
-updated: 2026-07-29
+updated: 2026-07-30
 review_cycle: monthly
 ---
 
 # Ayla Product Essence
 
-**Статус:** READY_FOR_OWNER_REVIEW
+**Статус:** CANONICAL
 **Версия:** 1.1
-**Подготовлено:** Living Digital Twin Foundation Window
-**Основание:** AYLA-DEC-0026 — Living Digital Twin as Ayla's Primary Visual Interface
-**Supersedes after approval:** Ayla Product Essence v1.0
+**Дата owner approval:** 2026-07-30
 **Владелец:** Product Owner
 **Слой:** Essence
 **Роль:** высший продуктовый источник истины
+**Основание:** AYLA-DEC-0026 — Living Digital Twin as Ayla's Primary Visual Interface
+**Supersedes:** Ayla Product Essence v1.0 (доступна через Git history)
 
-> Этот файл на ветке `canon/essence-v1.1-candidate` — кандидат v1.1, semantic patch по AYLA-DEC-0026. До owner approval и merge канонической рабочей версией остаётся v1.0 на основной ветке. После owner approval v1.1 становится CANONICAL, а v1.0 переводится в SUPERSEDED. Каноническая рабочая версия хранится в `ayla-knowledge`. Внешние копии не являются authoritative.
+> Каноническая рабочая версия хранится в `ayla-knowledge`. Внешние копии не являются authoritative.
 
 ## 1. Что такое Ayla
 

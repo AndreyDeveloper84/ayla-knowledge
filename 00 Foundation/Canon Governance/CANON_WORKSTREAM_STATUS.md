@@ -29,10 +29,10 @@ review_cycle: monthly
 
 ```text
 Current gate: FOUNDATION_NOT_STARTED
-Blocker: TOP_LEVEL_ESSENCE_REVISION_REQUIRED
+Blocker: NONE
 ```
 
-Блокер введён по AYLA-DEC-0026: перед открытием Foundation Canon Window требуется подготовить и утвердить Product Essence v1.1 (Living Digital Twin ruling). До утверждения v1.1: v1.0 остаётся CANONICAL, v1.1 — кандидат.
+Блокер `TOP_LEVEL_ESSENCE_REVISION_REQUIRED` снят 2026-07-30: Product Essence v1.1 утверждена владельцем (candidate `9e0a15d`, merge в `agent/ux-mvp`) и является CANONICAL; v1.0 — SUPERSEDED (Git history).
 
 ## Модель источников
 
@@ -45,8 +45,9 @@ Blocker: TOP_LEVEL_ESSENCE_REVISION_REQUIRED
 
 | Workstream | Gate | Window | Last handoff |
 |---|---|---|---|
-| Foundation | BLOCKED_BY_ESSENCE_V1_1 | Foundation Canon Window (не открыто) | — |
-| Living Digital Twin (Essence v1.1) | ESSENCE_V1_1_READY_FOR_OWNER_REVIEW | Living Digital Twin Foundation Window (кандидат v1.1 на ветке `canon/essence-v1.1-candidate`; owner review #1 CHANGES_REQUESTED P1=5 — revision применён, `9e0a15d`; merge до approval запрещён) | LIVING_DIGITAL_TWIN_ALIGNMENT_REPORT.md |
+| Foundation | UNBLOCKED / READY_TO_OPEN | Foundation Canon Window (NOT_OPENED) | — |
+| Living Digital Twin (Essence v1.1) | ESSENCE_V1_1_CANONICAL | Living Digital Twin Foundation Window (Phase A: COMPLETE; owner approved 2026-07-30, merge в `agent/ux-mvp`) | LIVING_DIGITAL_TWIN_ALIGNMENT_REPORT.md |
+| Living Digital Twin Manifesto Phase B | READY_TO_OPEN | не открыто; Manifesto NOT_STARTED | — |
 | Domain | BLOCKED | — | — |
 | UX | BLOCKED | — | — |
 | AI architecture | BLOCKED | — | — |

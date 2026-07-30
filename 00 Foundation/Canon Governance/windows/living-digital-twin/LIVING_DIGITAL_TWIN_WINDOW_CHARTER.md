@@ -26,9 +26,16 @@ review_cycle: monthly
 # LIVING_DIGITAL_TWIN_WINDOW_CHARTER
 
 **Window:** Living Digital Twin Foundation Window
-**Статус окна:** PREPARED / NOT_OPENED
 **Основание:** AYLA-DEC-0026 — Living Digital Twin as Ayla's Primary Visual Interface
-**Gate:** READY_TO_OPEN (открывается только отдельной командой владельца)
+
+```text
+Phase A: COMPLETE
+Essence v1.1: CANONICAL (owner approved 2026-07-30; merge f148e55)
+Phase B: READY_TO_OPEN
+Manifesto: NOT_STARTED
+```
+
+Phase B (Manifesto) открывается только отдельной командой владельца.
 
 ## Mission
 

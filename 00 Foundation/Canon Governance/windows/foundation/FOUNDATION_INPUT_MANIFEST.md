@@ -27,12 +27,12 @@ review_cycle: monthly
 
 Входной манифест Foundation Canon Window. KB = `C:\Users\user\PycharmProjects\Ayla\ayla-knowledge`. Канонические рабочие версии двух высших источников хранятся в KB; копии на `D:\Проекты\Ayla` — внешние исходные, non-authoritative.
 
-> **BLOCKED_BY_ESSENCE_V1_1 (AYLA-DEC-0026):** окно заблокировано до owner approval Product Essence v1.1. После approval строка Essence в REQUIRED заменяется на v1.1, и в применимые входы добавляется AYLA-DEC-0026.
+> **UNBLOCKED (2026-07-30):** Product Essence v1.1 утверждена и является CANONICAL — REQUIRED ссылается на неё (тот же стабильный файл). AYLA-DEC-0026 входит в применимые Owner Decisions окна. Окно NOT_OPENED / READY_TO_OPEN.
 
 ## REQUIRED
 
 ```text
-KB\00 Foundation\Ayla Product Essence.md              — высший продуктовый источник (CANONICAL)
+KB\00 Foundation\Ayla Product Essence.md              — высший продуктовый источник (CANONICAL v1.1, owner approved 2026-07-30)
 KB\02 Strategy\Ayla MVP Reset Roadmap.md              — операционный источник (CANONICAL)
 KB\01 Product\Ayla Product Vision.md                  — кандидат Product Vision
 KB\02 Strategy\Ayla MVP Product Thesis.md             — кандидат Product Thesis
