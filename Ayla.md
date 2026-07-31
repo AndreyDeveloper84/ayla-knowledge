@@ -4,7 +4,7 @@ title: Ayla
 type: moc
 status: review
 activation_status: pending-infrastructure
-version: "1.5"
+version: "1.6"
 owner: Product Architecture
 priority: P0
 knowledge_area:
@@ -17,7 +17,7 @@ system_owner:
   - ayla-knowledge
 source_repository: ayla-knowledge
 created: 2026-07-18
-updated: 2026-07-18
+updated: 2026-07-31
 source_kind: canonical
 classification: internal
 data_sensitivity: none
@@ -84,7 +84,7 @@ Reviewed nodes (прошли перенос и проверку):
 | [[Ayla Decision Log]] | 0.4 | review / pending infrastructure | межрепозиторные решения Founder |
 | [[Ayla Glossary]] | 2.1 | review / pending infrastructure | терминологический стандарт |
 | [[Ayla Domain and Metadata Registry]] | 1.0 | review / pending infrastructure | карта schema и ownership |
-| [[Ayla Product Vision]] | 1.4 | review / pending infrastructure | видение продукта и сегменты |
+| [[Ayla Product Vision]] | 2.0 | approved | видение продукта и сегменты |
 | [[Ayla User Journey Specification]] | 1.2 | review / pending infrastructure | experience contract |
 | [[Consent Scope Registry]] | 1.0 | approved | scopes согласий и authorization contract |
 | [[Ayla]] | 1.3 | review / pending infrastructure | навигация и migration state |
@@ -93,10 +93,13 @@ Draft / proposed nodes (в vault, НЕ канон; approval ограничен A
 
 | Document | Version | Status | Назначение |
 |---|---:|---|---|
-| [[Ayla MVP Product Thesis]] | 0.4 | draft | product scope и economic boundaries |
+| [[Ayla MVP Product Thesis]] | 0.5 | approved | product scope и economic boundaries |
 | [[Ayla MVP Documentation Roadmap]] | 1.0 | approved / accepted | роадмап документации к MVP (AYLA-DEC-0014) |
-| [[Ayla MVP Scope and Release Contract]] | 0.2 | draft / proposed | граница MVP scope (AYLA-DEC-0014/0015) |
-| [[Ayla Intent Model Specification]] | 0.1 | draft / proposed | intent types и output contract |
+| [[Ayla MVP Scope and Release Contract]] | 0.3 | draft / proposed | граница MVP scope (AYLA-DEC-0014/0015); CROSS_DOCUMENT_ALIGNED |
+| [[Ayla Single-Provider Technical Pilot Execution Scope]] | 0.3 | draft / proposed | non-canonical execution scope для A0/A1/A2; downstream of MVP Scope v0.3; CROSS_DOCUMENT_ALIGNED |
+| [[Ayla Multi-Provider Product Validation Execution Scope]] | 0.2 | draft / proposed | non-canonical execution scope для B0/B1; downstream of MVP Scope v0.3 и SP Execution Scope; CROSS_DOCUMENT_ALIGNED |
+| [[Ayla MVP v0.3 Downstream Migration Plan]] | 0.1 | draft / proposed | non-canonical migration execution plan (waves D0–D6); downstream of MVP Scope v0.3 и execution scopes; INTERNALLY_APPROVED |
+| [[Ayla Intent Model Specification]] | 0.9.2 | approved / accepted | intent types и output contract |
 | [[Killer PRD]] | 1.4.1 | draft / proposed | killer flow и память |
 | [[ADR-0012 Dynamic User Model]] | 0.2 | draft / proposed | динамическая модель пользователя |
 | [[AMD-020 C5 Implementation Amendment]] | 0.8 | draft / proposed | поправка реализации C5 |
@@ -291,6 +294,18 @@ Root MOC готов к approval, когда:
 - ссылки разрешаются без migration warnings.
 
 ## Change Log
+
+### v1.6 — 2026-07-31
+
+- Migration Wave D0 (Registry and Reference Normalization): версии и
+  статусы актуализированы — MVP Scope 0.2→0.3, Intent Model 0.1→0.9.2,
+  Product Thesis 0.4→0.5, Product Vision 1.4→2.0;
+- зарегистрированы non-canonical execution scopes: Single-Provider
+  Technical Pilot Execution Scope v0.3 и Multi-Provider Product
+  Validation Execution Scope v0.2 (CROSS_DOCUMENT_ALIGNED), а также
+  Ayla MVP v0.3 Downstream Migration Plan v0.1 (INTERNALLY_APPROVED);
+- execution scopes и Migration Plan не являются каноническими и не
+  входят в Foundation hierarchy.
 
 ### v1.5 — 2026-07-27
 

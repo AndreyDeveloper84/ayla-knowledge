@@ -3,7 +3,7 @@ node_id: ayla.foundation.canon-governance.canon-index
 title: CANON_INDEX
 type: moc
 status: draft
-version: "0.1"
+version: "0.2"
 owner: Product Owner
 knowledge_area:
   - foundation
@@ -19,7 +19,7 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-29
-updated: 2026-07-29
+updated: 2026-07-31
 review_cycle: monthly
 ---
 
@@ -55,6 +55,9 @@ SUPERSEDED
 | Product Vision | Foundation | `01 Product\Ayla Product Vision.md` | CANONICAL (v2.0, canonical_status: approved) | v1.4 (Git history) | Foundation Window документ №1 — COMPLETE. Owner approved 2026-07-30. Ниже Product Essence v1.1; Manifesto v1.0 — согласующий input для LDT-положений. Не является источником выше Essence. |
 | Product Thesis | Foundation | `02 Strategy\Ayla MVP Product Thesis.md` | CANONICAL (v0.5, canonical_status: approved) | v0.4 (Git history) | Foundation Window документ №2 — COMPLETE. Owner approved 2026-07-30. Ниже Essence v1.1 и Vision v2.0; Manifesto v1.0 — согласующий input. Authoritative input для Principles, MVP Scope, User Journey, Measurement Framework. |
 | Product Principles | Foundation | `01 Product\Ayla Product Principles.md` | CANONICAL (v0.1, canonical_status: approved) | — | Foundation Window документ №3 — COMPLETE. Owner approved 2026-07-31. Ниже Essence v1.1; не выше Vision v2.0 и Thesis v0.5; Manifesto v1.0 — canonical sibling / согласующий input. Authoritative input для MVP Scope, User Journey, UX Development Standard, Screen Registry, Component Library, Domain decisions, feature prioritization, Measurement Framework. |
-| MVP Scope | Foundation | `02 Strategy\Ayla MVP Scope and Release Contract.md` | DRAFT (v0.2, proposed) | — | Foundation Window документ №4. Способ канонизации (rewrite from new canon по раннему ruling vs align существующего draft) определяется в окне; при materially unresolved выборе — эскалация владельцу. |
+| MVP Scope | Foundation | `02 Strategy\Ayla MVP Scope and Release Contract.md` | DRAFT (v0.3, proposed, canonical_status: candidate) | — | Foundation Window документ №4. CROSS_DOCUMENT_ALIGNED с обоими execution scopes; canonization NOT_COMPLETE. |
+| Ayla Single-Provider Technical Pilot Execution Scope | Strategy execution | `02 Strategy\Ayla Single-Provider Technical Pilot Execution Scope.md` | DRAFT (v0.3, proposed, CROSS_DOCUMENT_ALIGNED) | — | Non-canonical execution scope for A0/A1/A2. Downstream of MVP Scope v0.3; не входит в Foundation hierarchy и не создаёт canonical dependency edge. |
+| Ayla Multi-Provider Product Validation Execution Scope | Strategy execution | `02 Strategy\Ayla Multi-Provider Product Validation Execution Scope.md` | DRAFT (v0.2, proposed, CROSS_DOCUMENT_ALIGNED) | — | Non-canonical execution scope for B0/B1. Downstream of MVP Scope v0.3 и Single-Provider Execution Scope v0.3; не входит в Foundation hierarchy. |
+| Ayla MVP v0.3 Downstream Migration Plan | Strategy execution | `02 Strategy\Ayla MVP v0.3 Downstream Migration Plan.md` | DRAFT (v0.1, proposed, INTERNALLY_APPROVED) | — | Non-canonical migration execution plan (waves D0–D6). Downstream of MVP Scope v0.3 и обоих execution scopes; не входит в Foundation hierarchy. |
 | MVP User Journey | Foundation | `01 Product\User Journeys\Ayla MVP User Journey Specification.md` | PARTIALLY_ALIGNED (v1.0, approved до LDT-канона) | — | Foundation Window документ №5. Требует LDT-alignment и повторного owner approval. |
 | Killer PRD | Legacy | `02 Strategy\Killer PRD.md`; `D:\Проекты\Ayla\Killer_PRD_v1.1_RU.md` | LEGACY REFERENCE ONLY | — | Только для поиска требований/решений/рисков. Не родительский документ и не основа структуры MVP Scope. |

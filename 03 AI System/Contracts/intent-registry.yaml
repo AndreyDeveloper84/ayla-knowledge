@@ -33,7 +33,7 @@ intents:
     safety_sensitive: true
     execution_class: read_only
     communicative_class: goal
-    downstream_capability: [CAP-004, CAP-008]  # Recommendation Formation, Service Catalog (proposal-маппинг Scope Contract §4)
+    downstream_capability: [CAP-004, CAP-008]  # Recommendation Formation, Service Catalog (proposal-маппинг Ayla MVP Scope and Release Contract v0.3 §6)
     slot_requirements:
       all_of: [service_interest]
       any_of: []
