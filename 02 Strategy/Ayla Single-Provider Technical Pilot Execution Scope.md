@@ -150,13 +150,13 @@ Multi-Provider Execution Scope и здесь не вводят новых нор
   validation — Multi-Provider Beta, AYLA-DEC-0032);
 - экономику масштабирования и низкую стоимость сопровождения;
 - эффективность marketplace, ranking и paid placement;
-- memory-dependent claims (Phase 1 — session-only, §13);
+- memory-dependent claims (Phase 1 — session-only, §14);
 - причинную атрибуцию вклада Twin (formal controlled experiment —
   DEFERRED, AYLA-DEC-0034).
 
 Все retention- и conversion-показатели этого пилота — предварительные
 продуктовые сигналы: среда контролируется владельцем продукта
-(см. §18 — статусы метрик).
+(см. §19 — статусы метрик).
 
 ## 6. Three-Channel Delivery Model
 
@@ -208,7 +208,7 @@ A2: все три required канала доступны реальной пил
 Store publication approval **не является blocker A0**. Для A2 требуется
 реальная доступность Mobile App пилотной группе — допускается closed
 distribution, если это операционно допустимо (маршрут распространения —
-open question, §24).
+open question, §25).
 
 ## 7. Phase Model Overview
 
@@ -253,7 +253,7 @@ Measurement Framework до A2 launch и здесь не устанавливаю
 - explainable recommendation;
 - next action, включая валидный исход «ничего не делать»;
 - safety gate;
-- session-only memory (Phase 1, §13);
+- session-only memory (Phase 1, §14);
 - user control (просмотр/исправление/удаление/отзыв);
 - audit;
 - core analytics;
@@ -263,7 +263,7 @@ Measurement Framework до A2 launch и здесь не устанавливаю
 
 - simple weekly plan;
 - daily check-in;
-- minimal operator console (§16).
+- minimal operator console (§17).
 
 ### DEFERRED
 
@@ -310,8 +310,9 @@ internal cohort A0); в противном случае A1 не стартует
 ### MUST
 
 - все A0 MUST;
+- simple weekly plan;
 - booking end-to-end через booking adapter (technical test coverage —
-  см. §14);
+  см. §15);
 - direct attribution recommendation → action → booking (при наличии
   booking);
 - operator exception handling без разработчика;
@@ -321,7 +322,7 @@ internal cohort A0); в противном случае A1 не стартует
 
 ### SHOULD
 
-- food trigger как один из равнозначных trigger-сценариев (§12);
+- food trigger как один из равнозначных trigger-сценариев (§13);
 - transactional notifications;
 - daily check-in;
 - partial post-procedure feedback.
@@ -357,6 +358,8 @@ single-provider cycle.
 
 - complete journey (MVP Scope §4);
 - weekly review;
+- daily check-in;
+- minimum transactional notifications;
 - post-procedure feedback;
 - state comparison (сравнение состояний во времени);
 - progress / next state как терминал journey;
@@ -389,7 +392,7 @@ Measurement Framework и здесь не устанавливается.
 
 Дополнительно требуется:
 
-- technical/safety acceptance (§18 hard gates);
+- technical/safety acceptance (§19 hard gates);
 - provider не зашит в код (добавляется конфигурацией);
 - ServiceOffering / booking adapter readiness к подключению второго
   провайдера;
@@ -424,11 +427,81 @@ Measurement Framework и здесь не устанавливается.
 | Transactional notifications | DEFERRED | SHOULD | MUST (минимум) |
 | Weekly review (full) | DEFERRED | DEFERRED | MUST |
 | Repeat photo capture | DEFERRED | DEFERRED | SHOULD |
-| Persistent memory (Phase 2) | DEFERRED | DEFERRED | DEFERRED (gate §13) |
+| Persistent memory (Phase 2) | DEFERRED | DEFERRED | DEFERRED (gate §14) |
 | Ranking / marketplace / second provider | OUT | OUT | OUT |
 | Monetization validation / cold traffic / Telegram | OUT | OUT | OUT |
 
-## 12. Food Scanner Correction
+## 12. Living Digital Twin Viability Boundary
+
+Upstream boundary — [[Ayla MVP Scope and Release Contract]] §6.4
+(MUST_HAVE / SHOULD_HAVE / CONDITIONAL / DEFERRED / OUT_OF_SCOPE) и
+[[Ayla Living Digital Twin Manifesto]] §5, §6, §9, §13, §14. Здесь
+граница не дублируется, а операционализируется для фаз A0/A1/A2.
+
+### MUST
+
+- controlled photo capture (управляемая фотофиксация);
+- Twin baseline (сохранение исходного состояния);
+- recognition point «это я»;
+- путь «это не похоже на меня» — сигнал пользователя и его разрешение
+  являются обязательной частью сценария, не опцией (MVP Scope §4,
+  шаг 4);
+- correction / rebuild модели;
+- identity preservation между версиями; identity drift — недопустимый
+  класс дефекта независимо от визуального качества;
+- comparison of states over time (сравнение состояний во времени);
+- разделение user-provided fact, system-observed fact, reconstruction,
+  estimate, forecast и desired outcome — классы достоверности не
+  смешиваются в представлении, объяснении и хранении;
+- body dignity / anti-shaming (Manifesto §13);
+- удаление исходных и производных Twin-данных;
+- user control над фото, baseline и коррекциями.
+
+### CONDITIONAL
+
+```text
+Target image:
+CONDITIONAL
+только как маркированный desired outcome
+не forecast
+не prediction
+не promise
+не гарантированный результат
+```
+
+```text
+Video:
+CONDITIONAL
+только если подтверждена необходимость для качества модели
+```
+
+### OUT
+
+- full morphing engine;
+- idealized future body presented as fact;
+- exact body composition from camera;
+- guaranteed 30/60/90-day forecast;
+- medical simulation;
+- medical-grade reconstruction;
+- automatic medical inference;
+- arbitrary avatar generation;
+- automatic Twin update after every action without user control.
+
+### Execution implications
+
+```text
+A0:
+technical viability of capture/baseline/recognition/correction
+
+A1:
+real-user recognition/correction and media pipeline feasibility
+(entry precondition §9)
+
+A2:
+identity continuity and state comparison across time
+```
+
+## 13. Food Scanner Correction
 
 Применяется **AYLA-DEC-0028**. Все формулировки v0.2, где Food Scanner
 выступал центральным daily loop, обязательной активацией, обязательной
@@ -451,9 +524,9 @@ CONDITIONAL
 определения дефицитов и выдачи приблизительных калорий за точные.
 
 Метрики: **trigger-agnostic — primary**; **food-specific — DIAGNOSTIC**
-(§18).
+(§19).
 
-## 13. Memory and Consent Phases
+## 14. Memory and Consent Phases
 
 ```text
 Phase 1: session-only memory; persistent memory технически отключена
@@ -471,7 +544,7 @@ Phase 2: opt-in persistent memory; только после Consent Scope Registr
   proactive recommendations, no cross-domain personalization, no
   persistent inferred signals, no persistent preference storage.
 
-## 14. Booking and Attribution Boundary
+## 15. Booking and Attribution Boundary
 
 Booking — **OPTIONAL downstream product action** (MVP Scope §4, шаг 8).
 
@@ -494,9 +567,9 @@ User outcome: OPTIONAL
   / cohort attribution — DEFERRED.
 - Внешняя booking-система подключается через adapter; Yclients может
   упоминаться только как текущая реализация/пример провайдерской
-  системы и не является канонической зависимостью (§20).
+  системы и не является канонической зависимостью (§21).
 
-## 15. Manual Operations Policy
+## 16. Manual Operations Policy
 
 Разрешённые ручные операции:
 
@@ -524,7 +597,7 @@ type / reason / operator / duration / result / affected cohort
 Функциональность, регулярно выполняемая вручную, не считается
 автоматизированной.
 
-## 16. Minimal Operations Surface
+## 17. Minimal Operations Surface
 
 Разрешение конфликта с MVP Scope `admin tooling — OUT_OF_SCOPE`:
 
@@ -542,11 +615,11 @@ type / reason / operator / duration / result / affected cohort
 artifact), а не в этот документ. Полноценная CRM, loyalty, admin
 tooling — OUT.
 
-## 17. Analytics and Release Evidence Mapping
+## 18. Analytics and Release Evidence Mapping
 
 Release evidence MVP Scope §11 маппится на события пилота (имена
 событий — из v0.2 §10.3, где они уже определены; новые имена не
-выдумываются, финальные имена — open question §24):
+выдумываются, финальные имена — open question §25):
 
 | Release evidence (MVP Scope §11) | События пилота |
 |---|---|
@@ -573,9 +646,9 @@ retention-контур: `weekly_review_opened`, `weekly_review_completed`,
 `food_capture_started`, `food_recognition_completed`,
 `food_result_confirmed`, `food_result_corrected`,
 `daily_checkin_completed`, `plan_action_completed` (food-события —
-DIAGNOSTIC, §12/§18).
+DIAGNOSTIC, §13/§19).
 
-## 18. Metrics and Threshold Status
+## 19. Metrics and Threshold Status
 
 Применяется **AYLA-DEC-0033**.
 
@@ -584,7 +657,13 @@ DIAGNOSTIC, §12/§18).
 - user data loss = 0;
 - critical safety incidents = 0;
 - consent bypass = 0;
-- economic influence on ranking = 0 (где применимо);
+- economic influence on recommendation or candidate ordering = 0 —
+  inherited constitutional guardrail ([[Ayla Constitution]] Ст. IV):
+  commercial status, tariff, payment or provider economics must not
+  influence recommendation or candidate ordering. Ranking — OUT в
+  A0–A2, поэтому это не active phase metric, а zero-tolerance
+  inherited guardrail для любой ordering logic, используемой в пилоте;
+  ranking capability этим не создаётся;
 - direct attribution chain technically available and auditable.
 
 ### WORKING VALIDATION THRESHOLDS
@@ -602,7 +681,7 @@ DIAGNOSTIC, §12/§18).
 
 - activation (Core / Behavioral);
 - D7/D28 в контролируемой когорте;
-- Food Scanner usage (§12);
+- Food Scanner usage (§13);
 - manual intervention (объём и тренд);
 - response times;
 - tool failures;
@@ -611,19 +690,19 @@ DIAGNOSTIC, §12/§18).
 Финальные B1 go/no-go пороги здесь **не утверждаются**: FINAL GO/NO-GO
 утверждается до B1 после B0 evidence и Measurement Framework.
 
-## 19. Entry and Exit Gates
+## 20. Entry and Exit Gates
 
 | Gate | Условия |
 |---|---|
 | A0 entry | internal build трёх каналов; consent flow реализован; safety gate активен; session-only режим подтверждён |
 | A0 exit → A1 entry | §8 Exit полностью; LDT media pipeline feasibility checkpoint (§9) |
 | A1 exit → A2 entry | §9 Exit полностью; runbook draft; оператор обучен; mobile closed distribution доступна когорте |
-| A2 exit → B0 entry | §10 A2 exit полностью, включая AYLA-DEC-0029 (достаточная A2-когорта завершила 28-дневный путь); hard gates §18 = 0 нарушений; architecture readiness §20; runbook documented; onboarding owner назначен |
+| A2 exit → B0 entry | §10 A2 exit полностью, включая AYLA-DEC-0029 (достаточная A2-когорта завершила 28-дневный путь); hard gates §19 = 0 нарушений; architecture readiness §21; runbook documented; onboarding owner назначен |
 
-Нарушение любого REQUIRED HARD GATE в любой фазе — stop condition (§23),
+Нарушение любого REQUIRED HARD GATE в любой фазе — stop condition (§24),
 а не усредняемая метрика.
 
-## 20. Architecture Readiness Boundary
+## 21. Architecture Readiness Boundary
 
 Сохраняются только execution-level readiness statements:
 
@@ -649,21 +728,21 @@ A0/A1 не блокируются полной B0-архитектурой: дл
 Техническая multi-tenant readiness **не означает** активацию CAP-020
 (multi-tenant customization — OUT_OF_SCOPE в MVP Scope §7).
 
-## 21. Safety, Privacy and Data Control
+## 22. Safety, Privacy and Data Control
 
 - Детерминированные safety gates применяются ко всем product
   capabilities (MVP Scope §6.5); обход запрещён, в том числе вручную
-  (§15).
+  (§16).
 - Consent: раздельные согласия (персональные данные, фотографии,
   персонализация, сервисные уведомления; маркетинговое — отдельное и
   необязательное); просмотр статуса, отзыв, удаление аккаунта и данных —
-  доступны пользователю и обрабатываются оператором (§15/§16).
+  доступны пользователю и обрабатываются оператором (§16/§17).
 - Purpose limitation: данные используются только для информированных
   целей; authoritative consent state — из Consent Domain
   ([[AMD-020 Pilot Scope Registry]]), независимый source of truth
   запрещён.
 - Privacy default — Consent Scope Registry §10: session context only до
-  Phase 2 gate (§13).
+  Phase 2 gate (§14).
 - Body dignity / anti-shaming обязательны во всех LDT-взаимодействиях
   ([[Ayla Living Digital Twin Manifesto]] §13).
 - Медицинская диагностика, выводы о здоровье и inferred mental state
@@ -671,7 +750,7 @@ A0/A1 не блокируются полной B0-архитектурой: дл
 - Пользовательские данные и фотографии удаляются по запросу, включая
   производные данные Twin.
 
-## 22. Disallowed Interpretations
+## 23. Disallowed Interpretations
 
 ```text
 Успех A0 не доказывает продуктовую готовность.
@@ -686,7 +765,7 @@ Phase 1 не валидирует memory-dependent claims.
 Три канала — не три отдельных продукта.
 ```
 
-## 23. Risks and Stop Conditions
+## 24. Risks and Stop Conditions
 
 Немедленная остановка фазы (stop condition):
 
@@ -708,7 +787,7 @@ Phase 1 не валидирует memory-dependent claims.
 - доля завершения 28-дневного пути явно недостаточна для B0 decision
   (denominator — Measurement Framework).
 
-## 24. Open Questions
+## 25. Open Questions
 
 Только реальные non-blocking вопросы; решённые OD-TP вопросы не
 переоткрываются:
@@ -717,7 +796,7 @@ Phase 1 не валидирует memory-dependent claims.
 - exact closed mobile distribution route;
 - exact LDT recognition threshold (downstream AI/Measurement);
 - exact manual intervention target;
-- exact event names для новых channel/cross-channel событий (§17);
+- exact event names для новых channel/cross-channel событий (§18);
 - exact operations staffing.
 
 Вопросы для review из v0.2 (достаточность цикла для alpha, разделение
@@ -725,10 +804,44 @@ Core/Behavioral Activation, safety/consent gates, перенос/отмена з
 vs deep link, допустимые ручные операции, exit criteria, архитектурные
 зависимости) закрыты этой ревизией или переведены в перечень выше.
 
-## 25. Change Log
+## 26. Change Log
 
 > Журнал отражает историю изменений и не является нормативной частью.
-> Нормативно — текущее состояние разделов 1–24.
+> Нормативно — текущее состояние разделов 1–25.
+
+### v0.3 (2026-07-31) — Targeted repair after Internal Consistency Review
+
+Выполнено по промпту
+`SINGLE_PROVIDER_EXECUTION_SCOPE_V0_3_TARGETED_MATERIAL_REPAIR_PROMPT.md`
+после Internal Consistency Review (verdict: MATERIAL_REPAIR_REQUIRED).
+Targeted repair, не повторный authoring.
+
+- **SP-ICR-P2-01 закрыт:** добавлен нормативный раздел §12 Living
+  Digital Twin Viability Boundary (после Capability Activation Matrix,
+  до Food Scanner Correction): MUST (включая путь «это не похоже на
+  меня», identity preservation, identity drift как дефект, разделение
+  классов достоверности), CONDITIONAL (target image — только
+  маркированный desired outcome; video), OUT-список и execution
+  implications A0/A1/A2. Последующие разделы перенумерованы
+  (§12–§25 → §13–§26), все внутренние ссылки обновлены.
+- **SP-ICR-P3-01 закрыт:** фазовые MUST-списки выровнены с Capability
+  Activation Matrix — `simple weekly plan` добавлен в A1 MUST;
+  `daily check-in` и `minimum transactional notifications` добавлены в
+  A2 MUST. Фазовые разделы, matrix и gates согласованы.
+- **SP-ICR-P3-02 закрыт:** формулировка «economic influence on ranking
+  = 0 (где применимо)» заменена на inherited constitutional guardrail
+  (Constitution Ст. IV) — не active phase metric; ranking capability
+  не создаётся (§19).
+- **Scope не расширен:** новых capabilities, фаз, участников, каналов
+  или обязательств не добавлено; repair операционализирует уже
+  действующий upstream boundary (MVP Scope §6.4) и согласует ранее
+  заявленные статусы.
+- **Owner decisions не требуются:** все изменения — в пределах
+  AYLA-DEC-0027/0028/0029/0033 и действующего канона.
+- **Не изменены (invariants):** title, node_id, path, owner, version
+  0.3, draft/proposed status, execution role, участники и длительность
+  A0/A1/A2, three-channel model, Food Scanner status, booking boundary,
+  memory phases, provider boundary, MVP Scope references.
 
 ### v0.3 (2026-07-31) — Structured revision after Two-Phase Pilot Scope Reconciliation
 
@@ -753,25 +866,27 @@ docx «Ayla Single-Provider Technical MVP Scope v0.2».
   channel rollout зафиксированы (§6).
 - **Food Scanner de-centered** (AYLA-DEC-0028): CONDITIONAL, один из
   четырёх равнозначных триггеров; trigger-agnostic primary метрики,
-  food-specific — DIAGNOSTIC (§12).
+  food-specific — DIAGNOSTIC (§13).
 - **Booking исправлен** до optional downstream outcome: technical test
   coverage — MUST в A1/A2, user outcome — OPTIONAL; терминал journey —
-  progress / next state (§14).
+  progress / next state (§15).
 - **Memory phases добавлены**: Phase 1 session-only / Phase 2 opt-in
   после Consent Scope Registry §10.2 gate; persistent memory — не
-  blocker фаз (§13).
+  blocker фаз (§14).
 - **LDT boundary выровнен** по MVP Scope §6.4: target image —
   CONDITIONAL desired outcome; video — CONDITIONAL; morphing engine,
-  medical simulation, гарантированный прогноз — OUT (см. §8–§10,
-  §21; boundary наследуется из MVP Scope v0.3 и не дублируется).
+  medical simulation, гарантированный прогноз — OUT. На момент
+  structured revision boundary наследовался из MVP Scope v0.3 без
+  отдельного нормативного раздела; нормативный execution-блок §12
+  добавлен targeted repair (см. запись выше).
 - **Metrics status добавлен** (AYLA-DEC-0033): REQUIRED HARD GATES /
-  WORKING VALIDATION THRESHOLDS / DIAGNOSTIC (§18).
+  WORKING VALIDATION THRESHOLDS / DIAGNOSTIC (§19).
 - **28-day cycle** зафиксирован как A2 exit evidence (AYLA-DEC-0029);
   denominator — Measurement Framework (§7, §10).
 - **Architecture/operations boundaries уточнены**: execution-level
   readiness только; Yclients — не canonical, только пример; minimal
-  operations surface отличён от admin tooling (§16, §20).
-- **Disallowed interpretations** зафиксированы явно (§22).
+  operations surface отличён от admin tooling (§17, §21).
+- **Disallowed interpretations** зафиксированы явно (§23).
 - **Stale references удалены**: «Ayla MVP Scope v0.1» →
   [[Ayla MVP Scope and Release Contract]] v0.3 (wikilink).
 - **Baseline вода/сон/активность** — baseline-опрос (самоотчёт), не
@@ -794,11 +909,11 @@ docx «Ayla Single-Provider Technical MVP Scope v0.2».
   Check-in, Safety Gate, Booking/attribution, Post-procedure, Weekly
   Review, уведомления) — перераспределён по фазам в §8–§11;
 - acceptance criteria v0.2 (95% сценариев, 98% событий, data loss 0,
-  safety 0, attribution) — переведены в статусы §18;
+  safety 0, attribution) — переведены в статусы §19;
 - exit gate в Multi-Provider Beta v0.2 — сохранён и усилен как A2 exit
-  before B0 (§10, §19);
+  before B0 (§10, §20);
 - Out of Scope v0.2 (marketplace, ranking, отзывы, платное продвижение,
   CRM/loyalty/payments, wearables, медицина, 3D-реконструкция,
   гарантированный прогноз, автономные назначения, массовый запуск) —
   сохранён в §8 OUT, §5 и MVP Scope §7;
-- вопросы для review v0.2 — закрыты или переведены в §24.
+- вопросы для review v0.2 — закрыты или переведены в §25.
