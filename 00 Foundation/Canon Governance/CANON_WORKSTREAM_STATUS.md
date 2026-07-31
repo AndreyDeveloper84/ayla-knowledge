@@ -30,11 +30,11 @@ review_cycle: monthly
 ```text
 Current gate: FOUNDATION_IN_PROGRESS
 Blocker: NONE
-Current Foundation document: Product Thesis
-Next action: Initialize Product Thesis Canon Window
+Current Foundation document: Product Principles
+Next action: Initialize Product Principles Canon Window
 ```
 
-Foundation Canon Window открыто 2026-07-30 (Essence v1.1 CANONICAL, Manifesto v1.0 CANONICAL). Порядок канонизации: Vision → Thesis → Principles → MVP Scope → User Journey. **Product Vision — COMPLETE / CANONICAL (v2.0, owner approved 2026-07-30).** Текущий документ — Product Thesis.
+Foundation Canon Window открыто 2026-07-30 (Essence v1.1 CANONICAL, Manifesto v1.0 CANONICAL). Порядок канонизации: Vision → Thesis → Principles → MVP Scope → User Journey. **Product Vision — COMPLETE / CANONICAL (v2.0). Product Thesis — COMPLETE / CANONICAL (v0.5, owner approved 2026-07-30).** Текущий документ — Product Principles. Downstream-документы, зависящие от Principles, не разблокируются до его канонизации.
 
 ## Модель источников
 
@@ -47,7 +47,7 @@ Foundation Canon Window открыто 2026-07-30 (Essence v1.1 CANONICAL, Manif
 
 | Workstream | Gate | Window | Last handoff |
 |---|---|---|---|
-| Foundation | OPEN / INITIALIZED | Foundation Canon Window (открыто 2026-07-30; Vision — COMPLETE/CANONICAL v2.0; текущий документ — Product Thesis; subagents FORBIDDEN) | — |
+| Foundation | OPEN / INITIALIZED | Foundation Canon Window (открыто 2026-07-30; Vision — COMPLETE v2.0, Thesis — COMPLETE v0.5; текущий документ — Product Principles; subagents FORBIDDEN) | — |
 | Living Digital Twin (Essence v1.1) | ESSENCE_V1_1_CANONICAL | Living Digital Twin Foundation Window (Phase A: COMPLETE; owner approved 2026-07-30, merge в `agent/ux-mvp`) | LIVING_DIGITAL_TWIN_ALIGNMENT_REPORT.md |
 | Living Digital Twin Manifesto Phase B | COMPLETE | Manifesto CANONICAL / v1.0 (owner approval RECORDED 2026-07-30); subagents NOT_USED | LIVING_DIGITAL_TWIN_ALIGNMENT_REPORT.md |
 | Domain | BLOCKED | — | — |

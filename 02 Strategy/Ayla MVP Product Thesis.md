@@ -2,8 +2,8 @@
 node_id: ayla.strategy.mvp-product-thesis
 title: Ayla MVP Product Thesis
 type: product-thesis
-status: draft
-canonical_status: candidate
+status: approved
+canonical_status: approved
 version: "0.5"
 owner: Product Owner
 priority: P0
@@ -43,6 +43,16 @@ supersedes: []
 ---
 
 # Ayla MVP Product Thesis v0.5
+
+**Статус:** CANONICAL — Product Owner approved 2026-07-30
+(APPROVE_WITH_NON_BLOCKING_EDITORIAL_NOTES); canonized through Main Canon
+Orchestrator
+**Версия:** 0.5
+**Положение:** Foundation document №2 (Vision → **Thesis** → Principles →
+MVP Scope → User Journey)
+
+> Документ находится ниже Ayla Product Essence v1.1 и Product Vision v2.0 и
+> не может их переопределять.
 
 ## 1. Purpose
 

@@ -91,3 +91,7 @@ Status:         DECIDED
 **Implementation / Canonization note — Product Vision v2.0 (2026-07-30):**
 
 > Product Vision v2.0 approved by Product Owner on 2026-07-30 (APPROVE_WITH_NON_BLOCKING_EDITORIAL_NOTES). Internal consistency review: APPROVED_FOR_OWNER_REVIEW (P0=0, P1=0, P2=0). P3-1 и P3-2 применены в editorial cleanup (`85ccd5c`); P3-3 принят как намеренная терминологическая вариативность. Повторный owner review не требовался. Product Vision v2.0 канонизирован под Product Essence v1.1 (Manifesto v1.0 — согласующий input для LDT-положений). Это исполнительная отметка (Foundation sequence, документ №1), не новое продуктовое решение.
+
+**Implementation / Canonization note — Product Thesis v0.5 (2026-07-30):**
+
+> Ayla MVP Product Thesis v0.5 approved by Product Owner on 2026-07-30 (APPROVE_WITH_NON_BLOCKING_EDITORIAL_NOTES). Internal consistency review: APPROVED_FOR_OWNER_REVIEW (P0=0, P1=0, P2=0). ICR-P3-1, ICR-P3-2, ICR-P3-3 применены в editorial cleanup (`65296ca`). Повторный owner review не требовался. Product Thesis v0.5 канонизирован (Foundation document №2); номер версии сохранён — владелец одобрил именно v0.5, изменение номера требует отдельного versioning decision. Документ стал authoritative input для Product Principles, MVP Scope, User Journey и Measurement Framework. Смысл AYLA-DEC-0002, AYLA-DEC-0018 и AYLA-DEC-0026 не изменён. Это исполнительная отметка, не новое продуктовое решение.
