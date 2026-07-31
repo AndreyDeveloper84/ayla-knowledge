@@ -4,7 +4,7 @@ title: Ayla
 type: moc
 status: review
 activation_status: pending-infrastructure
-version: "1.6"
+version: "1.7"
 owner: Product Architecture
 priority: P0
 knowledge_area:
@@ -87,13 +87,13 @@ Reviewed nodes (прошли перенос и проверку):
 | [[Ayla Product Vision]] | 2.0 | approved | видение продукта и сегменты |
 | [[Ayla User Journey Specification]] | 1.2 | review / pending infrastructure | experience contract |
 | [[Consent Scope Registry]] | 1.0 | approved | scopes согласий и authorization contract |
-| [[Ayla]] | 1.3 | review / pending infrastructure | навигация и migration state |
+| [[Ayla MVP Product Thesis]] | 0.5 | approved | product scope и economic boundaries |
+| [[Ayla]] | 1.7 | review / pending infrastructure | навигация и migration state |
 
 Draft / proposed nodes (в vault, НЕ канон; approval ограничен AYLA-DEC-0011):
 
 | Document | Version | Status | Назначение |
 |---|---:|---|---|
-| [[Ayla MVP Product Thesis]] | 0.5 | approved | product scope и economic boundaries |
 | [[Ayla MVP Documentation Roadmap]] | 1.0 | approved / accepted | роадмап документации к MVP (AYLA-DEC-0014) |
 | [[Ayla MVP Scope and Release Contract]] | 0.3 | draft / proposed | граница MVP scope (AYLA-DEC-0014/0015); CROSS_DOCUMENT_ALIGNED |
 | [[Ayla Single-Provider Technical Pilot Execution Scope]] | 0.3 | draft / proposed | non-canonical execution scope для A0/A1/A2; downstream of MVP Scope v0.3; CROSS_DOCUMENT_ALIGNED |
@@ -186,10 +186,19 @@ Model Specification (draft-заглушка), Ayla Domain Capability Registry
 
 | Order | Document | Reason | Intended outcome |
 |---:|---|---|---|
-| 1 | MVP Scope and Release Contract | ✅ draft v0.2 материализован 2026-07-27; к review после волны 1 | review |
-| 2 | Ayla Intent Model Specification | ✅ draft v0.1 материализован 2026-07-27; к review после волны 1 | review |
+| 1 | MVP Scope and Release Contract | ✅ v0.3 материализован; CROSS_DOCUMENT_ALIGNED / downstream migration in progress | review |
+| 2 | Ayla Intent Model Specification | ✅ v0.9.2; approved / accepted; downstream alignment still subject to D1 where applicable | review |
 | 3 | MVP-срез User Journey | производный от полной UJS: 14 этапов + негативные сценарии | reviewed canonical node |
 | 4 | Area MOC | завершить навигацию по заполненным областям | validated navigation |
+
+Активная очередь (по Ayla MVP v0.3 Downstream Migration Plan v0.1,
+INTERNALLY_APPROVED):
+
+```text
+D0 — Registry and Reference Normalization: COMPLETE
+D1 — Product/Journey Alignment: NEXT
+D2–D6 — по Migration Plan v0.1, после D1
+```
 
 Название в очереди не создаёт Knowledge Node и не означает approval.
 
@@ -294,6 +303,17 @@ Root MOC готов к approval, когда:
 - ссылки разрешаются без migration warnings.
 
 ## Change Log
+
+### v1.7 — 2026-07-31
+
+- D0 closure repair: self-version исправлена (строка Root MOC в Current
+  Canonical Set отражала 1.3 вместо фактической версии);
+- Product Thesis authority placement исправлен — Ayla MVP Product Thesis
+  v0.5 (approved) перенесён из draft/proposed-таблицы в reviewed set;
+- stale версии в Migration Queue исправлены — MVP Scope 0.2→0.3,
+  Intent Model 0.1→0.9.2;
+- активная migration queue выровнена с Migration Plan v0.1: D0 — complete,
+  D1 — next.
 
 ### v1.6 — 2026-07-31
 
