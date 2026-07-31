@@ -4,7 +4,8 @@ title: Ayla MVP Scope and Release Contract
 type: specification
 status: draft
 decision_status: proposed
-version: "0.2"
+canonical_status: candidate
+version: "0.3"
 owner: Product Owner
 priority: P0
 knowledge_area:
@@ -24,318 +25,595 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-27
-updated: 2026-07-27
+updated: 2026-07-31
 review_cycle: monthly
 depends_on:
-  - "[[Ayla Constitution]]"
-  - "[[Ayla Product Vision]]"
+  - "[[Ayla Product Essence]]"
+  - "[[Ayla Living Digital Twin Manifesto]]"
+  - "[[Ayla — Product Vision]]"
   - "[[Ayla MVP Product Thesis]]"
-  - "[[Killer PRD]]"
+  - "[[Ayla Product Principles]]"
+  - "[[Ayla Constitution]]"
   - "[[Ayla Decision Log]]"
   - "[[Ayla MVP Documentation Roadmap]]"
 related:
+  - "[[Killer PRD]]"
   - "[[Ayla Domain Capability Registry]]"
   - "[[Consent Scope Registry]]"
   - "[[AMD-020 Pilot Scope Registry]]"
-  - "[[Ayla User Journey Specification]]"
+  - "[[Ayla MVP User Journey Specification]]"
+supersedes: []
 ---
 
-# Ayla MVP Scope and Release Contract
+# Ayla MVP Scope and Release Contract v0.3
 
-Этот документ — главный документ против разрастания scope MVP. Он порождён
-записью AYLA-DEC-0014 ([[Ayla Decision Log]]) и разделом 1.4
-[[Ayla MVP Documentation Roadmap]]; нормативную силу получает только после
-approval (§12). До approval все положения имеют статус `proposed`.
+**Статус:** DRAFT / proposed / canonical candidate
+**Версия:** 0.3
+**Положение:** Foundation document №4 (Vision → Thesis → Principles →
+**MVP Scope** → User Journey)
+**Владелец:** Product Owner
+**Revision mode:** STRUCTURED_REVISION_FROM_CURRENT_CANON
+**Artifact path and node identity:** preserved
+(`02 Strategy/Ayla MVP Scope and Release Contract.md`,
+`ayla.strategy.mvp-scope-release-contract`)
+**Owner decision:** APPROVE_STRUCTURED_REVISION_ROUTE
+(OD-MS-1: STRUCTURED_REVISION_SAME_PATH; OD-MS-2: V0_3_CANDIDATE_SAME_PATH;
+OD-MS-3: PATH_STABILITY_WITH_COORDINATED_MIGRATION)
 
-Документ фиксирует **release scope** — какие capabilities обязаны работать в
-первом релизе, а какие явно отложены. Он не дублирует механику killer-сценария
-([[Killer PRD]]), пользовательский путь ([[Ayla User Journey Specification]]) и
-гипотезу MVP ([[Ayla MVP Product Thesis]]), а ссылается на них.
+> v0.2 не был canonical и остаётся PRE_CANON_ARTIFACT в Git history. v0.3 —
+> material structured revision под текущий канон: документ переписан
+> содержательно, а не отредактирован точечно. Downstream-ссылки на разделы
+> v0.2 не считаются выровненными автоматически и требуют coordinated
+> migration (§14). Документ не становится CANONICAL до internal consistency
+> review, migration readiness review и отдельного owner approval.
 
-## 1. MVP Goal
+## 1. Purpose and Release Contract Role
 
-Цель MVP — проверить на пилоте центральный тезис (AYLA-DEC-0002,
-[[Ayla MVP Product Thesis]] §4): накопленное и объяснимое понимание
-пользователя, а не сама функция записи, создаёт конкурентное преимущество.
+Этот документ отвечает на вопрос **«что входит в первый релиз»**: какие
+capabilities и пользовательские результаты обязаны работать в MVP пилота,
+а что явно отложено или исключено. Это release contract, а не roadmap:
+он фиксирует границу релиза, а не план работ во времени.
 
-Проверка тезиса выполняется через один сквозной сценарий (§3) и одну главную
-метрику (§9): переход «осмысленный запрос → полезная рекомендация →
-подтверждённое действие» ([[Ayla MVP Documentation Roadmap]] §9.2). Метрики
-количества сообщений целью MVP не являются.
+Положение в потоке документов: MVP Scope работает между
+[[Ayla MVP Product Thesis]] / [[Ayla Product Principles]] (проверяемая
+гипотеза и неизменные нормы) и [[Ayla MVP User Journey Specification]]
+(детализация пути пользователя). Он выбирает релизный состав в пределах
+Principles и под составную гипотезу Thesis.
 
-Условия, при которых MVP считается проверенным, определены в
-[[Ayla MVP Product Thesis]] §8.1/§8.2 (Success/Failure Criteria) и §8.4 (MVP
-Phase Exit Criteria) и здесь не переопределяются.
+Этот документ **не** определяет:
+
+- долгосрочное видение — [[Ayla — Product Vision]];
+- проверяемую гипотезу и критерии её подтверждения — [[Ayla MVP Product Thesis]];
+- неизменные продуктовые нормы — [[Ayla Product Principles]];
+- пользовательский путь и состояния — [[Ayla MVP User Journey Specification]];
+- техническую архитектуру, доменные схемы и API — Architecture/Domain-документы;
+- UX-решения — UX-документы;
+- числовые пороги и метрики — Measurement Framework (planned).
+
+MVP Scope не доказывает Thesis целиком: он фиксирует минимальный релиз,
+достаточный для её проверки (§3).
 
 **Граница с AMD-020 (факт, AYLA-DEC-0014):** [[AMD-020 Pilot Scope Registry]]
 владеет pilot/memory ownership (какие данные и память допустимы в пилоте);
 настоящий документ владеет release scope capabilities (какие способности
 продукта входят в релиз). Пересечения разрешаются в пользу более строгого
-ограничения; изменение границы — через Change Control (§11).
+ограничения; изменение границы — через Change Control (§13).
 
-## 2. Target Users
-
-Факт — [[Ayla MVP Product Thesis]] §5:
-
-- **Provider side:** соло-мастер (независимый специалист без наёмного
-  персонала) и малый салон (до 3 мастеров в штате) — симметрично тарифной
-  модели AYLA-DEC-0001. Провайдеры вне этих профилей (крупные сети, франшизы)
-  — вне scope.
-- **Client side:** пользователи в предметной области [[Ayla Constitution]]
-  Ст. I, физически находящиеся в зоне охвата пилотных провайдеров.
-- **Территория пилота:** Пенза; дата пилота зафиксирована отдельным решением
-  AYLA-DEC-0003 и в этом документе не дублируется — при переносе даты
-  пересматривается решение, а не этот контракт.
-
-**Персоны пилота (owner decision 2026-07-27):** пилот проверяет только
-персоны основного end-to-end сценария (§3): клиент, ищущий услугу или
-специалиста; соло-мастер; малый салон до трёх мастеров. Остальные персоны
-[[Ayla Product Vision]] §11 — стратегические, не release blockers.
-
-## 3. Primary End-to-End Scenario
-
-Единственный обязательный сквозной сценарий MVP (дословно из
-[[Ayla MVP Documentation Roadmap]] §1.2):
+## 2. Position in Canon
 
 ```text
-Пользователь выражает потребность
-→ Ayla уточняет intent
-→ подбирает услугу или действие
-→ объясняет рекомендацию
-→ пользователь подтверждает
-→ Ayla создаёт запись
-→ пользователь получает подтверждение
+Ayla Product Essence v1.1 — высший продуктовый источник
+├── Living Digital Twin Manifesto v1.0 — sibling / согласующий input (LDT-темы)
+├── Product Vision v2.0 — sibling
+├── Product Thesis v0.5 — sibling
+├── Product Principles v0.1 — sibling
+└── MVP Scope (этот документ)
+      ↓
+User Journey → Domain → UX → Architecture → Engineering
 ```
 
-Остальные сценарии — совместимые, но не обязательные (Roadmap §1.2).
-Детализация сценария до этапов, негативных веток и owning capability — задача
-MVP User Journey (производный срез [[Ayla User Journey Specification]], 14
-этапов + негативные сценарии, AYLA-DEC-0014), а не этого документа.
+- **[[Ayla Constitution]]** — hard constraints и боковой якорь; её статьи
+  здесь не переписываются, а применяются как обязательные ограничения.
+- **[[Ayla Product Essence]]** — высший продуктовый источник; при любом
+  конфликте побеждает Essence.
+- **[[Ayla Product Principles]]** — стабильные правила продуктовых решений;
+  релизный состав выбирается в их пределах.
+- **MVP Scope** — точная релизная граница первого выпуска.
+- **[[Ayla MVP User Journey Specification]]** — downstream: раскрывает путь
+  пользователя внутри утверждённого scope.
+- **[[Killer PRD]]** — legacy reference only (CANON_INDEX): не является
+  нормативным источником этого документа и не основа его структуры.
 
-Сквозной сценарий согласован с активационными gates
-[[Consent Scope Registry]] §10: **MVP Phase 1** — session-only vertical slice
-(сообщение → понимание запроса → подбор мастера → запись) без персистентной
-памяти; **MVP Phase 2** — opt-in persistent preferences. Phase 2 не является
-условием релиза Phase 1.
+Этот документ не создаёт новую иерархию и находится ниже Essence v1.1;
+Manifesto v1.0 — authoritative input для его LDT-положений, не родитель.
 
-## 4. Included Capabilities
+## 3. MVP Product Boundary
 
-Основа списка — [[Ayla MVP Documentation Roadmap]] §1.4; разделение на две
-группы и включение CAP-014/CAP-018/CAP-022 — по AYLA-DEC-0015 (MVP Monetary
-Boundary и enabling capabilities, owner decision 2026-07-27). Маппинг на
-Capability ID выполнен по canonical names
-[[Ayla Domain Capability Registry]] §6 и остаётся **proposal** до перевода
-записей в MVP-active (волна 2, AYLA-DEC-0014): в §9 MVP Scope Matrix реестра
-все записи, кроме CAP-023, имеют `mvp_scope: undetermined`.
+MVP — минимальный релиз, который проверяет **составную продуктовую
+ценность** ([[Ayla MVP Product Thesis]] §4.3):
 
-### 4.1 Product capabilities (user-visible)
+```text
+Transformation Goal
++
+Living Digital Twin baseline / recognition
++
+memory continuity
++
+explainable recommendation
++
+realistic action
++
+progress continuity
+```
 
-| # | Included capability | Capability ID (proposal) | Ограничение MVP |
-|---|---|---|---|
-| 1 | Intent Understanding | CAP-003 | Минимальный набор intent types (Roadmap §3.1) |
-| 2 | Recommendation Formation | CAP-004 | Primary recommendation + alternatives; без продвинутого ML ranking (Roadmap §3.2) |
-| 3 | Appointment Management | CAP-011 | Создание, подтверждение, перенос, отмена записи |
-| 4 | Service Catalog | CAP-008 | Seed catalog пилотных провайдеров |
-| 5 | Provider Management | CAP-009 | Минимальный профиль провайдера |
-| 6 | Availability | CAP-010 | Актуальные слоты пилотных провайдеров |
-| 7 | Consent Management | CAP-002 | Минимальный scope — только scopes, необходимые Phase 1/2 ([[Consent Scope Registry]] §10) |
-| 8 | Personal Context | CAP-001 | Только whitelist персональных фактов (Roadmap §3.4): способ общения, категории услуг, предпочтение времени, предыдущая подтверждённая услуга, явно подтверждённые ограничения, согласие на персонализацию |
-| 9 | Explanation | CAP-005 | Объяснение «почему эта рекомендация» — обязательно (Конституция Ст. VII) |
-| 10 | Notification | CAP-021 | Транзакционные уведомления по записи |
-| 11 | Attribution | CAP-013 | Минимальный direct linkage: `recommendation_id` → qualified action ([[Killer PRD]] §6) |
-| 12 | Conversation Experience | CAP-016 | Только сквозной сценарий §3 |
+Ни один элемент отдельно не является целью релиза; проверяется их
+сочетание. Память — механизм continuity внутри составного пути, а не
+центр продукта и не самостоятельная цель MVP.
 
-### 4.2 Mandatory enabling capabilities (`user_visible_capability: false`)
+Явные границы:
 
-Обязательны для релиза, но не являются user-visible продуктовыми функциями
-(AYLA-DEC-0015):
+- MVP — **не booking flow**: запись — одно из downstream-действий плана
+  ([[Ayla Product Essence]] §20; [[Ayla Product Principles]] 4.8);
+- **не набор disconnected trackers**: питание, вода, сон, активность —
+  инструменты пути к цели, не самостоятельные центры продукта;
+- **не полный marketplace**: только seed-контур пилотных провайдеров;
+- **не final Living Digital Twin**: проверяется жизнеспособность Twin
+  (viability), не полная модель (§6.4);
+- **не medical product**: медицинская диагностика и выводы о здоровье
+  запрещены ([[Ayla Constitution]] Ст. XII);
+- **не long-term personalization platform**: проверяется минимально
+  полезная continuity, а не платформа персонализации;
+- **«ничего не делать» — валидный outcome** рекомендации
+  ([[Ayla — Product Vision]] §19; Principles 4.7);
+- **economic neutrality обязательна**: коммерческий статус, тариф или
+  платёж провайдера никогда не влияют на персональные рекомендации
+  (Constitution Ст. IV; Principles 4.11).
 
-| # | Enabling capability | Capability ID | Release role | Ограничение MVP |
-|---|---|---|---|---|
-| 1 | Safety Policy Enforcement | CAP-014 | `mandatory-cross-cutting`, `mvp_scope: required` | Детерминированные safety gates ко всем product capabilities ([[Killer PRD]] §8, Roadmap §7.3) |
-| 2 | AI Orchestration and Tool Execution | CAP-018 | `enabling-technical-capability`, `mvp_scope: required` | Минимальный набор tools сквозного сценария (Roadmap §6.3) |
-| 3 | Audit and Observability | CAP-026 | `mandatory-cross-cutting` | Только критические события (consent, authorization, booking, safety) |
-| 4 | Provider monetary integration (Billing Eligibility) | CAP-022 | MVP-active | Только минимальный provider-side charge flow по §5.1; полноценный Billing — deferred (§5) |
+## 4. Primary End-to-End Journey
 
-Дополнительное нормативное ограничение Included Scope (факт из источников):
-автономные действия без подтверждения пользователя запрещены (Roadmap §1.2
-out of scope; Конституция).
+Единственный обязательный сквозной сценарий MVP — путь вокруг цели и
+видимого прогресса, а не цепочка «запрос → запись»:
 
-## 5. Deferred Capabilities
+```text
+1.  Пользователь формулирует или уточняет Transformation Goal   — OBLIGATORY
+2.  Пользователь предоставляет минимальные разрешённые inputs   — OBLIGATORY
+3.  Ayla создаёт или подтверждает Twin baseline                 — OBLIGATORY
+4.  Пользователь узнаёт себя или исправляет Twin                — OBLIGATORY
+5.  Ayla интерпретирует intent в контексте                      — OBLIGATORY
+6.  Ayla формирует объяснимую рекомендацию                      — OBLIGATORY
+7.  Пользователь выбирает реалистичный следующий шаг            — OBLIGATORY
+8.  Запись может произойти как одна из downstream-опций         — OPTIONAL
+9.  Результат / follow-up становится continuity input           — PARTIAL
+10. Пользователь видит прогресс или следующее состояние         — OBLIGATORY (минимальная форма)
+```
 
-Явно отложено (источник — Roadmap §1.4 Deferred; CAP-023 — по OD-CAP-4 в
-редакции AYLA-DEC-0015, остальные CAP-маппинги — proposal):
+Обязательные условия сценария:
 
-| Deferred capability | Capability ID (proposal) | Основание |
-|---|---|---|
-| Payment Processing | CAP-023 | Полноценная payment capability deferred. В MVP допускается только минимальный provider-side charge flow для подписки и booking fee, определённый отдельным integration contract. Клиентская оплата, wallet, payouts, refunds и универсальный payment lifecycle не входят в MVP. |
-| Полноценный Billing (сверх §5.1) | CAP-022 | Roadmap §1.4; минимальный provider monetary integration MVP-active по AYLA-DEC-0015 (§4.2) |
-| Advanced Outcome Learning | CAP-007 | Roadmap §1.4; полноценное outcome learning — только если потребуется пилоту (Roadmap §1.2) |
-| Сложная Experimentation Platform | CAP-025 | Roadmap §1.4; базовые метрики §9 этим не отменяются |
-| Расширенный Marketplace Search | CAP-024 | Roadmap §1.4; весь marketplace — out (Roadmap §1.2) |
-| Cross-product tenant customization | CAP-020 | Roadmap §1.4; сложная multi-tenant тарификация — out (Roadmap §1.2) |
-| Глубокая provider verification | часть CAP-009 | Roadmap §1.4 |
-| Автоматическая обработка health outcomes | CAP-006/CAP-007 | Roadmap §1.4; медицинская диагностика и автоматические выводы о здоровье запрещены ([[Killer PRD]] §9, Roadmap §1.2) |
+- **Consent gates** действуют на входных данных (шаг 2), media (шаг 3) и
+  персистентной памяти (шаг 9) — по [[Consent Scope Registry]] §10;
+- **recognition point обязательна** (шаг 4): сигнал «это не похоже на меня»
+  и исправление/перестроение Twin — часть сценария, не опция;
+- **Phase 1 — session-only memory**; **Phase 2 — opt-in persistent
+  memory**; Phase 2 не является условием релиза Phase 1;
+- **booking optional** (шаг 8): сценарий не обязан завершаться записью;
+  отказ от действия — допустимый исход (шаг 7);
+- **journey заканчивается прогрессом / следующим состоянием** (шаг 10),
+  а не подтверждением записи.
 
-### 5.1 MVP Provider Monetary Boundary
+Детализация сценария до этапов, негативных веток и owning capability —
+задача MVP User Journey, не этого документа.
 
-Факт — решение AYLA-DEC-0015 (owner decision 2026-07-27, OD-MVP-PAY-1):
+## 5. In-Scope User Outcomes
 
-В MVP входит ограниченный денежный контур провайдера:
+MVP обязан обеспечить следующие пользовательские результаты
+(outcome-level, без CAP-first framing и без числовых порогов):
 
-- списание подписки;
-- списание booking fee 90 ₽;
-- обработка результата попытки списания;
-- обновление billing status;
-- применение eligibility gate;
+1. личная Transformation Goal установлена или уточнена;
+2. Twin baseline создан на разрешённых данных;
+3. пользователь узнаёт себя в Twin или исправляет его;
+4. intent понят в контексте пользователя;
+5. рекомендация объяснена (что, почему, на каких данных, с какой
+   неопределённостью);
+6. реалистичный следующий шаг выбран — включая обоснованное «ничего не
+   делать»;
+7. booking возможен как downstream action;
+8. прогресс / следующее состояние видимы (сравнение состояний во времени);
+9. разрешённый continuity context сохраняется и используется в повторном
+   пути;
+10. user control реализуем на практике: просмотр, исправление, удаление,
+    отзыв согласия.
+
+## 6. In-Scope Capabilities
+
+Маппинг на Capability ID ([[Ayla Domain Capability Registry]] §6) остаётся
+**proposal** до перевода записей реестра в MVP-active (волна 2,
+AYLA-DEC-0014) и не является canonical activation. Новые области
+(Transformation Goal, Living Digital Twin) получают CAP-маппинг только
+через ту же волну 2, не этим документом.
+
+### 6.1 Client-facing
+
+- Transformation Goal creation / refinement (минимальная структура цели;
+  детальная модель — Domain);
+- минимальные разрешённые inputs (progressive profiling, Constitution
+  Ст. VI);
+- управляемая фотофиксация и Twin baseline;
+- recognition / correction Twin;
+- intent conversation (минимальный набор intent types, proposal CAP-003);
+- объяснимая рекомендация (proposal CAP-004 + CAP-005);
+- выбор следующего действия;
+- booking / reschedule / cancel как опция (proposal CAP-011);
+- транзакционные уведомления (proposal CAP-021);
+- сравнение состояний и видимый прогресс;
+- контроль данных, Twin и персонализации.
+
+**Wellness inputs — статусы:**
+
+| Input | Статус |
+|---|---|
+| food | CONDITIONAL — только как разрешённый контекст рекомендаций (один из равнозначных trigger-сценариев, Vision §10); dedicated tracking — DEFERRED |
+| water | DEFERRED |
+| sleep | DEFERRED |
+| mood | DEFERRED; без inferred mental state (Constitution Ст. X) |
+| symptoms | OUT_OF_SCOPE |
+| activity / body signals | DEFERRED |
+| photos | IN_SCOPE (управляемая фотофиксация для Twin; особо чувствительный input — Manifesto §12) |
+| manual notes | CONDITIONAL (минимальный пользовательский ввод фактов — whitelist personal context) |
+| conversation-derived context | IN_SCOPE в пределах consent; с разделением классов достоверности |
+
+Медицинские выводы (medical inference) не вводятся ни для одного input.
+
+### 6.2 Provider-facing
+
+- минимальный профиль провайдера (proposal CAP-009);
+- пилотные профили: соло-мастер и малый салон до 3 мастеров
+  ([[Ayla MVP Product Thesis]] §5);
+- актуальные слоты availability (proposal CAP-010);
+- provider-side monetary boundary (§7 не активирует полный Payment);
+- eligibility gate;
+- подтверждение записи;
 - минимальная reconciliation с платёжным провайдером.
 
-Этот контур **не означает активацию CAP-023 Payment Processing** и не создаёт
-универсальный payment domain.
+Не включать: глубокую верификацию провайдеров, payouts, крупные сети и
+франшизы, сложное управление персоналом.
 
-Вне scope остаются:
+### 6.3 AI / Orchestration / Memory
+
+- intent understanding;
+- recommendation formation (primary + alternatives; без продвинутого ML
+  ranking);
+- explanation — обязательно (Constitution Ст. VII);
+- минимальная tool orchestration сквозного сценария (proposal CAP-018);
+- session memory (Phase 1);
+- opt-in persistent memory — только после Phase 2 gate (Consent Scope
+  Registry §10);
+- model/provider fallback — как NFR (§10);
+- prompt/tool version traceability.
+
+Memory-first framing запрещён: память поддерживает составной путь
+(memory supports composite journey); объём сохранённых фактов не является
+целью и не admission metric ([[Ayla MVP Product Thesis]] §8.2).
+
+### 6.4 Living Digital Twin
+
+MVP обязан проверить жизнеспособность Living Digital Twin и обеспечить
+минимально достаточный контроль и доверие ([[Ayla Product Essence]] §18;
+[[Ayla Living Digital Twin Manifesto]] §14):
+
+| Класс | Состав |
+|---|---|
+| MUST_HAVE | управляемая фотофиксация; baseline; recognition («это я»); сигнал «это не похоже на меня»; исправление/перестроение модели; сохранение идентичности между версиями (identity drift — дефект); сравнение состояний во времени; разделение факта, реконструкции, прогноза и цели; body dignity и anti-shaming; удаление исходных и производных данных |
+| SHOULD_HAVE | отображение уверенности в поддерживаемой форме (не обязательные проценты); объяснение ограничений модели |
+| CONDITIONAL | видео — только при подтверждённой необходимости для качества модели |
+| DEFERRED | более богатая Living Timeline; более глубокая персонализация; более объяснимые прогнозы (Manifesto §15) |
+| OUT_OF_SCOPE | full morphing engine; идеализированное будущее тело; medical simulation; medical-grade reconstruction; неподдержанный/гарантированный прогноз (в т.ч. 30/60/90 дней); произвольная генерация аватаров; точный состав тела по камере; автоматическое обновление Twin после каждого действия |
+
+### 6.5 Safety / Consent / Control
+
+- детерминированные safety gates ко всем product capabilities
+  (mandatory cross-cutting, proposal CAP-014);
+- consent management — только scopes, необходимые Phase 1/2
+  (proposal CAP-002; [[Consent Scope Registry]] §10);
+- purpose limitation: данные используются только для информированных
+  целей;
+- session-only default до Phase 2 gate;
+- просмотр, исправление, удаление, отзыв согласия пользователем;
+- удаление исходных и производных данных;
+- аудит критических событий (consent, authorization, booking, safety —
+  proposal CAP-026);
+- запрет автономных действий без подтверждения пользователя;
+- запрет скрытой медицинской диагностики (Constitution Ст. X);
+- body dignity / anti-shaming (Manifesto §13).
+
+### 6.6 Enabling / Operations
+
+Сохраняются валидные enabling capabilities v0.2 (AYLA-DEC-0015):
+
+- AI Orchestration and Tool Execution (proposal CAP-018,
+  `user_visible_capability: false`, `mvp_scope: required`);
+- Audit and Observability (proposal CAP-026, `mandatory-cross-cutting`);
+- минимальный provider monetary integration (CAP-022 MVP-active только в
+  части §7 monetary boundary);
+- backend как SoR для каталога, провайдеров, availability, записей,
+  consent и context facts;
+- поддержка seed catalog / provider / availability.
+
+## 7. Explicitly Out of Scope / Deferred
+
+**OUT_OF_SCOPE (исключено из MVP):**
 
 - клиентская онлайн-оплата услуг;
 - wallet и внутренний баланс;
 - payouts;
 - refunds;
 - chargebacks;
-- split settlement как универсальная capability;
-- полноценный financial ledger.
-
-Также вне MVP (факты из [[Ayla MVP Product Thesis]] §7 и Roadmap §1.2/§1.3):
-
+- универсальный split settlement;
+- полноценный financial ledger;
+- полный marketplace и расширенный marketplace search (CAP-024);
+- multi-tenant customization (CAP-020);
+- medical/health inference и автоматические выводы о здоровье
+  (CAP-006 в этой части);
+- admin tooling;
 - Telegram как канал (AYLA-DEC-0004);
-- сложная программа лояльности; несколько стран; продвинутые ML-модели;
-  сложные модели обучения, долгосрочные cohort mechanics, глубокая
-  оптимизация ranking, сложная monetization attribution.
+- поддержка крупных сетей и франшиз;
+- полный LDT morphing и гарантированный прогноз будущей внешности (§6.4).
 
-## 6. Required Integrations
+**DEFERRED (отложено, не исключено навсегда):**
 
-Факты из источников:
+- полноценный Payment Processing (CAP-023; в MVP — только provider-side
+  monetary boundary ниже);
+- полноценный Billing сверх monetary boundary;
+- advanced Outcome Learning (CAP-007);
+- сложная Experimentation Platform (CAP-025);
+- продвинутый ML ranking;
+- dedicated wellness-трекеры (food/water/sleep/activity — §6.1);
+- глубокая provider verification;
+- внутренний баланс провайдера с выводом T+24ч (эпик этапа 2,
+  AYLA-DEC-0008);
+- richer Living Timeline, advanced forecasts, deeper personalization
+  (Manifesto §15).
 
-- **MAX platform** — канал пилота (AYLA-DEC-0004), см. §7.
-- **Backend API (beautygo_backend)** — SoR для каталога, провайдеров,
-  availability, записей, consent и context facts; набор endpoints MVP —
-  по Roadmap §6.2 (current user, consent, context facts, service search,
-  provider candidates, availability, appointment create/update/cancel,
-  recommendation persistence, attribution, feedback).
-- **ayla-ai-core** — библиотека reusable AI logic; **ai-bot-platform** —
-  runtime/channel consumer (Roadmap §5.1, рекомендуемая MVP-композиция;
-  backend допустим как модульный монолит).
-- **LLM provider** — через provider abstraction ayla-ai-core; определён
-  model/provider fallback (Roadmap §9.1).
-- **YooKassa** — обязательная интеграция только для provider-side charge
-  flow: подписка, booking fee 90 ₽, payment result callback и минимальная
-  reconciliation. Клиентская онлайн-оплата и полноценный Payment Processing
-  остаются вне MVP (AYLA-DEC-0015).
+**MVP Provider Monetary Boundary (факт, AYLA-DEC-0015):** в MVP входит
+ограниченный денежный контур провайдера — списание подписки; списание
+booking fee 90 ₽; обработка результата попытки списания; обновление
+billing status; применение eligibility gate; минимальная reconciliation с
+YooKassa. Этот контур **не означает активацию CAP-023 Payment Processing**
+и не создаёт универсальный payment domain.
 
-## 7. Required Channels
+## 8. Channels and Deployment Boundary
 
 - **MAX-бот + MAX Mini App** — единственные обязательные каналы MVP
-  (AYLA-DEC-0004, Thesis §6).
-- Telegram — вне пилотного scope (AYLA-DEC-0004, Thesis §7).
-- Универсальная multi-channel спецификация не требуется для MVP (Roadmap,
-  «Что не должно блокировать MVP»).
+  (AYLA-DEC-0004, Thesis §6);
+- **Telegram** — вне пилотного scope (AYLA-DEC-0004, Thesis §7);
+- универсальная multi-channel спецификация не требуется для MVP.
 
-## 8. Non-Functional Minimum
+## 9. Dependencies and External Systems
 
-Минимум, обязательный к релизу (факт — Roadmap §9.1 Release Readiness,
-сгруппировано):
+- **MAX platform** — канал пилота (AYLA-DEC-0004);
+- **Backend API** — SoR для каталога, провайдеров, availability, записей,
+  consent и context facts;
+- **ayla-ai-core** — библиотека reusable AI logic; **ai-bot-platform** —
+  runtime/channel consumer (рекомендуемая MVP-композиция; backend
+  допустим как модульный монолит);
+- **LLM provider** — через provider abstraction ayla-ai-core; определён
+  model/provider fallback;
+- **YooKassa** — обязательная интеграция только для provider-side
+  monetary flow (§7); клиентская оплата и полноценный Payment Processing
+  остаются вне MVP (AYLA-DEC-0015);
+- **LDT media pipeline** — downstream architecture dependency для Twin
+  baseline и фотофиксации; техническая граница реализации определяется в
+  Architecture-документах и здесь не фиксируется (§15).
 
-- **Security:** access control; tenant isolation; управление secrets; правила
-  логирования (без PII в логах); rate limits; audit; backup.
+## 10. Non-Functional Requirements
+
+Минимум, обязательный к релизу:
+
+- **Security:** access control; tenant isolation; управление secrets;
+  логирование без PII; rate limits; audit; backup;
 - **Privacy:** по умолчанию режим [[Consent Scope Registry]] §10 — session
   context only, no proactive recommendations, no cross-domain
-  personalization, no persistent inferred signals, no persistent preference
-  storage — до выполнения gate Phase 2.
-- **AI:** закреплённые версии prompt; совместимые tool schemas; установленный
-  token budget; протестированные hallucination-сценарии; определённый
-  model/provider fallback.
-- **Operations:** monitoring; alerts; support process; назначенный incident
-  owner; возможность rollback; feature flags.
-- **Product:** primary journey работает end-to-end; рекомендация объяснима;
-  fallback существует; критических тупиков нет.
+  personalization, no persistent inferred signals, no persistent
+  preference storage — до выполнения gate Phase 2;
+- **AI:** закреплённые версии prompt; совместимые tool schemas; token
+  budget; протестированные hallucination-сценарии; определённый
+  model/provider fallback; prompt/tool version traceability;
+- **Living Digital Twin:** recognition/correction поддерживаются
+  продуктово; identity preservation между версиями; честное разделение
+  факта, реконструкции, оценки, прогноза и цели; body dignity; удаление
+  исходных и производных данных;
+- **Explainability:** существенная рекомендация объяснима и трассируема к
+  структурированным причинам (Constitution Ст. VII);
+- **Operations:** monitoring; alerts; support process; назначенный
+  incident owner; возможность rollback; feature flags;
+- **Product:** primary journey (§4) работает end-to-end; fallback
+  существует; критических тупиков нет.
 
-Числовые SLA/пороги производительности в этом документе не устанавливаются —
-единственная зафиксированная метрика времени отклика учитывается как
-`median response time` в §9 (Roadmap §9.2).
+Числовые SLA и пороги производительности в этом документе не
+устанавливаются. Implementation details определяются в
+Architecture/Engineering-документах.
 
-## 9. Release Metrics
+## 11. Measurement and Release Evidence
 
-**Главная метрика MVP (факт — Roadmap §9.2):** проверяется не количество
-сообщений, а переход:
+MVP Scope фиксирует только **release evidence** — какие факты должны быть
+наблюдаемы в пилоте, чтобы составная ценность (§3) считалась проверенной
+качественно. Числовые пороги, cohorts, retention-аналитика и advanced
+attribution принадлежат Measurement Framework (planned) и здесь не
+вводятся (Thesis §8.1: пороги — design candidates).
 
-```text
-осмысленный запрос
-→ полезная рекомендация
-→ подтверждённое действие
-```
+Release evidence минимум:
 
-Минимальный набор метрик пилота (факт — Roadmap §9.2):
+- goal established — пользователь сформулировал/уточнил Transformation
+  Goal;
+- Twin baseline created;
+- recognition/correction captured — включая сигнал «это не похоже на
+  меня» и его разрешение;
+- recommendation explained;
+- next action accepted/rejected — включая валидный исход «ничего не
+  делать»;
+- booking — **secondary downstream evidence** (conversion/completion
+  фиксируются, но не являются центральной метрикой MVP);
+- continuity retained where consented — повторное обращение без повторного
+  объяснения контекста (в пределах Phase 1/2 режима);
+- user control exercised — просмотр/исправление/удаление/отзыв;
+- safety blocks; tool failures; usefulness feedback.
 
-- доля resolved intents;
-- clarification rate;
-- recommendation shown rate;
-- recommendation acceptance rate;
-- booking conversion;
-- booking completion;
-- attributed qualified actions;
-- recommendation rejection reasons;
-- unsafe block rate;
-- tool failure rate;
-- median response time;
-- пользовательская оценка полезности.
+Диагностический минимум пилота (resolved intents, clarification rate,
+recommendation shown/acceptance rate, rejection reasons, unsafe block
+rate, tool failure rate, median response time) сохраняется из v0.2 как
+техническая телеметрия релиза; критерии подтверждения/опровержения
+гипотезы — [[Ayla MVP Product Thesis]] §8.1/§8.2 и Product Thesis
+Validation Gate §8.4.
 
-Критерии подтверждения/опровержения тезиса по этим метрикам —
-[[Ayla MVP Product Thesis]] §8.1/§8.2. **Числовые пороги здесь не
-фиксируются:** по Thesis §8.1 они остаются design candidates до данных пилота
-или отдельного Measurement Framework (паттерн ADR-0012 OD-5/OD-6).
+## 12. Release Gates and Blockers
 
-## 10. Release Blockers
+| Элемент | Статус |
+|---|---|
+| OD-K11 (`canonical_status` в schema) | RESOLVED / NOT_A_BLOCKER |
+| Data Inventory Matrix | RESOLVED / NOT_A_BLOCKER (exists draft v1.0; зависимость AMD-020 разрешена — Thesis §9) |
+| Killer PRD | LEGACY_REFERENCE_ONLY / NOT_A_BLOCKER (его canonical approval заблокирован ADR-0012 OD-1/OD-2 — это блокер downstream approvals самого Killer PRD, не этого документа) |
+| Consent Scope Registry §10 gates | ACTIVE — Phase 1: scopes `intent_understanding` и `provider_selection` approved, persistent memory технически отключена; Phase 2 gate — по Registry §10.2 |
+| Safety/privacy review | ACTIVE — обязателен при approval этого документа |
+| LDT media pipeline feasibility | REQUIRES_REVALIDATION — на этапе Architecture (§9, §15) |
+| Recognition quality bar | REQUIRES_REVALIDATION — точный бар определяется downstream (§15) |
+| Provider supply readiness | OPERATIONS_DEPENDENCY / NOT_DOCUMENT_BLOCKER (операционный трек пилота, AYLA-DEC-0003) |
+| User Journey / Intent Model predecessor alignment | REQUIRES_REVALIDATION после v0.3 — оба документа ссылаются на разделы v0.2 и проходят coordinated migration (§14); User Journey дополнительно ожидает LDT-alignment как Foundation document №5 |
 
-Релиз блокируется до закрытия следующих условий (факты из источников):
+Resolved-элементы не сохраняются в статусе blockers. Governance Exit фазы
+MVP (Thesis §8.4): решение о переходе фазы принимает Product Owner и не
+является автоматическим.
 
-1. **Consent gates ([[Consent Scope Registry]] §10.1):** scopes
-   `intent_understanding` и `provider_selection` переведены из `proposed` в
-   `approved`; persistent memory технически отключена до Phase 2. Для Phase 2
-   дополнительно (§10.2): `preference_memory` approved, закрыт CSR-OD-5
-   (canonical SoR для consent records), подтверждение формулировок Privacy
-   Owner, реализованный runtime authorization contract, negative test
-   «отсутствие consent → deny».
-2. **Killer PRD canonical approval** заблокирован ADR-0012 OD-1/OD-2, OD-K9 и
-   OD-K11 (Thesis §9) — до их закрытия §3 и §12 остаются proposed.
-3. **Predecessor documents** по AYLA-DEC-0014, волна 1: MVP User Journey и
-   Intent Model Specification — сквозной сценарий §3 не детализирован без них.
-4. **AMD-020 Pilot Scope Registry** зависит от Data Inventory Matrix
-   (Thesis §9) — граница §1 не может быть проверена до её материализации.
+## 13. Admission and Change Control
 
-Governance Exit фазы MVP (Thesis §8.4): блокеры выше должны быть закрыты или
-явно вынесены в план Phase 1.5; решение о переходе фазы принимает Product
-Owner и не является автоматическим.
+**Admission test (составной, заменяет memory-first фильтр v0.2):**
+функция входит в MVP, только если она:
 
-## 11. Change Control
+1. вносит проверяемый вклад в составную гипотезу (Thesis §4.3);
+2. не нарушает [[Ayla Product Principles]] (4.1–4.11);
+3. необходима именно для релиза (release necessity, а не «полезна
+   вообще»);
+4. сохраняет объяснимость (Constitution Ст. VII);
+5. сохраняет user control и consent boundaries;
+6. не нарушает economic neutrality (Constitution Ст. IV);
+7. корректно позиционирована (booking и транзакции — downstream, не
+   центр);
+8. имеет измеримый release evidence (§11).
+
+Функция, нарушающая любую строку таблицы MVP-принципов Thesis §8.3, не
+проходит admission независимо от пункта 1 (автоматический отказ).
 
 **Критическое правило (дословно, Roadmap §1.4 и AYLA-DEC-0014):** после
-approval любое расширение Included Scope требует owner decision с указанием:
+approval любое расширение Included Scope требует owner decision с
+указанием:
 
 - зачем оно нужно до MVP;
 - какой срок добавляет;
 - какую текущую задачу вытесняет.
 
-Дополнительно (факт — Thesis §8): входной фильтр для любого кандидата в
-Included Scope — admission principle: функция входит в MVP, только если она
-напрямую усиливает memory-first тезис (AYLA-DEC-0002) и не нарушает таблицу
-MVP-принципов Thesis §8.3.
+Сокращение Included Scope или уточнение формулировок без расширения
+фиксируется записью в Change Log этого документа и записью в
+[[Ayla Decision Log]].
 
-> **Proposal (не факт):** сокращение Included Scope или уточнение формулировок
-> без расширения фиксируется записью в Change Log этого документа и записью в
-> [[Ayla Decision Log]]; формальное правило — подтвердить при approval.
+## 14. Downstream Migration Contract
+
+По owner decision OD-MS-3 (PATH_STABILITY_WITH_COORDINATED_MIGRATION):
+
+- artifact path, title, node identity и version history сохранены;
+- нумерация и семантика разделов v0.3 могут отличаться от v0.2, где это
+  требуется текущим каноном;
+- downstream-ссылки на разделы v0.2 **не считаются выровненными
+  автоматически**;
+- coordinated migration **обязательна** и должна завершиться до
+  канонизации этого документа;
+- owner review следует после structured revision и migration readiness
+  review.
+
+Migration matrix (миграция выполняется отдельными pass, не этим
+документом):
+
+```text
+Ayla MVP User Journey Specification   — ссылки на §3/§4/§11 v0.2; Foundation №5, LDT-alignment
+Ayla Intent Model Specification       — ссылки на §3/§4.1/§4.2/§5 v0.2
+Ayla Core Domain Model Specification  — ссылки на §4/§5/§11 v0.2 (включая change control)
+Ayla MVP Recommendation Contract      — depends_on и scope-якорь
+ADR-0013 Recommendation Snapshot      — ссылки на §4.1 п. 9, 11 v0.2
+UX MVP source index                   — ссылка на «v0.3» и неканонический path
+draft privacy-consent mapping         — ссылки на «v0.3» §8/§10
+recommendation UX addendum            — ссылки на §4.1 п. 2, 9, 11 v0.2
+SCR-CUST-004                          — ссылка на §4.1 п. 9 v0.2
+intent-registry.yaml                  — comment-ссылка на §4 v0.2 (non-normative)
+Ayla.md MOC                           — статусная таблица (v0.2)
+```
+
+## 15. Open Questions
+
+Только реальные non-blocking вопросы; новые owner decisions этот документ
+не создаёт:
+
+- **CAP mapping для Transformation Goal и LDT (KEEP_NON_BLOCKING).**
+  Новые области получают Capability-маппинг в волне 2 перевода Registry в
+  MVP-active (AYLA-DEC-0014), а не в этом документе.
+- **Exact recognition quality bar (KEEP_NON_BLOCKING).** Принцип
+  узнаваемости канонизирован (Manifesto §5); измерение — downstream
+  AI/Measurement.
+- **Exact LDT media pipeline implementation boundary
+  (KEEP_NON_BLOCKING).** Architecture topic; здесь зафиксирована только
+  зависимость (§9).
+- **Числовые пороги release evidence (KEEP_NON_BLOCKING).** Принадлежат
+  Measurement Framework (Thesis §8.1, §10).
+- **Post-MVP wellness trackers (KEEP_NON_BLOCKING).** Возврат dedicated
+  food/water/sleep/activity трекеров — отдельное scope-решение после
+  пилота.
 
 ## Change Log
 
-> Этот журнал отражает историю изменений документа и не является нормативной
-> частью спецификации. Нормативным считается текущее состояние разделов 1–12.
+> Этот журнал отражает историю изменений документа и не является
+> нормативной частью спецификации. Нормативным считается текущее состояние
+> разделов 1–15, а не записи ниже.
+
+### v0.3 (2026-07-31) — Structured revision for current product canon
+
+Выполнено в MVP Scope Canon Window по owner decision
+APPROVE_STRUCTURED_REVISION_ROUTE (OD-MS-1: STRUCTURED_REVISION_SAME_PATH;
+OD-MS-2: V0_3_CANDIDATE_SAME_PATH; OD-MS-3:
+PATH_STABILITY_WITH_COORDINATED_MIGRATION). Основание: Ayla Product
+Essence v1.1, Living Digital Twin Manifesto v1.0, Ayla Product Vision
+v2.0, Ayla MVP Product Thesis v0.5, Ayla Product Principles v0.1,
+AYLA-DEC-0026; действующие решения AYLA-DEC-0014/0015 сохранены.
+
+- **Artifact identity:** path, title, node_id, owner и Git history
+  сохранены; `supersedes` на v0.2 не добавляется — тот же artifact,
+  lineage через Git history и этот журнал.
+- **Memory-first framing удалён:** MVP Goal, admission filter и §9
+  метрики переписаны под составную гипотезу (Thesis §4.3); память —
+  continuity внутри составного пути.
+- **Transformation Goal и Living Digital Twin включены** в release
+  boundary (§3, §4, §6.1, §6.4); LDT MVP boundary задан по Essence §18 и
+  Manifesto §14–15.
+- **Booking — downstream:** primary journey (§4) завершается прогрессом,
+  а не записью; «ничего не делать» — валидный исход.
+- **Структура перестроена:** 15 разделов + Change Log; добавлены §2
+  Position in Canon, §3 Product Boundary, §5 User Outcomes, §14 Downstream
+  Migration Contract, §15 Open Questions.
+- **Blockers актуализированы (§12):** OD-K11 — RESOLVED; Data Inventory
+  Matrix — RESOLVED; Killer PRD — LEGACY_REFERENCE_ONLY; добавлены LDT
+  media pipeline feasibility и recognition quality bar
+  (REQUIRES_REVALIDATION).
+- **Killer PRD переведён в legacy reference:** удалён из `depends_on`,
+  оставлен в `related`; нормативных ссылок на Killer PRD в тексте нет.
+- **Wellness inputs определены явно** (§6.1); medical inference не
+  введён.
+- **Admission filter заменён** на составной 8-точечный тест (§13);
+  owner-decision правило расширения scope (AYLA-DEC-0014) сохранено
+  дословно.
+- **Metadata:** version 0.2 → 0.3; добавлен `canonical_status:
+  candidate`; `depends_on` приведён к Essence / Manifesto / Vision /
+  Thesis / Principles / Constitution / Decision Log / Documentation
+  Roadmap; `related` актуализирован (MVP User Journey Specification).
+- **Документ не объявляется CANONICAL:** статус CANONICAL присваивается
+  только после internal consistency review, migration readiness review и
+  owner approval. Owner re-review after revision — REQUIRED.
+- **Downstream migration обязательна (§14)** до канонизации; downstream
+  references не считаются aligned автоматически.
 
 ### v0.2 (2026-07-27) — Применено AYLA-DEC-0015 (MVP Monetary Boundary)
 
@@ -370,19 +648,3 @@ MVP-принципов Thesis §8.3.
 - Открытые вопросы: применимость персон к пилоту (§2); статус CAP-014/CAP-018
   (§4); расхождение Thesis §6 и OD-CAP-4 по денежному контуру (§5);
   интеграция YooKassa (§6); правило сокращения scope (§11).
-
-## 12. Approval
-
-**Status:** Draft — pending Product Owner review. Approval невозможен до
-выполнения предусловий §10 п. 2–3. Маппинг CAP-ID (§4, proposal) подлежит
-сверке при переводе записей Registry в MVP-active (волна 2, AYLA-DEC-0014) и
-не блокирует approval этого документа.
-
-Для approval необходимы:
-
-- Product Owner review (scope, change control);
-- Product Architecture review (маппинг на Capability Registry);
-- Privacy review (согласование с [[Consent Scope Registry]] §10 gates).
-
-С момента approval вступает в силу Change Control (§11): Included Scope
-замораживается, и любое его расширение требует owner decision по форме §11.
