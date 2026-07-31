@@ -30,8 +30,8 @@ review_cycle: monthly
 ```text
 1. Product Vision      — COMPLETE / CANONICAL (v2.0, owner approved 2026-07-30)
 2. Product Thesis      — COMPLETE / CANONICAL (v0.5, owner approved 2026-07-30)
-3. Product Principles  — CURRENT / NEXT
-4. MVP Scope           — PENDING
+3. Product Principles  — COMPLETE / CANONICAL (v0.1, owner approved 2026-07-31)
+4. MVP Scope           — CURRENT / NEXT
 5. User Journey        — PENDING
 ```
 
@@ -51,4 +51,4 @@ User Journey отвечает — как человек проходит клю�
 
 - Работа ведётся по одному документу за раз, в отдельном документном окне; следующий документ не начинается до owner approval предыдущего или отдельного разрешения владельца.
 - Над всеми пятью документами стоят Ayla Product Essence v1.1 и Living Digital Twin Manifesto v1.0 (для LDT-тем); sibling-иерархия сохраняется.
-- Текущий документ: **Product Principles**.
+- Текущий документ: **MVP Scope**.

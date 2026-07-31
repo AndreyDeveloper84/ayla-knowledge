@@ -35,7 +35,8 @@ Current gate: FOUNDATION_IN_PROGRESS
 Active blocker: NONE
 Product Vision stage: COMPLETE / CANONICAL v2.0 (owner approval recorded 2026-07-30)
 Product Thesis stage: COMPLETE / CANONICAL v0.5 (owner approval recorded 2026-07-30)
-Current Foundation document: Product Principles
+Product Principles stage: COMPLETE / CANONICAL v0.1 (owner approval recorded 2026-07-31)
+Current Foundation document: MVP Scope
 ```
 
 ## Mission
@@ -56,8 +57,8 @@ Current Foundation document: Product Principles
 ```text
 Product Vision      — 01 Product\Ayla Product Vision.md (v2.0, CANONICAL — COMPLETE)
 Product Thesis      — 02 Strategy\Ayla MVP Product Thesis.md (v0.5, CANONICAL — COMPLETE)
-Product Principles  — файл отсутствует (MISSING / CREATE)
-MVP Scope           — 02 Strategy\Ayla MVP Scope and Release Contract.md (v0.2, draft)
+Product Principles  — 01 Product\Ayla Product Principles.md (v0.1, CANONICAL — COMPLETE)
+MVP Scope           — 02 Strategy\Ayla MVP Scope and Release Contract.md (v0.2, draft — CURRENT)
 User Journey        — 01 Product\User Journeys\Ayla MVP User Journey Specification.md (v1.0, approved до LDT-канона)
 ```
 

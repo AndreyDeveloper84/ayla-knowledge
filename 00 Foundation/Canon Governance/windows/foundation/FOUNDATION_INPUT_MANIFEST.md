@@ -43,8 +43,8 @@ review_cycle: monthly
 ```text
 01 Product\Ayla Product Vision.md                — CANONICAL v2.0 (approved source; owner approved 2026-07-30)
 02 Strategy\Ayla MVP Product Thesis.md           — CANONICAL v0.5 (approved source; owner approved 2026-07-30)
-Product Principles — файл отсутствует (создаётся в окне) — CURRENT INPUT FOR NEXT WINDOW (Product Principles Canon Window)
-02 Strategy\Ayla MVP Scope and Release Contract.md
+01 Product\Ayla Product Principles.md            — CANONICAL v0.1 (approved source; owner approved 2026-07-31)
+02 Strategy\Ayla MVP Scope and Release Contract.md — CURRENT INPUT FOR NEXT WINDOW (MVP Scope Canon Window)
 01 Product\User Journeys\Ayla MVP User Journey Specification.md
 ```
 

@@ -2,8 +2,8 @@
 node_id: ayla.product.product-principles
 title: Ayla Product Principles
 type: foundation
-status: draft
-canonical_status: candidate
+status: approved
+canonical_status: approved
 version: "0.1"
 owner: Product Owner
 priority: P0
@@ -44,7 +44,9 @@ open_schema_question: >
 
 # Ayla Product Principles v0.1
 
-**Статус:** DRAFT / canonical candidate
+**Статус:** CANONICAL — Product Owner approved 2026-07-31
+(APPROVE_WITH_NON_BLOCKING_EDITORIAL_NOTES); canonized through Main Canon
+Orchestrator
 **Версия:** 0.1
 **Положение:** Foundation document №3 (Vision → Thesis → **Principles** →
 MVP Scope → User Journey)
