@@ -481,6 +481,7 @@ MVP, критический пользовательский journey, обяза
 
 | Source | Role | What Principles translates | What Principles does not duplicate |
 |---|---|---|---|
+| Ayla Product Essence | Highest product source / parent product source | Продуктовый центр, иерархия документов (Essence §21; раскрыта также в §2), неизменная продуктовая истина: human-first, Transformation Goal, разделение ролей | Полный narrative Essence, каноническая формула продукта, полная модель ролей, развёрнутые критерии решений (§22) |
 | Ayla Constitution | Hard constraints / side anchor | Продуктовые эвристики объяснимости, уместности, нейтральности, контроля | Тексты статей; consent-нормы (Ст. VI, XIV); safety-компетенции (Ст. VIII, XII, XIII); governance-процесс |
 | LDT Manifesto | Sibling / aligning input для LDT-положений | Recognition, identity preservation, разделение классов достоверности, body dignity — как продуктовые decision rules | Living Timeline; семь классов достоверности дословно (§9); Consent and Data Dignity (§12); MVP Principles (§14); Long-Term Boundaries (§15) |
 | Product Vision | Sibling / long-term direction | Human-first, memory as continuity, видимый путь, «ничего не делать» — как стабильные нормы | Конкурентный ландшафт; персоны; стратегия запуска; позиционирование |
