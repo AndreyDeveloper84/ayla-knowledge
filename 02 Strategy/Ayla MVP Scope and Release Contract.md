@@ -169,6 +169,15 @@ progress continuity
   платёж провайдера никогда не влияют на персональные рекомендации
   (Constitution Ст. IV; Principles 4.11).
 
+**Пилотная граница (факт, без дублирования Thesis):** территория пилота —
+Пенза (дата пилота — AYLA-DEC-0003); клиентская сторона — пользователи в
+предметной области [[Ayla Constitution]] Ст. I, находящиеся в зоне охвата
+пилотных провайдеров ([[Ayla MVP Product Thesis]] §5); начальный
+provider-профиль — соло-мастер и малый салон до 3 мастеров; персоны пилота
+— по owner direction 2026-07-27 (клиент, ищущий услугу или специалиста;
+соло-мастер; малый салон до трёх мастеров): новые персоны не вводятся,
+детальные нарративы персон здесь не пересказываются.
+
 ## 4. Primary End-to-End Journey
 
 Единственный обязательный сквозной сценарий MVP — путь вокруг цели и
@@ -288,7 +297,12 @@ AYLA-DEC-0014) и не является canonical activation. Новые обл�
 - opt-in persistent memory — только после Phase 2 gate (Consent Scope
   Registry §10);
 - model/provider fallback — как NFR (§10);
-- prompt/tool version traceability.
+- prompt/tool version traceability;
+- attribution — IN_SCOPE как минимальный direct linkage: `recommendation_id`
+  → выбранное действие; `booking_id` / `appointment_id` привязываются только
+  если booking произошёл (proposal CAP-013). Assisted attribution, cohort
+  models, multi-touch attribution и advanced windows — DEFERRED,
+  Measurement Framework (§11).
 
 Memory-first framing запрещён: память поддерживает составной путь
 (memory supports composite journey); объём сохранённых фактов не является
@@ -481,6 +495,13 @@ Validation Gate §8.4.
 Resolved-элементы не сохраняются в статусе blockers. Governance Exit фазы
 MVP (Thesis §8.4): решение о переходе фазы принимает Product Owner и не
 является автоматическим.
+
+**Предусловия approval и канонизации:** до Product Owner approval и
+канонизации этого документа обязательны: (1) Internal Consistency Review;
+(2) Migration Readiness Review; (3) Product Architecture review —
+подтверждение scope-to-capability alignment и proposal CAP-маппинга;
+(4) Privacy/Safety review — подтверждение активных gates; (5) завершённая
+обязательная downstream migration (§14); (6) Product Owner Final Review.
 
 ## 13. Admission and Change Control
 
