@@ -321,7 +321,6 @@ OUT / DEFERRED (отдельное owner decision и отдельная кого
 
 ### DEFERRED
 
-- cold acquisition (B1, §21);
 - monetization validation (B1, §20);
 - formal RCT (AYLA-DEC-0034);
 - large salon (AYLA-DEC-0030);
@@ -329,6 +328,7 @@ OUT / DEFERRED (отдельное owner decision и отдельная кого
 
 ### OUT
 
+- cold acquisition — B0 OUT; activates only in B1 after B0 exit (§21);
 - paid placement;
 - marketplace search (CAP-024);
 - multi-tenant customization (CAP-020);
@@ -603,9 +603,14 @@ status
   взаимодействии пользователя с другими провайдерами, Constitution
   Ст. V).
 
-Это execution-level enabling surface: он **не расширяет** canonical MVP
-release boundary (MVP Scope §6.2 provider-facing). Полная CRM, финансовый
-учёт и программа лояльности — OUT.
+Это execution-level enabling operations surface для B0/B1: он **не
+модифицирует** canonical MVP release boundary (MVP Scope §6.2
+provider-facing) и **не активирует** новую user-facing MVP capability.
+Полная CRM, финансовый учёт и программа лояльности — OUT.
+
+**Minimal provider analytics:** SHOULD в B0, MUST в B1 — provider workspace
+minimum в B0 остаётся MUST, но analytics-компонент внутри него — SHOULD до
+B1 (синхронно с §22).
 
 ## 19. Attribution and Outcome Boundary
 
@@ -708,7 +713,7 @@ B1: MUST as separate cohort
 | Reduced manual onboarding | SHOULD | SHOULD |
 | Assisted/multi-touch attribution | DEFERRED (diag.) | DEFERRED (diag.) |
 | Formal RCT / controlled Twin experiment | DEFERRED | DEFERRED |
-| Large salon cohort | OUT/DEFERRED | DEFERRED |
+| Large salon cohort | OUT | DEFERRED (separate owner decision) |
 | Full billing beyond monetary boundary | OUT | DEFERRED |
 | Marketplace self-service / search (CAP-024) | OUT | OUT |
 | Paid placement / ad auction | OUT | OUT |
@@ -753,8 +758,10 @@ B1: MUST as separate cohort
 - provider WTP — не менее 30% провайдеров подтверждают готовность
   платить по одной из моделей §20;
 - attribution completeness — не менее 95%;
-- среднее ручное сопровождение не делает unit economics заведомо
-  отрицательной.
+- manual intervention and cost-to-serve are measured as a qualitative
+  working validation threshold; exact acceptable cost-to-serve and unit
+  economics criteria are defined by the Measurement Framework and approved
+  by Product Owner before B1 launch.
 
 FINAL GO/NO-GO утверждается Product Owner до B1 launch после B0 evidence
 и Measurement Framework; здесь не канонизируется.
@@ -926,6 +933,27 @@ Three channels are not three products.
 
 > Журнал отражает историю изменений и не является нормативной частью.
 > Нормативно — текущее состояние разделов 1–29.
+
+### v0.2 (2026-07-31) — Provider analytics, cold acquisition, large salon and cost-to-serve wording normalized
+
+Выполнено в Two-Phase Pilot Scope Reconciliation Window по промпту
+`TWO_PHASE_PILOT_COMBINED_EDITORIAL_CLEANUP_PROMPT.md` (findings CD-P3-02,
+MP-ICR-P3-01, MP-ICR-P3-02, MP-ICR-P3-03, MP-ICR-P3-04).
+
+- **§18** — boundary-формулировка уточнена: execution-level enabling
+  operations surface, не модифицирует canonical MVP release boundary и не
+  активирует user-facing MVP capability; minimal provider analytics явно
+  SHOULD в B0 / MUST в B1 (CD-P3-02, MP-ICR-P3-01).
+- **§10** — cold acquisition перенесён из DEFERRED в OUT («B0 OUT;
+  activates only in B1 after B0 exit»), согласовано с §21 и §22
+  (MP-ICR-P3-02).
+- **§22** — composite-статус large salon `OUT/DEFERRED` разделён: B0 —
+  OUT, B1 — DEFERRED (separate owner decision) (MP-ICR-P3-03).
+- **§23** — расплывчатая строка про unit economics заменена qualitative
+  working validation threshold с отсылкой к Measurement Framework и owner
+  approval до B1 launch; числовой порог не создан (MP-ICR-P3-04).
+- **Editorial only:** no scope change, no owner decision, no version bump,
+  no canonical status change.
 
 ### v0.2 (2026-07-31) — Structured revision after Two-Phase Pilot Scope Reconciliation
 

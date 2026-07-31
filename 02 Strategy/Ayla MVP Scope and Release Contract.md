@@ -622,6 +622,8 @@ push notification contract            — TO_BE_CREATED (downstream migration it
 mobile privacy/media consent mapping  — TO_BE_CREATED (downstream migration item, AYLA-DEC-0027)
 channel capability matrix             — TO_BE_CREATED (execution/UX artifact, AYLA-DEC-0027)
 mobile UX source index                — TO_BE_CREATED (downstream migration item, AYLA-DEC-0027)
+Ayla Single-Provider Technical Pilot Execution Scope — CREATED / EDITORIAL_CLEANUP_COMPLETE / TARGETED_REVIEW_REQUIRED
+Ayla Multi-Provider Product Validation Execution Scope — CREATED / EDITORIAL_CLEANUP_COMPLETE / TARGETED_REVIEW_REQUIRED
 ```
 
 Артефакты, помеченные TO_BE_CREATED, не существуют в репозитории на момент
@@ -668,6 +670,20 @@ AYLA-DEC-0027; их создание — часть coordinated migration и exe
 > Этот журнал отражает историю изменений документа и не является
 > нормативной частью спецификации. Нормативным считается текущее состояние
 > разделов 1–15, а не записи ниже.
+
+### v0.3 (2026-07-31) — Execution scope artifacts added to migration matrix
+
+Выполнено в Two-Phase Pilot Scope Reconciliation Window по промпту
+`TWO_PHASE_PILOT_COMBINED_EDITORIAL_CLEANUP_PROMPT.md` (finding CD-P3-03).
+
+- **§14** — migration matrix дополнена двумя созданными downstream
+  execution artifacts: Ayla Single-Provider Technical Pilot Execution Scope
+  и Ayla Multi-Provider Product Validation Execution Scope — со статусами
+  CREATED / EDITORIAL_CLEANUP_COMPLETE / TARGETED_REVIEW_REQUIRED. Они не
+  объявляются canonical или finally approved; обязательность coordinated
+  downstream migration не изменена.
+- **Editorial only:** no scope change, no owner decision, no version bump,
+  no canonical status change.
 
 ### v0.3 (2026-07-31) — Mobile Channel Amendment (AYLA-DEC-0027)
 

@@ -190,7 +190,12 @@ AYLA-DEC-0018).
 
 ## 6. MVP Scope — What's In
 
-- Канал: **MAX-бот + MAX Mini App** (AYLA-DEC-0004).
+- Каналы (факт, AYLA-DEC-0027; [[Ayla MVP Scope and Release Contract]] §8):
+  **Mobile App** — primary product experience; **MAX Mini App** — required
+  embedded companion; **MAX Bot** — required conversational / notification /
+  routing companion; feature parity across channels — NOT_REQUIRED; shared
+  backend/state/consent/safety/analytics — REQUIRED. AYLA-DEC-0027 уточняет
+  AYLA-DEC-0004, не отменяет его: Telegram остаётся вне пилотного scope.
 - Монетизация: подписка 690₽/990₽ + 90₽ за завершённую запись, платит
   провайдер (AYLA-DEC-0001).
 - Онлайн-оплата клиентом — опционально, не обязательна для записи
@@ -466,6 +471,21 @@ Governance Exit — готова ли **документация/canon**. Это
 > Этот журнал отражает историю изменений документа и не является
 > нормативной частью спецификации. Нормативным считается текущее состояние
 > разделов 1–11, а не записи ниже.
+
+### v0.5 (2026-07-31) — Editorial propagation of AYLA-DEC-0027 channel model
+
+Выполнено в Two-Phase Pilot Scope Reconciliation Window по промпту
+`TWO_PHASE_PILOT_COMBINED_EDITORIAL_CLEANUP_PROMPT.md` после cross-document
+consistency review (verdict: EDITORIAL_CLEANUP_REQUIRED), finding CD-P3-01.
+
+- **§6** — обзорная строка канала приведена к owner-approved модели
+  AYLA-DEC-0027: Mobile App — primary product experience; MAX Mini App и
+  MAX Bot — required companion; feature parity — NOT_REQUIRED; shared
+  backend/state/consent/safety/analytics — REQUIRED; добавлена ссылка на
+  [[Ayla MVP Scope and Release Contract]] §8. AYLA-DEC-0027 уточняет
+  AYLA-DEC-0004, не отменяет его.
+- **Editorial only:** no scope change, no owner decision, no version bump,
+  no canonical status change; thesis claims не изменены.
 
 ### v0.5 (2026-07-30) — Structured revision for current product canon
 

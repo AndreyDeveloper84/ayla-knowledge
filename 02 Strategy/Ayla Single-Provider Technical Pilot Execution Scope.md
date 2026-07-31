@@ -331,7 +331,10 @@ internal cohort A0); в противном случае A1 не стартует
 
 - full weekly review;
 - full 28-day evidence;
-- Phase 2 persistent memory;
+- Phase 2 persistent memory.
+
+### OUT at document level
+
 - second provider;
 - ranking;
 - cold acquisition.
@@ -808,6 +811,19 @@ vs deep link, допустимые ручные операции, exit criteria,
 
 > Журнал отражает историю изменений и не является нормативной частью.
 > Нормативно — текущее состояние разделов 1–25.
+
+### v0.3 (2026-07-31) — Document-level OUT status normalized in A1
+
+Выполнено в Two-Phase Pilot Scope Reconciliation Window по промпту
+`TWO_PHASE_PILOT_COMBINED_EDITORIAL_CLEANUP_PROMPT.md` (finding
+SP-RICR-P3-01).
+
+- **§9** — `second provider`, `ranking`, `cold acquisition` убраны из
+  phase-level DEFERRED и вынесены в отдельный блок `### OUT at document
+  level`; согласовано с §3, §8 и §11. Phase capability progression не
+  изменён.
+- **Editorial only:** no scope change, no owner decision, no version bump,
+  no canonical status change.
 
 ### v0.3 (2026-07-31) — Targeted repair after Internal Consistency Review
 
