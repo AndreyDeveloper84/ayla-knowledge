@@ -256,6 +256,18 @@ AYLA-DEC-0014) и не является canonical activation. Новые обл�
 - сравнение состояний и видимый прогресс;
 - контроль данных, Twin и персонализации.
 
+**Канальное распределение (факт, AYLA-DEC-0027):** client-facing
+capabilities распределяются по owning channels: **Mobile App** —
+primary/full experience для Living Digital Twin, photo capture, прогресса,
+истории, контроля данных и longitudinal interaction; **MAX Mini App** —
+lightweight embedded experience для статуса цели, рекомендации, booking,
+быстрого check-in и продолжения пути; **MAX Bot** — диалог, уточнения,
+объяснения, напоминания, транзакционные уведомления, быстрые действия и
+маршрутизация. Полная feature parity между каналами не требуется;
+capability обязана быть доступна в назначенном owning channel (§8).
+Полная channel capability matrix принадлежит execution/UX-документам и
+здесь не фиксируется.
+
 **Wellness inputs — статусы:**
 
 | Input | Статус |
@@ -396,8 +408,26 @@ YooKassa. Этот контур **не означает активацию CAP-0
 
 ## 8. Channels and Deployment Boundary
 
-- **MAX-бот + MAX Mini App** — единственные обязательные каналы MVP
-  (AYLA-DEC-0004, Thesis §6);
+**Required MVP channel set (факт, AYLA-DEC-0027):**
+
+1. **Mobile App** — REQUIRED / primary product experience: полная визуальная
+   и longitudinal experience (Living Digital Twin, photo capture, прогресс,
+   история, контроль данных);
+2. **MAX Mini App** — REQUIRED / lightweight embedded companion;
+3. **MAX Bot** — REQUIRED / conversational, notification and routing
+   companion.
+
+Обязательные условия:
+
+- три канала — один продукт, а не три отдельных продукта; все три работают
+  поверх единого backend и domain model;
+- едины identity, consent, safety, recommendation state, memory boundary,
+  attribution и analytics;
+- **feature parity across channels — NOT_REQUIRED**; capability обязана
+  быть доступна в назначенном owning channel;
+- **shared product state — REQUIRED**; cross-channel continuity обязательна;
+- реальный pilot release требует доступности всех трёх required channels;
+  internal smoke test может использовать pre-release/internal distribution;
 - **Telegram** — вне пилотного scope (AYLA-DEC-0004, Thesis §7);
 - универсальная multi-channel спецификация не требуется для MVP.
 
@@ -416,7 +446,17 @@ YooKassa. Этот контур **не означает активацию CAP-0
   остаются вне MVP (AYLA-DEC-0015);
 - **LDT media pipeline** — downstream architecture dependency для Twin
   baseline и фотофиксации; техническая граница реализации определяется в
-  Architecture-документах и здесь не фиксируется (§15).
+  Architecture-документах и здесь не фиксируется (§15);
+- **Mobile application distribution infrastructure** — internal testing /
+  closed distribution / store publication path; конкретный mobile store не
+  фиксируется как единственный канал распространения (AYLA-DEC-0027);
+- **Deep links / universal links** — обязательны для channel routing, где
+  поддерживаются платформой;
+- **Push notifications** — mobile dependency для mobile-owned уведомлений;
+- **Cross-channel account linking** — обязательная зависимость единой
+  идентичности пользователя между Mobile App, MAX Mini App и MAX Bot;
+- **Shared API contract** — единый контракт для всех трёх required channels;
+  channel-specific backend rules не создаются.
 
 ## 10. Non-Functional Requirements
 
@@ -440,7 +480,13 @@ YooKassa. Этот контур **не означает активацию CAP-0
 - **Operations:** monitoring; alerts; support process; назначенный
   incident owner; возможность rollback; feature flags;
 - **Product:** primary journey (§4) работает end-to-end; fallback
-  существует; критических тупиков нет.
+  существует; критических тупиков нет;
+- **Channels (AYLA-DEC-0027):** cross-channel identity consistency;
+  cross-channel consent consistency; shared recommendation state;
+  отсутствие дублированной автономной business logic в клиентах; deep-link
+  fallback; channel-aware observability; mobile crash/error telemetry;
+  rollback и feature flags по каналам; secure local storage для mobile;
+  media permission handling.
 
 Числовые SLA и пороги производительности в этом документе не
 устанавливаются. Implementation details определяются в
@@ -469,7 +515,12 @@ Release evidence минимум:
 - continuity retained where consented — повторное обращение без повторного
   объяснения контекста (в пределах Phase 1/2 режима);
 - user control exercised — просмотр/исправление/удаление/отзыв;
-- safety blocks; tool failures; usefulness feedback.
+- safety blocks; tool failures; usefulness feedback;
+- channel continuity (AYLA-DEC-0027) — account linking completed;
+  cross-channel state preserved; consent state consistent;
+  recommendation/result continuity preserved; channel source captured;
+  deep-link/route outcome captured; mobile-owned LDT/photo/progress path
+  observable; bot/Mini App companion path observable.
 
 Диагностический минимум пилота (resolved intents, clarification rate,
 recommendation shown/acceptance rate, rejection reasons, unsafe block
@@ -491,6 +542,7 @@ Validation Gate §8.4.
 | Recognition quality bar | REQUIRES_REVALIDATION — точный бар определяется downstream (§15) |
 | Provider supply readiness | OPERATIONS_DEPENDENCY / NOT_DOCUMENT_BLOCKER (операционный трек пилота, AYLA-DEC-0003) |
 | User Journey / Intent Model predecessor alignment | REQUIRES_REVALIDATION после v0.3 — оба документа ссылаются на разделы v0.2 и проходят coordinated migration (§14); User Journey дополнительно ожидает LDT-alignment как Foundation document №5 |
+| Mobile channel readiness | ACTIVE / REQUIRED (AYLA-DEC-0027) — internal/closed mobile distribution validated; account linking; deep links; push path where required; crash monitoring; privacy/safety review для camera/media/local storage; store review/publication timing отслеживается как operational dependency и не является абсолютным blocker для internal testing |
 
 Resolved-элементы не сохраняются в статусе blockers. Governance Exit фазы
 MVP (Thesis §8.4): решение о переходе фазы принимает Product Owner и не
@@ -563,7 +615,19 @@ recommendation UX addendum            — ссылки на §4.1 п. 2, 9, 11 v
 SCR-CUST-004                          — ссылка на §4.1 п. 9 v0.2
 intent-registry.yaml                  — comment-ссылка на §4 v0.2 (non-normative)
 Ayla.md MOC                           — статусная таблица (v0.2)
+mobile navigation specification       — TO_BE_CREATED (downstream migration item, AYLA-DEC-0027)
+mobile deep-link contract             — TO_BE_CREATED (downstream migration item, AYLA-DEC-0027)
+mobile authentication/account-linking flow — TO_BE_CREATED (downstream migration item, AYLA-DEC-0027)
+push notification contract            — TO_BE_CREATED (downstream migration item, AYLA-DEC-0027)
+mobile privacy/media consent mapping  — TO_BE_CREATED (downstream migration item, AYLA-DEC-0027)
+channel capability matrix             — TO_BE_CREATED (execution/UX artifact, AYLA-DEC-0027)
+mobile UX source index                — TO_BE_CREATED (downstream migration item, AYLA-DEC-0027)
 ```
+
+Артефакты, помеченные TO_BE_CREATED, не существуют в репозитории на момент
+этой ревизии и зарегистрированы как downstream migration items по
+AYLA-DEC-0027; их создание — часть coordinated migration и execution/UX
+работ, не этого документа.
 
 ## 15. Open Questions
 
@@ -584,12 +648,70 @@ Ayla.md MOC                           — статусная таблица (v0.
 - **Post-MVP wellness trackers (KEEP_NON_BLOCKING).** Возврат dedicated
   food/water/sleep/activity трекеров — отдельное scope-решение после
   пилота.
+- **Exact mobile distribution route for pilot (KEEP_NON_BLOCKING).**
+  Маршрут распространения (internal testing / closed distribution / store
+  publication) определяется операционно; store как единственный канал не
+  фиксируется (§9).
+- **Exact store publication timing (KEEP_NON_BLOCKING).** Release
+  dependency, отслеживается как operational dependency (§12); не blocker
+  для internal testing.
+- **Exact feature ownership details by channel (KEEP_NON_BLOCKING).**
+  Детальная channel capability matrix принадлежит execution/UX-документам
+  (§6.1, §14); implementation-level вопрос, нового owner decision не
+  требует.
+- **Exact deep-link fallback behavior (KEEP_NON_BLOCKING).**
+  Implementation-level поведение определяется в Architecture/UX-документах;
+  требование fallback зафиксировано как NFR (§10).
 
 ## Change Log
 
 > Этот журнал отражает историю изменений документа и не является
 > нормативной частью спецификации. Нормативным считается текущее состояние
 > разделов 1–15, а не записи ниже.
+
+### v0.3 (2026-07-31) — Mobile Channel Amendment (AYLA-DEC-0027)
+
+Targeted material revision по owner ruling AYLA-DEC-0027 (OD-CH-1 —
+Required MVP Channel Set, OWNER_DECISION_REGISTER) в Two-Phase Pilot Scope
+Reconciliation Window. Это targeted owner-directed correction до
+канонизации, а не новый release scope generation; версия сохранена 0.3.
+
+- **Mobile App добавлен как REQUIRED / primary product experience**;
+  **MAX Mini App и MAX Bot сохранены как required companion channels**
+  (§8); feature parity across channels — NOT_REQUIRED; shared
+  backend/state/consent/safety/analytics — REQUIRED; cross-channel
+  continuity обязательна.
+- **§6.1** — добавлено канальное распределение client-facing capabilities
+  по owning channels (без полной channel capability matrix — она
+  принадлежит execution/UX-документам).
+- **§8** — устаревшая норма «MAX-бот + MAX Mini App — единственные
+  обязательные каналы MVP» заменена на required three-channel set;
+  Telegram остаётся вне scope (AYLA-DEC-0004 уточнён, не отменён).
+- **§9** — добавлены mobile distribution infrastructure, deep/universal
+  links, push notifications, cross-channel account linking, shared API
+  contract.
+- **§10** — добавлены channel-specific NFR (identity/consent consistency,
+  shared recommendation state, deep-link fallback, channel-aware
+  observability, mobile telemetry, per-channel rollback/feature flags,
+  secure local storage, media permissions).
+- **§11** — добавлено channel continuity release evidence (без числовых
+  порогов).
+- **§12** — добавлен gate Mobile channel readiness (ACTIVE / REQUIRED);
+  store approval не является абсолютным blocker для internal testing.
+- **§14** — migration matrix расширена mobile/channel downstream
+  artifacts; все они зарегистрированы как TO_BE_CREATED (не существуют на
+  момент ревизии, без выдуманных owners).
+- **§15** — добавлены channel open questions (distribution route, store
+  timing, feature ownership details, deep-link fallback) — все
+  KEEP_NON_BLOCKING, implementation-level.
+- **Не изменены:** составная продуктовая гипотеза, product boundary,
+  primary journey, provider monetary boundary, wellness statuses, LDT
+  boundary, booking downstream, economic neutrality, admission test,
+  география и provider-профиль пилота, metadata (version/status/owner/
+  created/updated).
+- Документ остаётся **draft / proposed / candidate**; Product Owner Final
+  Review остаётся deferred до execution-scope revisions и обязательных
+  reviews (§12).
 
 ### v0.3 (2026-07-31) — Structured revision for current product canon
 
