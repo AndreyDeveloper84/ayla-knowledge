@@ -1,39 +1,32 @@
 ---
 node_id: ayla.strategy.strategic-moat
 title: Ayla Strategic Moat Specification
-type: strategy
+type: specification
 status: review
-activation_status: pending-approval
+activation_status: pending-infrastructure
 version: "0.1"
 owner: Founder / Product Strategy
 priority: P0
 knowledge_area:
   - strategy
 domain:
-  - user-model
+  - user-context
   - intent
   - recommendation
-  - provider-network
-concerns:
-  - competitive-advantage
-  - personalization
-  - trust
-  - data-governance
-  - network-effects
-  - ai-architecture
+  - provider
 system_owner:
   - shared
 source_repository: ayla-knowledge
 created: 2026-07-21
 updated: 2026-07-21
-source_kind: canonical-candidate
+source_kind: canonical
 classification: internal
 data_sensitivity: none
 data_categories:
   - none
 security_sensitivity: medium
 ai_indexing: allowed
-export_policy: summary-only
+export_policy: sanitized
 tags:
   - ayla
   - ayla/strategy
