@@ -7,7 +7,7 @@ aliases:
 type: specification
 status: draft
 decision_status: proposed
-version: "0.7"
+version: "0.8"
 canonical_status: draft
 owner: Chief Product Architect
 priority: P0
@@ -27,7 +27,7 @@ system_owner:
   - ayla-knowledge
 source_repository: ayla-knowledge
 created: 2026-07-23
-updated: 2026-07-23
+updated: 2026-07-24
 source_kind: canonical
 source_kind_note: "source_kind=canonical identifies the document as originating in the ayla-knowledge canonical repository; maturity/approval is expressed by status, decision_status, and canonical_status."
 classification: internal
@@ -60,12 +60,12 @@ review_cycle: event-driven
 |---|---|
 | Document status | Draft |
 | Decision status | Proposed |
-| Version | 0.7 (2026-07-23) |
+| Version | 0.8 (2026-07-24) |
 | Canonical status | draft |
 | Review status | pending_technical_re_review |
 
 Этот документ — извлечённый перечень code deltas для W2/W3, необходимых для
-реализации AMD-020 v0.7. Он не включает Verification Evidence (создаётся W6
+реализации AMD-020 v0.8. Он не включает Verification Evidence (создаётся W6
 после реализации) и не меняет код самостоятельно.
 
 ---
@@ -514,4 +514,4 @@ secondary deltas.
 
 ---
 
-**Конец документа — AMD-020 Implementation Amendment v0.7 (Draft, pending technical re-review)**
+**Конец документа — AMD-020 Implementation Amendment v0.8 (Draft, pending technical re-review)**

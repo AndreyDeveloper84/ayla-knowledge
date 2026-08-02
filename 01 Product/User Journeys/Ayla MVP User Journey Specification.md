@@ -4,7 +4,7 @@ title: Ayla MVP User Journey Specification
 type: user-journey-specification
 status: approved
 decision_status: accepted
-version: "1.0"
+version: "1.1"
 owner: Product Owner
 priority: P0
 knowledge_area:
@@ -38,11 +38,18 @@ related:
   - "[[Consent Scope Registry]]"
   - "[[Ayla Domain Capability Registry]]"
   - "[[Killer PRD]]"
+  - "[[Ayla Domain Event Registry]]"
+  - "[[Ayla MVP Recommendation Contract]]"
 ---
 
 # Ayla MVP User Journey Specification
 
-> **Статус:** Approved v1.0 (2026-07-29, Product Owner). Документ принят
+> **Статус:** Approved v1.1 (2026-07-29, Product Owner). v1.1 —
+> conforming amendment: миграция имён событий `recommendation.*` и
+> `qualified_action.attributed` по [[Ayla Domain Event Registry]] v0.3
+> (§6.5/§6.6, registered) и [[Ayla MVP Recommendation Contract]] v0.3,
+> закрытие Open Question №11, обновление Open Question №8; бизнес-логика
+> этапов, scope и негативные сценарии не изменены. Документ принят
 > после устранения обязательного замечания F1 (синхронизация этапов 4–5 с
 > утверждённой [[Ayla Intent Model Specification]]) и внесения ремарки F2;
 > положения имеют нормативную силу в границах MVP. Документ остаётся
@@ -235,18 +242,20 @@ Error and Reason Code Registry (Roadmap §6.5, planned).
 - **audit event** — consent, authorization и policy checks; канонический
   перечень — [[Consent Scope Registry]] §9.1.
 
-Именование событий (v0.3-final): конвенция и правила установлены решением
+Именование событий (v1.1): конвенция и правила установлены решением
 AYLA-DEC-0025 (lowercase dot-separated past-tense; две оси классификации
 `semantic_class` × `publication_scope`; один authoritative producer);
-канонический реестр создан (`05 Architecture/Ayla Domain Event
-Registry.md`, v0.2). **Миграция выполнена только для active canonical
-event names** (owner ruling 2026-07-28): `consent.*`,
-`intent.resolution_produced`, `appointment.*` (этапы 3, 4, 11, 12, 14);
-legacy-формы указаны справочно. Имена pending-семейств
-(`recommendation.*`, `qualified_action.*`, `memory.*`) **не мигрированы**
-и сохранены по источникам (Roadmap §6.4, CSR §9.1) до утверждения
-соответствующих записей реестра; отсутствующие события не выдумываются
-(registry gaps — Open Question №8).
+канонический реестр — `05 Architecture/Ayla Domain Event Registry.md`,
+актуальная редакция v0.3. **Миграция выполнена для всех зарегистрированных
+canonical event names:** `consent.*`, `intent.resolution_produced`,
+`appointment.*` (этапы 3, 4, 11, 12, 14), `recommendation.*` и
+`qualified_action.attributed` (этапы 7, 9, 12 — Domain Event Registry
+v0.3 §6.5/§6.6, `registered`; семантика —
+[[Ayla MVP Recommendation Contract]] v0.3); legacy-формы указаны
+справочно. Имена `memory.*` **не
+мигрированы** (candidate mappings до подтверждения записей реестра) и
+сохранены по источникам (Roadmap §6.4, CSR §9.1); отсутствующие события
+не выдумываются (registry gaps — Open Question №8).
 
 ### Этап 1. Entry
 
@@ -291,7 +300,7 @@ legacy-формы указаны справочно. Имена pending-семе
 | ошибка | Отсутствие, отказ или отзыв consent → **fail-closed**: операция не выполняется (факт — CSR §2) |
 | fallback | Session-only обработка без сохранения (факт — CSR §5.7: «без него — данные не сохраняются, только session-only обработка»); сценарий продолжается |
 | audit event | `consent_granted` / `consent_denied` / `consent_revoked` (факт — CSR §9.1; audit — проекция/consumer доменных событий consent, не конкурирующая форма канона — AYLA-DEC-0025) |
-| domain event | `consent.granted` / `consent.revoked` (канон — AYLA-DEC-0025 / Domain Event Registry v0.2 §6.2; legacy: `ConsentGranted`, `ConsentRevoked`) |
+| domain event | `consent.granted` / `consent.revoked` (канон — AYLA-DEC-0025 / Domain Event Registry v0.3 §6.2; legacy: `ConsentGranted`, `ConsentRevoked`) |
 | owning capability | CAP-002 — Consent Management |
 
 В Phase 1 этот этап не показывает диалог согласия для понимания текущего
@@ -310,7 +319,7 @@ memory в Phase 1 технически отключена (факт — CSR §10
 | отображаемое состояние | Формулировка понимания с уровнем уверенности через язык (факт — полная UJS, Stage 3 Confidence) |
 | ошибка | `INTENT_UNRESOLVED` — intent не распознан или confidence ниже порога (соответствует `intent_type = UNKNOWN` со `status = unresolved` / `needs_clarification`; `UNKNOWN` — resolver sentinel, execution по нему запрещён — факт, Intent Model § Intent Types, § Output Contract) |
 | fallback | Переход к этапу 5 (Clarification); при повторной неудаче — см. Negative Scenarios №1 |
-| domain event | `intent.resolution_produced` (канон — AYLA-DEC-0025 / Domain Event Registry v0.2 §6.1; результат — в payload `resolution_status`; legacy: `IntentResolved`) |
+| domain event | `intent.resolution_produced` (канон — AYLA-DEC-0025 / Domain Event Registry v0.3 §6.1; результат — в payload `resolution_status`; legacy: `IntentResolved`) |
 | owning capability | CAP-003 — Intent Understanding |
 
 Минимальный набор intent types (факт — [[Ayla Intent Model Specification]]
@@ -383,12 +392,13 @@ pipeline inference → confirmation → persist — факт, AYLA-DEC-0023 п. 
 | отображаемое состояние | recommendation ready (одна карточка primary); no recommendation — если кандидатов не осталось |
 | ошибка | `NO_CANDIDATES`; `SAFETY_BLOCKED`; `ranking_economic_neutrality_alert` (внутренний policy/observability alert, не user-facing ошибка: блокирует выдачу до разбора — факт, Killer PRD §5.2/§5.3) |
 | fallback | При `NO_CANDIDATES` — честное состояние no recommendation + обычный поиск/запись без персонализированной primary (факт — Killer PRD §5.3 Fallback); при safety-блокировке — S8 Boundary Handling (см. Negative Scenarios №8) |
-| domain event | `RecommendationShown` (факт — Roadmap §6.4; семейство `recommendation.*` намеренно не зарегистрировано — семантика pending, AYLA-DEC-0025 п. 8) |
-| analytics event | `recommendation_created` (informative — CSR §9.2, владелец схемы — Killer PRD; candidate до Domain Event Registry) |
+| domain event | `recommendation.created` (канон — AYLA-DEC-0025 / Domain Event Registry v0.3 §6.5, `registered`; публикуется после persistence immutable decision record — [[Ayla MVP Recommendation Contract]] v0.3 §15; legacy: `RecommendationCreated`) и `recommendation.presented` (канон — там же; доставка каналу MAX, owner Channel Delivery / Interaction, `presented ≠ viewed`; legacy: `RecommendationShown`) |
+| analytics event | `recommendation_created` (informative — CSR §9.2, владелец схемы — Killer PRD) |
 | owning capability | CAP-004 — Recommendation Formation |
 
-Персистентность рекомендации и expiry/invalidation определяются MVP
-Recommendation Contract (planned, Roadmap §3.2).
+Персистентность рекомендации, lifecycle (projection: active / superseded /
+expired / invalidated) и expiry/invalidation определяются
+[[Ayla MVP Recommendation Contract]] v0.3 (§3, §14, §22).
 
 ### Этап 8. Explanation
 
@@ -415,7 +425,7 @@ Recommendation Contract (planned, Roadmap §3.2).
 | отображаемое состояние | recommendation ready + CTA подтверждения; после отказа — нейтральное acknowledgement |
 | ошибка | Пользователь отклоняет или игнорирует предложение |
 | fallback | Отказ — валидный исход: после окончательного (повторного или жёсткого) отказа Ayla не предлагает новых вариантов и не инициирует повторное (факт — полная UJS, User Communication); см. Negative Scenarios №9 |
-| domain event | `RecommendationAccepted` (факт — Roadmap §6.4; семейство `recommendation.*` намеренно не зарегистрировано — семантика pending, AYLA-DEC-0025 п. 8) |
+| domain event | `recommendation.accepted` при явном выборе варианта (канон — AYLA-DEC-0025 / Domain Event Registry v0.3 §6.5, `registered`; acceptance ≠ booking completion, `acceptance_action` обязателен — [[Ayla MVP Recommendation Contract]] v0.3 §17; legacy: `RecommendationAccepted`) / `recommendation.declined` при явном отказе (канон — там же; бездействие ≠ decline) |
 | analytics event | `recommendation_dismissed` (informative — CSR §9.2) |
 | owning capability | CAP-004 — Recommendation Formation (acceptance как часть lifecycle рекомендации; доставка UX — CAP-016) |
 
@@ -444,7 +454,7 @@ Recommendation Contract (planned, Roadmap §3.2).
 | отображаемое состояние | booking pending (confirmation in progress; hold-индикатор из этапа 10 остаётся до результата) |
 | ошибка | `APPOINTMENT_CONFLICT`, `TOOL_TIMEOUT`, `APPOINTMENT_NOT_CONFIRMED`, `SLOT_TAKEN` (факт — AYLA-DEC-0021 п. 3: нарушение занятости при confirm), hold expired (истёкший hold не подтверждается — факт, там же) |
 | fallback | После expiry hold — отключить подтверждение и предложить повторную проверку доступности (факт — AYLA-DEC-0021); при нарушении занятости — понятный пользователю `SLOT_TAKEN` без внутренних терминов; показать booking failed с честным описанием и recovery path: повторить, выбрать другой слот, записаться позже (факт — полная UJS, Error Recovery 3; Success Criteria — «пользователь получил честное описание ошибки и Recovery path»); см. Negative Scenarios №6–7 |
-| domain event | `appointment.created` (канон — AYLA-DEC-0025 / Domain Event Registry v0.2 §6.3; legacy: `AppointmentCreated`, `booking.*`) |
+| domain event | `appointment.created` (канон — AYLA-DEC-0025 / Domain Event Registry v0.3 §6.3; legacy: `AppointmentCreated`, `booking.*`) |
 | owning capability | CAP-011 — Appointment Management |
 
 ### Этап 12. Booking confirmation
@@ -458,8 +468,8 @@ Recommendation Contract (planned, Roadmap §3.2).
 | отображаемое состояние | booking confirmed |
 | ошибка | Провайдер не подтверждает / отклоняет запись → `APPOINTMENT_NOT_CONFIRMED` |
 | fallback | Не показывать подтверждение неподтверждённой записи (факт — полная UJS, Success Criteria: «Ayla подтвердила только фактически достигнутое состояние»); предложить альтернативный слот/мастера **(proposal)**; см. Negative Scenarios №6 |
-| domain event | `appointment.confirmed` (канон — AYLA-DEC-0025 / Domain Event Registry v0.2 §6.3; legacy: `AppointmentConfirmed`); при соблюдении условий — `QualifiedActionAttributed` с `recommendation_id` (факт — Roadmap §6.4; семантика `qualified_action.attributed` pending, AYLA-DEC-0025 п. 8; правила атрибуции — Killer PRD §6.2) |
-| analytics event | `booking_confirmation_shown` **(proposal — legacy-маркер; канонического analytics event в Domain Event Registry v0.2 нет, registry gap зарегистрирован в Open Question №8)** |
+| domain event | `appointment.confirmed` (канон — AYLA-DEC-0025 / Domain Event Registry v0.3 §6.3; legacy: `AppointmentConfirmed`); при соблюдении условий — `qualified_action.attributed` с `recommendation_id` (канон — Domain Event Registry v0.3 §6.6, `registered`; owner Attribution / Measurement, правила атрибуции — Killer PRD §6.2 и [[Ayla MVP Recommendation Contract]] v0.3 §18; legacy: `QualifiedActionAttributed`) |
+| analytics event | `booking_confirmation_shown` **(proposal — legacy-маркер; канонического analytics event в Domain Event Registry v0.3 нет, registry gap зарегистрирован в Open Question №8)** |
 | owning capability | CAP-011 — Appointment Management |
 
 Подтверждённая запись в пределах attribution window может составить
@@ -496,7 +506,7 @@ Recommendation Contract (planned, Roadmap §3.2).
 | отображаемое состояние | Сообщение с вариантами оценки |
 | ошибка | Пользователь не отвечает — молчание не интерпретируется как согласие или отрицание (факт — полная UJS, Learning Signals) |
 | fallback | Не повторять prompt навязчиво; feedback остаётся опциональным **(proposal)** |
-| domain event | `appointment.completed` (канон — AYLA-DEC-0025 / Domain Event Registry v0.2 §6.3, `semantic_status: incomplete` до Appointment Contract) — входной доменный триггер этапа, не событие самого feedback prompt; `ContextFactCorrected` при коррекции контекста (факт — Roadmap §6.4; candidate mapping `memory.entry_superseded` по AYLA-DEC-0024 п. 4 — не мигрировано до подтверждения записи реестра) |
+| domain event | `appointment.completed` (канон — AYLA-DEC-0025 / Domain Event Registry v0.3 §6.3, `semantic_status: incomplete` до Appointment Contract) — входной доменный триггер этапа, не событие самого feedback prompt; `ContextFactCorrected` при коррекции контекста (факт — Roadmap §6.4; candidate mapping `memory.entry_superseded` по AYLA-DEC-0024 п. 4 — не мигрировано до подтверждения записи реестра) |
 | analytics event | `feedback_received` **(proposal)** |
 | owning capability | CAP-006 — Outcome Capture (в MVP — только простой feedback prompt; advanced outcome learning deferred — факт, Scope Contract §5) |
 
@@ -722,7 +732,7 @@ Specification определяет взаимодействие capabilities, н
 | Runtime orchestration | CAP-018 AI Orchestration and Tool Execution | inherited |
 | Persistent Context Fact storage | User Context Domain / backend (SoR — Core Domain Model) | requires contract confirmation |
 | Memory audit | CAP-026 Audit and Observability | inherited |
-| Recommendation-time use | CAP-004 + CAP-001 | requires Recommendation Contract |
+| Recommendation-time use | CAP-004 + CAP-001 | [[Ayla MVP Recommendation Contract]] v0.3 (§6) |
 | Outcome interpretation | CAP-006 + CAP-001 | requires CAP-006 depth decision (Open Question №6) |
 
 Не каждый feedback становится памятью **(proposal)**: оценка специалиста,
@@ -915,9 +925,9 @@ hard constraints и exclusions, формирование candidate set, outcome-
 relevance, preference weighting, novelty/diversity guard, выбор explanation
 и уровня уверенности, решение «предложить действие или продолжить
 уточнение». Канонический pipeline Killer PRD §5.1 этим не отменяется —
-порядок gates сохраняется; уточнение контракта «как тип факта влияет на
-решение» — предмет MVP Recommendation Contract (planned, Roadmap §3.2) и
-upstream Open Question №11.
+порядок gates сохраняется; контракт «как тип факта влияет на решение»
+определён в [[Ayla MVP Recommendation Contract]] v0.3 (§6, §7) —
+upstream Open Question №11 закрыт (v1.1).
 
 ## Cross-channel Experience
 
@@ -1105,8 +1115,8 @@ CSR §2, полная UJS Memory Proposal; остальное — **proposal**, 
    «альтернативный слот/мастер» помечено (proposal); требуется подтверждение
    продуктового решения.
 4. **Fallback этапа 8.** Правило «без объяснения рекомендация не
-   показывается» — (proposal), требует сверки с MVP Recommendation Contract
-   (planned, Roadmap §3.2).
+   показывается» — (proposal), требует сверки с Explanation Contract
+   [[Ayla MVP Recommendation Contract]] v0.3 (§13).
 5. **Ветки переноса/отмены записи.** Включать ли их stage specifications в
    следующую версию MVP-среза — открыто (Non-goals п. 5).
 6. **Статус CAP-006 в MVP.** Stage 14 отнесён к Outcome Capture, но в
@@ -1139,16 +1149,16 @@ CSR §2, полная UJS Memory Proposal; остальное — **proposal**, 
      только intent-level readiness; execution readiness (authorization,
      user confirmation) вычисляется orchestration/capability layer — в
      Journey это этапы 6+; пересечения ответственности нет.
-8. **(ЧАСТИЧНО РЕШЁН — v0.3-final).** Domain Event Registry v0.1 создан
+8. **(ЧАСТИЧНО РЕШЁН — v1.1).** Domain Event Registry создан
    (`05 Architecture/Ayla Domain Event Registry.md`, актуальная редакция —
-   v0.2). Миграция выполняется для active canonical event names
-   (`consent.*`, `intent.resolution_produced`, `appointment.*` — применена
-   в этапах 3, 4, 11, 12, 14); pending и отсутствующие события остаются
-   открытыми до утверждения соответствующих записей реестра:
-   регистрация `recommendation.*` (семантика — MVP Recommendation
-   Contract v0.1, OQ-R), `qualified_action.attributed`, имена `memory.*`
-   (candidate mappings, включая `ContextFactCorrected →
-   memory.entry_superseded`), финальные payload и owner для этапа 14.
+   v0.3). Миграция выполнена для всех зарегистрированных canonical event
+   names: `consent.*`, `intent.resolution_produced`, `appointment.*`
+   (этапы 3, 4, 11, 12, 14), `recommendation.*` и
+   `qualified_action.attributed` (этапы 7, 9, 12 — Domain Event Registry
+   v0.3 §6.5/§6.6, `registered`; OQ-E1 реестра закрыт). Открытыми
+   остаются: имена `memory.*` (candidate mappings, включая
+   `ContextFactCorrected → memory.entry_superseded`), финальные payload
+   и owner для этапа 14 (OQ-E3, до Appointment Contract).
    **Registry gap:** канонический analytics event для
    `booking_confirmation_shown` (этап 12) в реестре отсутствует —
    событие остаётся legacy-маркером до регистрации.
@@ -1182,17 +1192,25 @@ CSR §2, полная UJS Memory Proposal; остальное — **proposal**, 
     confirmation, revocation) — по AYLA-DEC-0024 п. 7. Приведение плоского
     списка Roadmap §3.4 / Scope Contract §4.1 к категориальной форме —
     через Change Control approved-источников.
-11. **(upstream, v0.2 — OPEN). Роль памяти в recommendation pipeline.**
-    Канонический pipeline (Killer PRD §5.1) содержит preference boost как
-    один из этапов; Memory influence model (proposal) предполагает более
-    широкую роль типов фактов: constraint, exclusion, candidate-generation
-    input, ranking weight, outcome modifier, explanation evidence,
-    clarification trigger, novelty guard. Memory lifecycle и storage
-    semantics определены AYLA-DEC-0024 (v0.3); открытым остаётся именно
-    то, как retrieved memory влияет на candidate generation, ranking,
-    explanation, alternatives и final recommendation, — предмет MVP
-    Recommendation Contract (planned, Roadmap §3.2); изменять
-    канонический порядок Killer PRD не обязательно (v0.2.1).
+11. **(ЗАКРЫТ — v1.1, [[Ayla MVP Recommendation Contract]] v0.3). Роль
+    памяти в recommendation pipeline.** Канонический pipeline (Killer PRD
+    §5.1) содержит preference boost как один из этапов; Memory influence
+    model (proposal) предполагает более широкую роль типов фактов:
+    constraint, exclusion, candidate-generation input, ranking weight,
+    outcome modifier, explanation evidence, clarification trigger,
+    novelty guard. Memory lifecycle и storage semantics определены
+    AYLA-DEC-0024 (v0.3). Нормативная модель влияния retrieved memory на
+    candidate generation, ranking, explanation, alternatives и final
+    recommendation определена Recommendation Contract v0.3 (§6, §7):
+    consent/safety задают admissible set для всей обработки; внутри него
+    действует приоритет источников (current explicit request → session
+    context → confirmed persistent memory → historical inferred signals —
+    последние не участвуют в ranking как факт до Memory Learning Loop);
+    memory используется через immutable `memory_snapshot_ref`
+    (`memory_version`, `value_digest`); заднее число переписывания
+    recommendation запрещено. Канонический порядок gates Killer PRD §5.1
+    подтверждён без изменений (safety предшествует eligibility; ranking =
+    relevance + preference).
 12. **(ЗАКРЫТ — resolved by AYLA-DEC-0023/0024, accepted 2026-07-28).
     «Согласие на персонализацию» в whitelist.** Нормативный вывод: consent
     state — это authorization metadata, а не Context Fact и не значение
@@ -1221,6 +1239,34 @@ CSR §2, полная UJS Memory Proposal; остальное — **proposal**, 
       используется только во втором значении (deferral-ветка).
 
 ## Change Log
+
+### v1.1 (2026-07-29) — Conforming amendment: регистрация recommendation.* / qualified_action.attributed, закрытие OQ №11
+
+- **Миграция имён событий завершена для зарегистрированных семейств**
+  ([[Ayla Domain Event Registry]] v0.3, §6.5/§6.6, `registered`;
+  семантика — [[Ayla MVP Recommendation Contract]] v0.3, architecture
+  review APPROVED): этап 7 — `recommendation.created` +
+  `recommendation.presented` (legacy `RecommendationShown`); этап 9 —
+  `recommendation.accepted` / `recommendation.declined` (legacy
+  `RecommendationAccepted`); этап 12 — `qualified_action.attributed`
+  (legacy `QualifiedActionAttributed`). Ссылки на реестр обновлены до
+  v0.3 во всех этапах. `memory.*` остаются немигрированными (candidate
+  mappings); отсутствующие события не выдуманы.
+- **Open Question №11 закрыт:** нормативная модель влияния memory на
+  candidate generation / ranking / explanation / alternatives определена
+  Recommendation Contract v0.3 (§6, §7): consent/safety — admissible
+  set; приоритет источников внутри него; inferred signals не участвуют в
+  ranking как факт до Memory Learning Loop; immutable
+  `memory_snapshot_ref`; канонический порядок gates Killer PRD §5.1
+  подтверждён без изменений.
+- **Open Question №8 обновлён (частично решён):** OQ-E1 реестра закрыт;
+  открыты — candidate mappings `memory.*`, финальные payload/owner
+  этапа 14 (OQ-E3), registry gap `booking_confirmation_shown`.
+- Ссылки «MVP Recommendation Contract (planned)» заменены на
+  [[Ayla MVP Recommendation Contract]] v0.3 (этап 7, Memory Interaction,
+  Recommendation and Proactivity Gates, OQ №4).
+- Conforming amendment: бизнес-логика этапов, scope, негативные
+  сценарии и metrics не изменены. Статус не изменён: approved/accepted.
 
 ### v1.0 (2026-07-29) — Approval: синхронизация с Intent Model (F1), ремарка о лимитах clarification (F2)
 

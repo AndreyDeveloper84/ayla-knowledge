@@ -3,7 +3,7 @@ node_id: ayla.governance.consent-scope-registry
 title: Consent Scope Registry
 type: specification
 status: approved
-version: "1.0"
+version: "1.2"
 owner: User Context Domain Owner / Privacy Owner
 priority: P0
 knowledge_area:
@@ -18,7 +18,7 @@ concerns:
   - governance
   - audit
 created: 2026-07-27
-updated: 2026-07-27
+updated: 2026-07-29
 source_kind: canonical
 source_repository: ayla-knowledge
 classification: internal
@@ -802,8 +802,8 @@ expired  → granted
 **Явное разграничение mutable/immutable (устраняет двусмысленность):**
 consent record — это **текущий mutable state**: переходы `granted →
 revoked` и `granted → expired` **изменяют статус той же записи**, не
-создают новую. Immutable — это audit trail (события `consent_granted`,
-`consent_revoked`, `consent_expired` и т.д., §9) — каждое изменение
+создают новую. Immutable — это audit trail (события `consent.granted`,
+`consent.revoked`, `consent.expired` и т.д., §9) — каждое изменение
 статуса порождает неизменяемое событие, но сама запись при этом
 обновляется на месте.
 
@@ -838,6 +838,14 @@ proof:
   notice_version: string          # версия текста согласия, которую видел пользователь
   source_message_id: string | null  # id сообщения в диалоге, если согласие получено через чат
 ```
+
+**`needs_reconfirmation` — не статус Consent (owner ruling P1-2).**
+`needs_reconfirmation` не является статусом Consent наряду с
+`granted`/`denied`/`revoked`/`expired` и не добавляется в lifecycle. Это
+результат consent resolution/remediation при Subject merge:
+`consent_resolution = needs_reconfirmation`. Merge запрещён до
+реализации consent resolver (AYLA-DEC-0016); вопрос закрывается до
+активации Subject merge.
 
 **Invariant уникальности.** Для комбинации `subject_id` +
 `tenant_id` + `scope_id` может существовать не более одного **effective**
@@ -902,7 +910,7 @@ Privacy Owner.
 consumer): существующий consent автоматически переходит в `expired`;
 запрос на повторное согласие при следующем взаимодействии; до повторного
 согласия данные не используются (fail-closed); audit events
-`scope_version_major_updated`, `consent_expired`.
+`scope_version_major_updated`, `consent.expired`.
 
 **Переходный период для MAJOR:** повторное согласие запрашивается при
 следующем релевантном взаимодействии с пользователем — без фиксированного
@@ -946,14 +954,14 @@ booking history из её source of truth.
 
 ## 9. Audit events
 
-### 9.1 Authorization and consent events — канонические в этом документе
+### 9.1 Authorization and consent events — перечень канонический в этом документе; именование — по [[Ayla Domain Event Registry]]
 
 | Event | Когда создаётся |
 |---|---|
-| `consent_granted` | Пользователь предоставил согласие |
-| `consent_denied` | Пользователь отказал |
-| `consent_revoked` | Пользователь отозвал согласие |
-| `consent_expired` | Согласие истекло |
+| `consent.granted` | Пользователь предоставил согласие |
+| `consent.denied` | Пользователь отказал |
+| `consent.revoked` | Пользователь отозвал согласие |
+| `consent.expired` | Согласие истекло |
 | `authorization_scope_checked` | Выполнена runtime-проверка authorization scope (любой scope, независимо от authorization basis) |
 | `consent_record_checked` | Дополнительно к `authorization_scope_checked` — когда scope имеет `authorization_basis: explicit_consent` и проверяется наличие/статус consent record |
 | `context_read_allowed` | Чтение разрешено |
@@ -969,6 +977,24 @@ booking history из её source of truth.
 
 Это полный канонический список для authorization/consent-домена этого
 Registry — не выборка и не минимальный подмножество.
+
+**Именование событий (AYLA-DEC-0025, owner ruling P1-1):**
+
+- Канонические имена событий принадлежат [[Ayla Domain Event Registry]]
+  (AYLA-DEC-0025): `consent.granted`, `consent.denied`,
+  `consent.revoked`, `consent.expired`.
+- snake_case-формы (`consent_granted`, `consent_denied`,
+  `consent_revoked`, `consent_expired`) — legacy aliases либо внутренние
+  audit codes; они **не являются вторым каноном** событий.
+- Новые producers и consumers используют только `consent.*`.
+- Временный compatibility mapping snake_case ↔ `consent.*` допустим на
+  период миграции и не создаёт второго полноценного события.
+- Envelope, payload schema/version и authoritative producer определяются
+  Domain Event Registry; CSR не создаёт собственную event naming
+  convention.
+- CSR нормативно владеет scope, purpose, policy bindings и lifecycle
+  Consent: статусы `granted`/`denied`/`revoked`/`expired` как состояния
+  consent record остаются зоной CSR и не путаются с именами событий.
 
 ### 9.2 Product and analytics events — informative, не владение
 
@@ -1000,7 +1026,7 @@ truth для Consent Records, отдельно от User Context Domain. Пок�
 бы решение, которое ещё не принято.
 
 **Retention period — design candidates, не финальные решения:**
-- Consent lifecycle events (`consent_granted`, `consent_revoked`) —
+- Consent lifecycle events (`consent.granted`, `consent.revoked`) —
   предлагается длительный период для compliance с 152-ФЗ; точный срок
   требует подтверждения Legal, не фиксируется здесь как факт (тот же
   паттерн, что ADR-0012 OD-5/OD-6 — числа остаются design candidate).
@@ -1064,6 +1090,36 @@ no persistent inferred signals
 +
 no persistent preference storage (preference_memory not active)
 ```
+
+### 10.3 Product Thesis Validation (по AYLA-DEC-0018)
+
+Соотношение activation gates этого раздела с продуктовой валидацией
+(факт — [[Ayla Decision Log]], AYLA-DEC-0018, accepted 2026-07-28,
+Option C):
+
+- Phase 1 (§10.1) — самостоятельный технический release gate; его
+  успешное завершение подтверждает работоспособность и безопасность
+  session-only vertical slice, но **не подтверждает memory-first
+  продуктовую гипотезу** (AYLA-DEC-0002).
+- Phase 2 (§10.2) — обязательное условие Product Thesis Validation и
+  требует отдельного activation decision (гейты §10.2), но сама активация
+  Phase 2 **не означает** её прохождения.
+- Product Thesis Validation закрывается только успешным Product Thesis
+  Validation Scenario с измеримым улучшением повторного journey;
+  критерии — в тексте AYLA-DEC-0018.
+- Persistent memory допустима только при подходящем активном consent
+  scope (fail-closed, §2); активация памяти не равна доказанной
+  продуктовой ценности.
+- Consent state — authorization metadata, а не Context Fact
+  (AYLA-DEC-0023/0024): согласие не персистируется как пользовательская
+  память.
+- Revocation блокирует дальнейшее использование памяти в соответствующем
+  scope (§2 п. 6; многослойное применение — AYLA-DEC-0024 п. 5).
+
+Дополнительно: форма допустимой persistent memory определена решениями
+AYLA-DEC-0023 (категориальный whitelist) и AYLA-DEC-0024 (Memory
+Contract); согласование категорий данных и scope этого реестра с
+MemoryCategoryPolicy — отдельная задача синхронизации.
 
 ## 11. Отношение к Killer PRD
 
@@ -1262,6 +1318,44 @@ Legal ruling). Это один открытый вопрос под тремя �
 > нормативной частью спецификации, включая формулировки, описывающие
 > процесс ревью. Нормативно только текущее состояние §1–§10 (см. пометку
 > Normative/Informative в начале документа).
+
+### v1.2 — 2026-07-29 — Amendment §9.1: канонические имена событий `consent.*` (AYLA-DEC-0025, owner ruling P1-1)
+
+- §9.1 переведён на канонические lowercase dot-separated past-tense
+  имена событий по AYLA-DEC-0025 и [[Ayla Domain Event Registry]]:
+  `consent.granted`, `consent.denied`, `consent.revoked`,
+  `consent.expired`; добавлена явная норма именования (owner ruling
+  P1-1, зафиксирован в CDM v1.3 §24).
+- snake_case-формы (`consent_granted` и т.д.) сохранены только как
+  legacy aliases либо внутренние audit codes (в т.ч. значения `reason`
+  в authorization response §6) — не второй канон; новые producers и
+  consumers используют только `consent.*`; временный compatibility
+  mapping допустим на период миграции.
+- Ссылки на события приведены к dot-форме в §7 (Consent lifecycle,
+  Scope Version Migration) и §9 (Retention). Разделение владения: CSR —
+  scope/purpose/policy bindings/lifecycle Consent; Domain Event
+  Registry — имена событий, envelope, payload schema/version,
+  authoritative producer.
+- §7 — зафиксирован owner ruling P1-2: `needs_reconfirmation` — не
+  статус Consent наряду с `granted`/`denied`/`revoked`/`expired`, а
+  результат consent resolution/remediation при Subject merge
+  (`consent_resolution = needs_reconfirmation`); merge запрещён до
+  реализации consent resolver (AYLA-DEC-0016), вопрос закрывается до
+  активации Subject merge.
+- Статус документа не изменён (approved).
+
+### v1.1 — 2026-07-28 — Применено AYLA-DEC-0018 (Product Thesis Validation)
+
+- добавлен §10.3: Phase 1 (§10.1) — самостоятельный технический release
+  gate, не подтверждающий memory-first гипотезу; Phase 2 (§10.2) —
+  обязательное условие Product Thesis Validation, но активация Phase 2 не
+  означает её прохождения (AYLA-DEC-0018, accepted, Option C).
+- зафиксирована связь с AYLA-DEC-0023 (категориальный whitelist) и
+  AYLA-DEC-0024 (Memory Contract); согласование категорий и scope с
+  MemoryCategoryPolicy — отдельная задача синхронизации.
+- выполнено в рамках единого Change Control approved-документов по
+  AYLA-DEC-0018/0023/0024/0025 (совместно с Roadmap §3.4 и
+  Scope Contract §3/§4.1). Статус документа не изменён (approved).
 
 ### v1.0 — 2026-07-27 — Канонизация
 

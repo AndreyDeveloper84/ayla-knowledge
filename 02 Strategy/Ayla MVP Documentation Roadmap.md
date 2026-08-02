@@ -4,7 +4,7 @@ title: Ayla MVP Documentation Roadmap
 type: specification
 status: approved
 decision_status: accepted
-version: "1.0"
+version: "1.1"
 owner: Founder / Product Architecture
 priority: P0
 knowledge_area:
@@ -21,7 +21,7 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-27
-updated: 2026-07-27
+updated: 2026-07-28
 review_cycle: monthly
 depends_on:
   - "[[Ayla Constitution]]"
@@ -488,6 +488,22 @@ redaction;
 предыдущая подтверждённая услуга;
 явно подтверждённые ограничения;
 согласие на персонализацию.
+
+> **AYLA-DEC-0023 (2026-07-28, accepted):** плоский whitelist этого
+> раздела заменяется категориальной формой — категории со статусом
+> allowed / requires dedicated consent / forbidden, наследованием
+> политики полями и красной зоной default deny. Позиция «согласие на
+> персонализацию» как персональный факт вытесняется: consent state —
+> authorization metadata, не Context Fact (см. также AYLA-DEC-0024,
+> MemoryEntry хранит только ссылку `consent_scope`). **Список выше —
+> superseded, non-normative historical reference** и не является вторым
+> нормативным источником; нормативна категориальная форма AYLA-DEC-0023
+> (+ MemoryCategoryPolicy, AYLA-DEC-0024 п. 7). Редакционное приведение
+> списка — pending.
+> Именование событий §6.4 этого документа приводится к конвенции
+> AYLA-DEC-0025 (dot-separated past-tense) при создании Domain Event
+> Registry.
+
 Phase 4. Завершить доменные границы только для MVP
 4.1. Ayla Domain Capability Registry
 

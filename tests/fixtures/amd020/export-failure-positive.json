@@ -1,0 +1,10 @@
+{
+  "operation_id": "11111111-1111-1111-1111-111111111111",
+  "status": "failed",
+  "format_version": "1.0",
+  "error": {
+    "code": "upstream_timeout",
+    "message": "upstream deadline exceeded",
+    "retryable": true
+  }
+}

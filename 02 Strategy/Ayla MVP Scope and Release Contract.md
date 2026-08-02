@@ -4,7 +4,7 @@ title: Ayla MVP Scope and Release Contract
 type: specification
 status: draft
 decision_status: proposed
-version: "0.2"
+version: "0.3"
 owner: Product Owner
 priority: P0
 knowledge_area:
@@ -24,7 +24,7 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-27
-updated: 2026-07-27
+updated: 2026-07-28
 review_cycle: monthly
 depends_on:
   - "[[Ayla Constitution]]"
@@ -118,6 +118,22 @@ MVP User Journey (производный срез [[Ayla User Journey Specificat
 памяти; **MVP Phase 2** — opt-in persistent preferences. Phase 2 не является
 условием релиза Phase 1.
 
+По AYLA-DEC-0018 (accepted 2026-07-28, Option C — факт): Phase 1 остаётся
+самостоятельным техническим release gate; его успешное завершение не
+подтверждает memory-first продуктовую гипотезу (§1). Разделяются три
+понятия:
+
+```text
+Phase 1 release acceptance
+≠ Phase 2 activation
+≠ Product Thesis Validation
+```
+
+Phase 2 activation **необходима** для Product Thesis Validation, но сама по
+себе её **не доказывает**: validation закрывается только успешным Product
+Thesis Validation Scenario. Критерии — в тексте AYLA-DEC-0018; см. также
+CSR §10.3.
+
 ## 4. Included Capabilities
 
 Основа списка — [[Ayla MVP Documentation Roadmap]] §1.4; разделение на две
@@ -144,6 +160,19 @@ Capability ID выполнен по canonical names
 | 10 | Notification | CAP-021 | Транзакционные уведомления по записи |
 | 11 | Attribution | CAP-013 | Минимальный direct linkage: `recommendation_id` → qualified action ([[Killer PRD]] §6) |
 | 12 | Conversation Experience | CAP-016 | Только сквозной сценарий §3 |
+
+> **AYLA-DEC-0023 (accepted 2026-07-28 — факт):** форма whitelist
+> персональных фактов (строка 8 таблицы) заменяется категориальной —
+> категории со статусом allowed / requires dedicated consent / forbidden,
+> наследованием политики полями и красной зоной default deny. Позиция
+> «согласие на персонализацию» как персональный факт вытесняется:
+> consent state — authorization metadata, не Context Fact (AYLA-DEC-0024:
+> MemoryEntry хранит только ссылку `consent_scope`). Расширение
+> whitelist — только owner decision по §11 с проверками DEC-0023 п. 5.
+> **Плоский список строки 8 — superseded, non-normative historical
+> reference** и не является вторым нормативным источником; нормативна
+> категориальная форма AYLA-DEC-0023 (+ MemoryCategoryPolicy,
+> AYLA-DEC-0024 п. 7). Редакционное приведение строки 8 — pending.
 
 ### 4.2 Mandatory enabling capabilities (`user_visible_capability: false`)
 
@@ -336,6 +365,22 @@ MVP-принципов Thesis §8.3.
 
 > Этот журнал отражает историю изменений документа и не является нормативной
 > частью спецификации. Нормативным считается текущее состояние разделов 1–12.
+
+### v0.3 (2026-07-28) — Применено AYLA-DEC-0018 и AYLA-DEC-0023 (единый Change Control)
+
+- **§3** добавлено положение по AYLA-DEC-0018 (accepted, Option C): Phase 1 —
+  самостоятельный технический release gate; Product Thesis Validation —
+  отдельный acceptance, открытый до Phase 2 и успешного Product Thesis
+  Validation Scenario; активация Phase 2 не закрывает validation; Phase 2 не
+  становится условием релиза Phase 1.
+- **§4.1** добавлено примечание по AYLA-DEC-0023: форма whitelist
+  персональных фактов заменяется категориальной; позиция «согласие на
+  персонализацию» вытесняется (Consent state ≠ Context Fact, AYLA-DEC-0024);
+  редакционное приведение строки 8 таблицы — pending.
+- Выполнено в рамках единого Change Control approved-документов по
+  AYLA-DEC-0018/0023/0024/0025 (совместно с Consent Scope Registry §10.3 и
+  Roadmap §3.4). Статус документа не изменён (draft/proposed; нормативная
+  сила — после approval по §12).
 
 ### v0.2 (2026-07-27) — Применено AYLA-DEC-0015 (MVP Monetary Boundary)
 
