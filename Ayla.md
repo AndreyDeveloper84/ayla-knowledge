@@ -114,6 +114,8 @@ Draft / proposed nodes (в vault, НЕ канон; approval ограничен A
 Таблицы отражают фактическое состояние vault и не считаются
 release bundle.
 
+Документы со статусом `draft` не являются утверждёнными canonical nodes и требуют review перед approval.
+
 ## Decision Hierarchy
 
 При чтении документов применяется следующий порядок:
@@ -160,6 +162,16 @@ release bundle.
 | `.knowledge/` | schema и sync manifest |
 
 Папка не определяет ownership. Источник и ответственность задаются metadata.
+
+## Data Governance Nodes
+
+Следующие документы определяют границы владения данными и памятью:
+
+| Document | Type | Status | Purpose |
+|---|---|---|---|
+| [[Data Inventory Matrix]] | data-inventory-matrix | draft | фиксирует классы данных, владельцев, источники истины и правила обработки |
+
+Эти документы не наделяют W2 правами владения semantic memory и не разрешают обход consent/purpose gates.
 
 ## System Map
 
