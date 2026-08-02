@@ -1,12 +1,15 @@
 ---
 artifact: design-wave-1a
-version: "0.1"
+version: "0.2"
 status: draft
 date: 2026-07-29
 task_id: UX-WAVE-1A
 basis:
   - UX-OD-001…005
   - screen-inventory-customer v0.2
+  - flows/customer-cancel-reschedule-stages.md v0.4
+  - AYLA-DEC-0022
+  - AYLA-DEC-0036
 node_id: ayla.ux.design-wave-1a
 title: Design Wave 1A — Customer Surface (пакет для дизайнера)
 type: specification
@@ -27,7 +30,7 @@ data_categories:
 security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
-updated: 2026-07-29
+updated: 2026-08-02
 review_cycle: monthly
 ---
 
@@ -75,7 +78,7 @@ UJS = SRC-02 (этап/N-ветка).
 | SCR-CUST-010 | Records list = Mini App home Phase 1 | Mini App | READY | Upcoming bookings, relevant booking states, history when available; entry для cancel/reschedule. НЕ: wellness dashboard, food/water, proactive | default (upcoming); empty (нет записей); history (when available) | OD-005; UJS этап 11 (статусы записи); SRC-12 customer-records-flow | Naming состояний UX State Contract — P1-04 | Screen Contract → wireframe |
 | SCR-CUST-011 | Booking detail | Mini App | RWA | Детали активной/прошлой записи; entry points «Отменить»/«Перенести» → deep link в bot DM (C1/R1). НЕ: inline cancel/reschedule в Mini App | active detail; past detail | OD-001; SS (Entry points); SRC-12 customer-records-flow (R3) | Deep link Mini App → bot DM — proposal (SS OQ-3) | Screen Contract → wireframe |
 | SCR-CUST-012 | Cancel booking flow | bot DM (+ Mini App entry) | RWA | C1 identify → C2 summary → C3 explicit confirmation → C4 pending → C5 result. НЕ: standalone full-screen flow (W2) | C1 empty / select; C2–C3 summary; C4 cancel_pending; C5 cancelled / cancel_failed; N-CR2 (timeout), N-CR3 (гонка, уже отменена) | OD-001, OD-002; SS §Cancel, §Таблица состояний, N-CR2/3 | Политика отмены (штрафы/дедлайны на C3) — не подтверждена каноном, только нейтральные формулировки (SS OQ-1); SS — draft | Screen Contract (по SS) → wireframe |
-| SCR-CUST-013 | Reschedule booking flow | bot DM (+ Mini App слоты) | RWA | R1 → R2 (раскрытие неатомарности) → R3 cancel → R4 слоты → R5 create → R6 два явных статуса. НЕ: смена мастера, расширенные альтернативы (W2); впечатление атомарной замены | R2 intent (+неатомарность); R3 cancel_pending / failed (запись остаётся активной); R4 slots / slot unavailable (N-CR4); R5 pending; R6 confirmed / failed / **failed-critical** («старая отменена, новая не создана») | OD-001, OD-002, OD-004; SS §Reschedule, N-CR1/4 | SS — draft; retry по выбранному слоту без повторного показа — proposal (SS OQ-4) | Screen Contract (по SS) → wireframe |
+| SCR-CUST-013 | Reschedule booking flow | bot DM (+ Mini App слоты) | RWA | R1 identify → R2 new date/time selection → R3 explicit confirmation («было → станет») → R4 reschedule pending → R5 result (rescheduled / reschedule_failed). Same-ID, time-only перенос той же записи (AYLA-DEC-0022 п. 1, 2, 9); НЕ: смена мастера, расширенные альтернативы (W2); впечатление создания отдельной новой записи | R2 slots / slot unavailable (N-CR4); R3 confirm; R4 reschedule_pending; R5 rescheduled / reschedule_failed — UX-facing исход, не отдельный domain status (AYLA-DEC-0022 п. 1, 9) | OD-001, OD-002, OD-004; AYLA-DEC-0022, AYLA-DEC-0036; SS (`flows/customer-cancel-reschedule-stages.md`) §Reschedule, N-CR1/3/4 | SS — draft; retry на R4 — idempotent retry той же pending-операции, не создание отдельной записи (SS OQ-4, закрыт 2026-08-02) | Screen Contract (по SS) → wireframe |
 | SCR-CUST-014 | Транзакционные уведомления и напоминания | bot DM | RWA | Только транзакционный контур записи (подтверждение, напоминание). НЕ: B7 (T-15min), B9 (care notes), любой proactive | notification (delivered); preference не запрашивается в Phase 1 | UJS этап 13; OD-003; SRC-12 customer-reminders-voice (B5/B6) | — | Screen Contract → wireframe |
 | SCR-CUST-016 | Safety boundary message (N8) | bot DM | RWA | Остановка, минимальные вопросы о срочности, безопасный следующий шаг. НЕ: CTA на заблокированную услугу | boundary message; safe next step | UJS N8; Killer PRD OD-K6; RC §5 (`SAFETY_BLOCKED`) | Отдельной спеки нет — тексты требуют выделенной задачи | Screen Contract → wireframe |
 | SCR-CUST-019 | Terminal fallback (N1, N7) | bot DM | RWA | Честное сообщение о неудаче + обязательные действия: retry, reformulate, return_to_previous_safe_step, try_later, exit; preserve_safe_session_context. НЕ: оператор, имитация поддержки, контакты мастера/салона, human handoff (P1-08) | terminal fallback | OD-002 | — | Screen Contract → wireframe |
@@ -94,9 +97,10 @@ DEFERRED (inventory §«Экраны вне MVP»).
    ответа booking SoR.
 2. **Подтверждение намерения ≠ подтверждение записи** (OD-004): CTA в
    карточке/диалоге подтверждает намерение, не факт записи.
-3. **Неатомарность переноса раскрыта заранее** (OD-001, SS R2): перед
-   reschedule пользователь явно предупреждён, что старая запись отменяется
-   отдельно; впечатление атомарной замены запрещено.
+3. **Впечатление создания отдельной новой записи запрещено** (OD-001,
+   AYLA-DEC-0022 п. 1; SS R3): перенос — одна same-ID операция над той же
+   записью; на подтверждении показывается «было → станет» той же записи,
+   не отмена и создание новой.
 4. **Без оператора и автовыдачи контактов** (OD-002): ни один экран не
    обещает оператора, не имитирует живую поддержку, не выдаёт контакты
    мастера/салона автоматически.
@@ -152,7 +156,7 @@ DEFERRED (inventory §«Экраны вне MVP»).
 | OQ-REC-7 | Deep-link-контракт и TTL `recommendation_id` в Mini App | Platform + UX |
 | SS OQ-1 | Политика отмены (штрафы/дедлайны) — формулировки C3 | Product Owner |
 | SS OQ-3 | Механизм deep link Mini App → bot DM (entry 011 → 012/013) | Platform owner |
-| SS OQ-4 | Retry создания по выбранному слоту (R6 failed-critical) | Booking owner |
+| ~~SS OQ-4~~ | ~~Retry создания по выбранному слоту (R6 failed-critical)~~ — закрыт 2026-08-02: failed-critical для Simple Reschedule не существует, retry на R4 — idempotent retry той же pending-операции (AYLA-DEC-0022 п. 10) | — |
 | P1-04 | Naming UX-состояний (UX State Contract) — влияет 003/010 | UX + Product Owner |
 | P1-03 | Anonymous mode для SCR-CUST-009 | Product Owner |
 | Privacy Q1 | Baseline-слой 152-ФЗ `PERSONAL_DATA` vs service_necessity | Privacy Owner/юрист |
@@ -188,6 +192,14 @@ DEFERRED (inventory §«Экраны вне MVP»).
 
 ## Changelog
 
+- 2026-08-02 — Wave 1 Simple Reschedule canon sync: строка SCR-CUST-013 и
+  §3 п.3 переписаны с `cancel + create` (R1–R6, `failed-critical`) на
+  same-ID модель R1–R5 (`reschedule_pending`, `rescheduled` — UX-facing
+  исход, `reschedule_failed`) по AYLA-DEC-0022 и AYLA-DEC-0036; SS OQ-4
+  отмечен закрытым (2026-08-02, `flows/customer-cancel-reschedule-stages.md`
+  v0.4); basis дополнен ссылками на stages-документ и оба решения. Full
+  Cancellation journey, replacement, смена мастера/услуги, re-offer —
+  без изменений, остаются deferred.
 - 2026-07-29 — UX-REFINE-001: строки SCR-CUST-004, OQ-REC-1 и OQ-REC-6
   приведены к редакции displayable explanation по owner ruling 2026-07-29
   (правило принято; OQ-REC-6 — владелец классификации displayable /

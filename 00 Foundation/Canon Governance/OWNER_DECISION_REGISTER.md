@@ -3,7 +3,7 @@ node_id: ayla.foundation.canon-governance.owner-decision-register
 title: OWNER_DECISION_REGISTER
 type: dashboard
 status: draft
-version: "0.1"
+version: "0.2"
 owner: Product Owner
 knowledge_area:
   - foundation
@@ -19,7 +19,7 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-29
-updated: 2026-07-31
+updated: 2026-08-02
 review_cycle: monthly
 ---
 
@@ -281,3 +281,43 @@ Scope:          Multi-Provider Execution Scope (экспериментальны
 Affected docs:  Multi-Provider Execution Scope, Product Experiment Design (planned).
 Status:         DECIDED
 ```
+
+### AYLA-DEC-0036 — Wave 1 Simple Reschedule: только same-ID time-only механика (OD-RESCHED-1)
+
+```text
+ID:             AYLA-DEC-0036 (owner ruling ID: OD-RESCHED-1)
+Date:           2026-08-02
+Question:       Какая механика переноса записи обязательна для Wave 1 Simple
+                Reschedule и что остаётся deferred?
+Options:        n/a — прямое решение Product Owner (ruling), не выбор из
+                эскалированных вариантов
+Decision:       Wave 1 Simple Reschedule выполняется только как same-ID,
+                time-only изменение по AYLA-DEC-0022 (сохраняется
+                appointment_id, версия монотонно увеличивается, публикуется
+                appointment.rescheduled). Механика cancel_then_create_new_booking
+                для переноса ЗАПРЕЩЕНА для Simple Reschedule. Полная
+                Cancellation journey остаётся deferred (owner ruling
+                2026-07-28, вариант Б; этим решением не расширяется и не
+                сужается). Replacement, смена специалиста, смена услуги,
+                изменение цены/длительности и cross-tenant перенос остаются
+                deferred для Wave 1.
+Rationale:      Устраняет расхождение между UX MVP слоем (ранее —
+                cancel_then_create_new_booking в UX-OD-001) и канонической
+                доменной моделью AYLA-DEC-0022; формализует owner direction от
+                2026-08-02, ранее применённую в UX-документах как неформальная
+                пометка без registered ID (UX-SYNC-001 → UX reconciliation
+                2026-08-02).
+Scope:          UX MVP слой Wave 1 Simple Reschedule (bot DM + Mini App,
+                customer surface). Не переопределяет AYLA-DEC-0022 по существу
+                и не расширяет Wave 1 за пределы time-only переноса в рамках
+                исходного Offering.
+Affected docs:  decisions/ux-owner-decisions.md (UX-OD-001),
+                flows/customer-cancel-reschedule-stages.md (UX-SPEC-001),
+                gaps/UX-GAP-0105.md, context/current-session-brief.md,
+                02-screen-inventory-customer.md (SCR-CUST-013).
+Status:         DECIDED
+```
+
+Соотношение с AYLA-DEC-0022: уточняет обязательность применения канонической same-ID/time-only модели к Wave 1 UX-scope и явно запрещает `cancel_then_create_new_booking` как альтернативу для этого сценария; не переопределяет саму доменную модель (п. 1, 2, 9, 10 AYLA-DEC-0022 остаются источником механики).
+
+Источник: owner ruling, Product Owner, 2026-08-02; формализация ранее применённого owner direction в UX-документах.
