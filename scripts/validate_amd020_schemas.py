@@ -1,31 +1,27 @@
 #!/usr/bin/env python3
-"""Validate AMD-020 JSON Schema 2020-12 blocks and sample instances.
+"""Validate AMD-020 JSON Schema 2020-12 blocks and positive/negative fixtures.
 
 Run from repository root:
     python scripts/validate_amd020_schemas.py
 
 The script extracts all JSON Schema 2020-12 blocks from the AMD-020 Contract,
-checks that each is a valid meta-schema, validates representative sample
-instances, and verifies that additionalProperties are rejected at closed
-levels.
+checks that each is a valid meta-schema, verifies stable `$id` values are unique,
+validates positive fixtures, and verifies that negative fixtures are rejected.
 """
 
 import json
 import pathlib
 import re
 import sys
-import uuid
-from datetime import datetime, timezone
+from collections import defaultdict
 
 from jsonschema import Draft202012Validator
 from referencing.jsonschema import DRAFT202012
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 CONTRACT = ROOT / "05 Architecture" / "AMD-020 C5 Pilot Personal Context Export-Forget Contract.md"
-
-
-def utc_now() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+FIXTURE_DIR = ROOT / "tests" / "fixtures" / "amd020"
+EXPECTED_SCHEMA_COUNT = 7
 
 
 def extract_schemas(text: str):
@@ -34,17 +30,34 @@ def extract_schemas(text: str):
     for block in blocks:
         try:
             obj = json.loads(block)
-        except json.JSONDecodeError:
+        except json.JSONDecodeError as exc:
+            print(f"WARN: skipping non-JSON block: {exc}")
             continue
         if isinstance(obj, dict) and obj.get("$schema") == "https://json-schema.org/draft/2020-12/schema":
             schemas.append(obj)
     return schemas
 
 
+def schema_basename(schema_id: str) -> str:
+    parts = schema_id.rstrip("/").split("/")
+    # IDs are .../<name>/1.0 ; return the name segment.
+    if len(parts) >= 2 and parts[-1].replace(".", "", 1).isdigit():
+        return parts[-2]
+    return parts[-1]
+
+
 def check_meta(schema: dict) -> list[str]:
     errors = []
     if "$id" not in schema:
         errors.append("missing $id")
+    if "type" not in schema:
+        errors.append("missing root type")
+    if "required" not in schema:
+        errors.append("missing required")
+    if "properties" not in schema and "$defs" not in schema:
+        errors.append("missing properties/$defs")
+    if "additionalProperties" not in schema:
+        errors.append("missing additionalProperties")
     try:
         DRAFT202012.create_resource(schema)
     except Exception as exc:
@@ -52,171 +65,98 @@ def check_meta(schema: dict) -> list[str]:
     return errors
 
 
-def build_samples() -> tuple[list[dict], dict]:
-    ayla_id = str(uuid.uuid4())
-    bot_id = str(uuid.uuid4())
-    op_id = str(uuid.uuid4())
-    now = utc_now()
-    sub = {"ayla_user_id": ayla_id, "bot_user_id": bot_id}
-
-    export_success = {
-        "operation_id": op_id,
-        "status": "completed",
-        "generated_at": now,
-        "subject": sub,
-        "format_version": "1.0",
-        "ayla": {"user_id": ayla_id, "exported_at": now, "personal_context": {"a": 1}},
-        "memory": [{
-            "id": str(uuid.uuid4()),
-            "kind": "preference",
-            "source": "explicit",
-            "content": {"x": 1},
-            "last_inferred_at": now,
-            "created_at": now,
-        }],
-        "consents": [{
-            "consent_type": "marketing",
-            "granted": True,
-            "document_version": "1",
-            "source": "miniapp",
-            "captured_at": now,
-            "withdrawn_at": None,
-            "purpose": "p",
-            "data_categories": [],
-            "operator": "o",
-            "recipients": [],
-            "term": "t",
-            "lawful_basis": None,
-            "identification_method": "m",
-            "legacy_record": False,
-            "schema_complete": True,
-            "semantic_complete": True,
-            "legal_validity_status": "approved",
-        }],
-    }
-
-    export_failure = {
-        "operation_id": op_id,
-        "status": "failed",
-        "format_version": "1.0",
-        "error": {"code": "upstream_timeout", "message": "m", "retryable": True},
-    }
-
-    delete_success = {
-        "operation_id": op_id,
-        "status": "completed",
-        "format_version": "1.0",
-        "subject": sub,
-        "completed_at": now,
-        "per_step_results": {
-            "ayla_delete": {"ok": True, "detail": "deleted"},
-            "memory_delete": {"ok": True, "detail": "deleted"},
-            "consent_withdraw": {"ok": True, "detail": "withdrawn"},
-        },
-        "deleted": ["ayla_personal_context", "memory_green"],
-        "retained": [{
-            "category": "audit_trail",
-            "reason": "regulatory_audit",
-            "lawful_basis": None,
-            "retention_until": None,
-            "decision_status": "owner_decision_required",
-            "restrictions": "no_personal_values",
-            "owner": "Legal",
-            "deletion_trigger": "legal_retention_expiry",
-        }],
-    }
-
-    delete_partial = {
-        "operation_id": op_id,
-        "status": "partial",
-        "format_version": "1.0",
-        "subject": sub,
-        "completed_at": now,
-        "per_step_results": {
-            "ayla_delete": {"ok": True, "detail": "deleted"},
-            "memory_delete": {"ok": False, "detail": "not_linked"},
-            "consent_withdraw": {"ok": True, "detail": "withdrawn"},
-        },
-        "completed_steps": ["ayla_delete", "consent_withdraw"],
-        "failed_steps": ["memory_delete"],
-        "retryable": True,
-        "request_attempt": 1,
-        "execution_attempt": 1,
-        "retained": [],
-        "next_action": "retry_by_user",
-    }
-
-    delete_failure = {
-        "operation_id": op_id,
-        "status": "failed",
-        "format_version": "1.0",
-        "error": {"code": "internal_error", "message": "m", "retryable": False},
-    }
-
-    subject_gone = {
-        "code": "subject_gone",
-        "format_version": "1.0",
-        "subject": {"ayla_user_id": ayla_id},
-        "correlation_id": str(uuid.uuid4()),
-        "retryable": False,
-    }
-
-    bad = {
-        "operation_id": op_id,
-        "status": "completed",
-        "generated_at": now,
-        "subject": sub,
-        "format_version": "1.0",
-        "ayla": None,
-        "memory": [],
-        "consents": [],
-        "extra_field": 1,
-    }
-
-    return [export_success, export_failure, delete_success, delete_partial, delete_failure, subject_gone], bad
+def load_fixture(name: str) -> dict | None:
+    path = FIXTURE_DIR / name
+    if not path.exists():
+        return None
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
-def main() -> int:
+def run() -> int:
+    exit_code = 0
     if not CONTRACT.exists():
         print(f"ERROR: contract not found: {CONTRACT}")
         return 1
 
     text = CONTRACT.read_text(encoding="utf-8")
     schemas = extract_schemas(text)
-    expected = 6
-    if len(schemas) != expected:
-        print(f"ERROR: expected {expected} schemas, found {len(schemas)}")
-        return 1
 
     print(f"Found {len(schemas)} JSON Schema 2020-12 blocks")
-    exit_code = 0
+    if len(schemas) != EXPECTED_SCHEMA_COUNT:
+        print(f"ERROR: expected {EXPECTED_SCHEMA_COUNT} schemas, found {len(schemas)}")
+        exit_code = 1
+
+    # $id uniqueness
+    ids = defaultdict(list)
+    for i, schema in enumerate(schemas, 1):
+        sid = schema.get("$id", f"no-$id-{i}")
+        ids[sid].append(i)
+    duplicates = {sid: idxs for sid, idxs in ids.items() if len(idxs) > 1}
+    if duplicates:
+        print(f"ERROR: duplicate $id values: {duplicates}")
+        exit_code = 1
 
     # Meta validation
+    meta_ok = 0
+    meta_fail = 0
     for i, schema in enumerate(schemas, 1):
+        sid = schema.get("$id", "no-$id")
         errors = check_meta(schema)
         if errors:
-            print(f"  Schema {i} ({schema.get('$id', 'no-$id')}): META_INVALID -> {errors}")
+            print(f"  Schema {i} ({sid}): META_INVALID -> {errors}")
+            meta_fail += 1
             exit_code = 1
         else:
-            print(f"  Schema {i} ({schema['$id']}): meta-valid")
+            print(f"  Schema {i} ({sid}): meta-valid")
+            meta_ok += 1
 
-    # Instance validation
-    samples, bad = build_samples()
-    for i, (schema, sample) in enumerate(zip(schemas, samples), 1):
-        try:
-            Draft202012Validator(schema).validate(sample)
-            print(f"  Schema {i}: sample VALID")
-        except Exception as exc:
-            print(f"  Schema {i}: sample INVALID -> {exc}")
+    # Fixture validation
+    positive_ok = 0
+    positive_fail = 0
+    negative_ok = 0
+    negative_fail = 0
+    fixture_missing = 0
+
+    for i, schema in enumerate(schemas, 1):
+        sid = schema.get("$id", "no-$id")
+        base = schema_basename(sid)
+        validator = Draft202012Validator(schema)
+
+        pos = load_fixture(f"{base}-positive.json")
+        if pos is None:
+            print(f"  Schema {i} ({sid}): POSITIVE fixture MISSING")
+            fixture_missing += 1
             exit_code = 1
+        else:
+            try:
+                validator.validate(pos)
+                print(f"  Schema {i} ({sid}): positive fixture VALID")
+                positive_ok += 1
+            except Exception as exc:
+                print(f"  Schema {i} ({sid}): positive fixture INVALID -> {exc}")
+                positive_fail += 1
+                exit_code = 1
 
-    # additionalProperties rejection
-    try:
-        Draft202012Validator(schemas[0]).validate(bad)
-        print("  additionalProperties rejection: FAIL")
-        exit_code = 1
-    except Exception:
-        print("  additionalProperties rejection: PASS")
+        neg = load_fixture(f"{base}-negative.json")
+        if neg is None:
+            print(f"  Schema {i} ({sid}): NEGATIVE fixture MISSING")
+            fixture_missing += 1
+            exit_code = 1
+        else:
+            try:
+                validator.validate(neg)
+                print(f"  Schema {i} ({sid}): negative fixture UNEXPECTEDLY VALID -> FAIL")
+                negative_fail += 1
+                exit_code = 1
+            except Exception:
+                print(f"  Schema {i} ({sid}): negative fixture REJECTED (PASS)")
+                negative_ok += 1
+
+    print("\n=== Summary ===")
+    print(f"Schemas found: {len(schemas)} (expected {EXPECTED_SCHEMA_COUNT})")
+    print(f"Meta-valid: {meta_ok}; meta-invalid: {meta_fail}")
+    print(f"Positive fixtures: {positive_ok} valid, {positive_fail} invalid, {fixture_missing} missing")
+    print(f"Negative fixtures: {negative_ok} rejected, {negative_fail} unexpectedly valid, {fixture_missing} missing")
 
     if exit_code == 0:
         print("\nAll AMD-020 schema checks passed.")
@@ -226,4 +166,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(run())
