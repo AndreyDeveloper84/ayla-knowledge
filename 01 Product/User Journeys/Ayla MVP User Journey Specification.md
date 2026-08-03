@@ -125,7 +125,7 @@ This document:
   порогов), AYLA-DEC-0034 (NO_FORMAL_RCT в initial beta).
 - Consent, memory phases и authorization — по [[Consent Scope Registry]]
   (факт — CSR §2, §5, §8, §10); intent types и output contract — по
-  [[Ayla Intent Model Specification]] v0.9.2 (approved/accepted).
+  [[Ayla Intent Model Specification]] (v1.0, draft / proposed / candidate).
 - Исполнение пилота (фазы A0–B1) описывается execution scopes; этот
   документ задаёт только journey-логику (см. Relationship to A0–B1
   Execution).
@@ -336,6 +336,14 @@ AYLA-DEC-0027; NFR — MVP Scope v0.3 §10).
 - пользовательские команды: просмотр активных согласий; отзыв отдельного
   scope; отключение всей persistent personalization; «Что Ayla знает обо
   мне»; удаление выбранного memory fact; «Забыть это»;
+- routing этих команд: выделенные UI-элементы (dedicated settings controls)
+  обращаются к CAP-001 (Personal Context Management) и CAP-002 (Consent
+  Management) напрямую, минуя intent resolution; разговорные формулировки
+  тех же команд распознаются orchestration как management-запрос и
+  маршрутизируются к владеющей capability без расширения замороженного
+  реестра из 11 продуктовых intent types + sentinel `UNKNOWN` и без
+  изменения Output Contract `0.5` (факт — [[Ayla Intent Model Specification]]
+  § Does not own) **(proposal)**;
 - фото, видео и body-related data — особо чувствительные входы
   (факт — Manifesto §12).
 
@@ -443,9 +451,9 @@ CONDITIONAL — только при подтверждённой необход�
 Ayla извлекает intent и slots из сообщения, определяет confidence и
 проверяет safety constraints до перехода к рекомендации (факт — полная
 UJS, Stage 3). Поддерживаемые intent types, required/optional slots и
-confidence levels определяет [[Ayla Intent Model Specification]] v0.9.2
-(approved/accepted: 11 продуктовых intent types + sentinel `UNKNOWN`) и
-машиночитаемые contracts `03 AI System/Contracts/`
+confidence levels определяет [[Ayla Intent Model Specification]]
+(v1.0, draft / proposed / candidate: 11 продуктовых intent types + sentinel
+`UNKNOWN`) и машиночитаемые contracts `03 AI System/Contracts/`
 (intent-registry.yaml, slot-registry.yaml, intent-output.schema.json,
 contract_version 0.5). `UNKNOWN` — resolver sentinel: execution по нему
 запрещён; доменное событие `intent.resolution_produced` — канон
@@ -991,6 +999,17 @@ proposal); ограничение использования факта — че
 отключает обязательные safety/authorization/consent/freshness/legal
 проверки (v1.0).
 
+**Routing boundary (proposal):** выделенные UI-элементы (dedicated settings
+controls) для перечисленных выше команд обращаются к CAP-001 (Personal
+Context Management) и CAP-002 (Consent Management) напрямую и не требуют
+intent resolution. Разговорные формулировки тех же команд («Покажи, что ты
+обо мне знаешь», «Забудь это», «Удали этот факт», «Почему ты это
+сохранила?», «Где ты это использовала?») распознаются orchestration как
+management-запрос и маршрутизируются к владеющей capability без расширения
+замороженного реестра из 11 продуктовых intent types + sentinel `UNKNOWN` и
+без изменения Output Contract `0.5` (факт —
+[[Ayla Intent Model Specification]] § Does not own).
+
 ### Product Thesis Validation Scenario **(proposal)**
 
 Статус определён AYLA-DEC-0018 (accepted, Option C): Phase 1
@@ -1214,6 +1233,23 @@ counts, detailed gates и operational procedures в этот документ н
    permission при первом запуске Mobile App — UX/platform-документы.
 
 ## 18. Change Log
+
+### v1.1 (2026-08-03) — D1 Product/Journey consistency repair
+
+- Stale [[Ayla Intent Model Specification]] references (§2 Canonical
+  Position, §6.4 Intent Understanding) corrected: removed hard-coded
+  `v0.9.2 (approved/accepted)`; now cite `v1.0, draft / proposed /
+  candidate`, matching the current Intent Model status banner.
+- Memory/consent controls (§6.1 Entry and Context, §10 Memory Interaction)
+  clarified: dedicated UI controls route directly to CAP-001 (Personal
+  Context Management) / CAP-002 (Consent Management), bypassing intent
+  resolution; conversational equivalents are recognized by orchestration as
+  management requests and routed to the same capabilities without
+  extending the frozen 11 product intent types + `UNKNOWN` registry.
+- No new intents, slots, scope, or owner decisions introduced; version,
+  status and canonical_status unchanged; historical Change Log entries
+  (including the `v0.9.2` references under `### v1.0 (2026-07-29)`) left
+  untouched as accurate history. Status remains candidate.
 
 ### v1.1 (2026-07-31) — Structured revision for MVP Scope v0.3 downstream migration (Wave D1)
 

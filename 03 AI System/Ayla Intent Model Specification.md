@@ -390,6 +390,21 @@ Core Domain Model владеет:
   `context_fact` — Personal Context Management (CAP-001), `consent_scope` —
   [[Consent Scope Registry]]. Intent Model владеет только именами слотов,
   их типами и правилами заполнения, не данными.
+- **Memory view/delete/explain операции** (например, «покажи, что известно
+  обо мне», «удали этот факт», «почему это сохранено», «где это
+  использовалось») — точный командный словарь и operation contract
+  принадлежат CAP-001 (Personal Context Management) и CAP-002 (Consent
+  Management) и их UX/operation contracts, не этому документу. Выделенные
+  UI-элементы (dedicated settings controls) могут обращаться к этим
+  capability напрямую, минуя intent resolution. Разговорные формулировки
+  тех же команд могут распознаваться intent resolution как management
+  speech act исключительно для маршрутизации orchestration к владеющей
+  capability — это не создаёт нового публичного product intent type, не
+  расширяет замороженный реестр из 11 типов + sentinel `UNKNOWN`, не
+  добавляет runtime-поле и не меняет Output Contract `0.5` **(Proposal)**.
+  Interim rule до отдельного owner decision: прямые UI-действия разрешены;
+  разговорные команды маршрутизируются к CAP-001/CAP-002 через
+  orchestration; новый публичный intent type не вводится.
 
 ## Non-goals
 
@@ -1594,6 +1609,24 @@ repair (этот проход) и Product Owner Final Review.
 
 > Журнал отражает историю изменений документа и не является нормативной частью
 > спецификации.
+
+### v1.0 (2026-08-03) — D1 Product/Journey boundary clarification
+
+- **§ Does not own дополнен:** memory view/delete/explain операции
+  («покажи, что известно обо мне», «удали этот факт», «почему это
+  сохранено», «где это использовалось») явно закреплены за CAP-001
+  (Personal Context Management) и CAP-002 (Consent Management) и их
+  UX/operation contracts. Выделенные UI-элементы могут обращаться к этим
+  capability напрямую, минуя intent resolution; разговорные формулировки
+  могут распознаваться только для маршрутизации orchestration, без
+  создания нового публичного product intent type.
+- Interim rule зафиксировано: прямые UI-действия разрешены; разговорные
+  команды маршрутизируются к CAP-001/CAP-002 через orchestration; новый
+  публичный intent type не вводится до отдельного owner decision.
+- 11 продуктовых intent types + sentinel `UNKNOWN`, 18 слотов, OQ-9, OQ-10
+  и Output Contract `0.5` не изменены; machine-readable appendix не
+  затронут; никакое новое runtime-поле не добавлено. Status остаётся
+  candidate.
 
 ### v1.0 (2026-08-03) — Governance and machine-readable synchronization pass
 
