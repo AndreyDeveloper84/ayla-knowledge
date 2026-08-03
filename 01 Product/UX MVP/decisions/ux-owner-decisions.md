@@ -1,6 +1,6 @@
 ---
 artifact: ux-owner-decisions
-version: "0.1"
+version: "0.4"
 status: approved
 date: 2026-07-29
 task_id: UX-SYNC-001
@@ -25,7 +25,7 @@ data_categories:
 security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
-updated: 2026-07-29
+updated: 2026-08-02
 review_cycle: monthly
 ---
 
@@ -39,6 +39,14 @@ UX-документам в UX-SYNC-001.
 > (ayla-knowledge, review-gate) — отдельный процесс и в рамках UX-SYNC-001
 > **не выполняется**.
 
+> **Обновлено 2026-08-02 (Wave 1 Simple Reschedule canon alignment):**
+> `reschedule_flow` в UX-OD-001 приведён в соответствие с AYLA-DEC-0022
+> (accepted, 2026-07-28) — same-ID/time-only модель вместо
+> `cancel_then_create_new_booking`. Остальные четыре решения (UX-OD-002…005)
+> не затронуты. Owner ruling формально зарегистрирован как **AYLA-DEC-0036**
+> (OD-RESCHED-1, `OWNER_DECISION_REGISTER.md`). См. Change Log в конце
+> документа.
+
 ## UX-OD-001 — minimal_conversational_cancel_and_reschedule
 
 ```yaml
@@ -46,6 +54,7 @@ decision_id: UX-OD-001
 title: minimal_conversational_cancel_and_reschedule
 status: accepted
 date: 2026-07-29
+updated: 2026-08-02
 owner: Product Owner
 resolves: [UX-GAP-0105 (owner part), SRC-02 OQ5]
 affected_screens: [SCR-CUST-012, SCR-CUST-013, SCR-CUST-010, SCR-CUST-011]
@@ -55,20 +64,57 @@ decision:
     show_booking_summary → explicit_confirmation →
     authoritative_cancellation → result.
   reschedule_flow: >-
-    Перенос = cancel_then_create_new_booking (bot DM; Mini App — когда нужен
-    расширенный выбор слота).
+    Simple Reschedule (Wave 1) — same-ID, time-only перенос: сохраняется
+    appointment_id, меняются только дата/время в пределах того же Offering
+    (тот же специалист, та же услуга, неизменные цена/длительность), версия
+    записи монотонно увеличивается, публикуется событие
+    appointment.rescheduled (канон — AYLA-DEC-0022 п. 1, п. 2, п. 9; Domain
+    Event Registry §6.3, registered, v0.4). Механика
+    cancel_then_create_new_booking для этого сценария не используется (owner
+    ruling AYLA-DEC-0036 / OD-RESCHED-1, 2026-08-02). Bot DM — компактный выбор нового времени; Mini
+    App — когда нужен расширенный выбор слота (UX-OD-004). Owner ruling
+    зарегистрирован как AYLA-DEC-0036 (OD-RESCHED-1).
   deferred_to_W2:
     - смена мастера при переносе
+    - смена услуги / Offering при переносе
+    - replacement и re-offer как полноценные ветки
     - расширенные альтернативы
     - standalone full-screen cancel/reschedule flows
+  deferred_scope_note: >-
+    Перечисленное выше — сужение UX-поверхности Wave 1, а не следствие
+    доменной механики: AYLA-DEC-0022 п. 2 технически допускает смену
+    специалиста в пределах того же Offering как same-ID (с явным согласием
+    клиента), но Wave 1 UX эту ветку не открывает. cancel_flow выше —
+    minimal conversational cancel (identify → summary → confirmation →
+    cancellation → result), не full Cancellation journey: policy/deadline/
+    refund flow (OQ-1), standalone full-screen cancellation management,
+    late-window/waitlist-ветки и провайдер-уведомления (OQ-5) в cancel_flow
+    не входят. Полная cancellation journey отдельно и явно остаётся
+    deferred (owner ruling 2026-07-28, вариант Б; формально зафиксировано
+    как AYLA-DEC-0036 / OD-RESCHED-1, 2026-08-02, без расширения или
+    сужения этого deferral). Backend cancel capability (CAP-011) может
+    существовать шире cancel_flow — это не переводит полную UX
+    cancellation journey в Wave 1.
 constraints:
-  - no cancelled state до authoritative confirmation
-  - обязательны состояния cancel_pending и cancel_failed
-  - заранее раскрывать пользователю неатомарность переноса, если backend не
-    гарантирует атомарность
+  - no cancelled state до authoritative confirmation (cancel flow)
+  - обязательны состояния cancel_pending и cancel_failed (cancel flow)
+  - reschedule — одна authoritative-транзакция над той же записью; итоговые
+    состояния — rescheduled / reschedule_failed; промежуточного cancelled у
+    исходной записи не возникает; при любом отказе исходная запись и её
+    reservation остаются без изменений (AYLA-DEC-0022 п. 10)
+  - terminal-state запись (cancelled/completed) не может быть перенесена
+    (AYLA-DEC-0022 п. 1)
+traceability:
+  - AYLA-DEC-0022 — Appointment Reschedule and Replacement Model (accepted,
+    2026-07-28), п. 1, п. 2, п. 9, п. 10
+  - AYLA-DEC-0036 (OD-RESCHED-1) — Wave 1 Simple Reschedule owner ruling
+    (registered 2026-08-02, `OWNER_DECISION_REGISTER.md`); формализует
+    запрет cancel_then_create_new_booking и deferred-scope для Wave 1
+  - appointment.rescheduled — Domain Event Registry, registration_status
+    registered (v0.4)
 follow_up: >-
-  Stage specs готовятся в UX-SPEC-001
-  (flows/customer-cancel-reschedule-stages.md).
+  Stage specs синхронизированы в UX-SPEC-001
+  (flows/customer-cancel-reschedule-stages.md) с AYLA-DEC-0022, 2026-08-02.
 ```
 
 ## UX-OD-002 — honest_self_service_terminal_fallback
@@ -201,3 +247,57 @@ decision:
     - water tracker
     - proactive recommendations
 ```
+
+## Change Log
+
+### v0.4 (2026-08-02) — Cancellation scope reconciliation
+
+- `deferred_scope_note` (UX-OD-001) переформулирован: явно указано, что
+  `cancel_flow` — minimal conversational cancel, а не full Cancellation
+  journey; перечислены элементы full journey, которые в `cancel_flow` не
+  входят (policy/deadline/refund, standalone screens, late-window/
+  waitlist, провайдер-уведомления). Устраняет неоднозначность: ранее текст
+  утверждал полный cancellation journey deferred, не уточняя границу с
+  активной Phase 1 веткой C1–C5. Семантика самого `cancel_flow` (шаги
+  C1–C5) не изменена.
+- Добавлена ссылка на формальную регистрацию deferral как часть
+  AYLA-DEC-0036 (без изменения границ deferral).
+
+### v0.3 (2026-08-02) — Owner ruling formally registered (AYLA-DEC-0036)
+
+- Owner ruling для Wave 1 Simple Reschedule (same-ID/time-only,
+  cancel_then_create_new_booking запрещён, deferred-scope) формально
+  зарегистрирован в `00 Foundation/Canon Governance/OWNER_DECISION_REGISTER.md`
+  как **AYLA-DEC-0036** (owner ruling ID `OD-RESCHED-1`). Ранее в v0.2 это
+  было отражено как неформальная пометка «owner direction, 2026-08-02» без
+  registered ID.
+- UX-OD-001: `reschedule_flow` и `traceability` дополнены ссылкой на
+  AYLA-DEC-0036. Семантика решения (same-ID/time-only, AYLA-DEC-0022) не
+  изменена — только формализация регистрации.
+- UX-OD-002…005 не затронуты.
+
+### v0.2 (2026-08-02) — Wave 1 Simple Reschedule canon alignment
+
+- **UX-OD-001, `reschedule_flow`:** заменена механика
+  `cancel_then_create_new_booking` на same-ID/time-only модель по
+  AYLA-DEC-0022 (accepted, 2026-07-28) — owner direction 2026-08-02:
+  `cancel_then_create_new_booking` для Simple Reschedule отклонена.
+  Сохраняется `appointment_id`, версия монотонно увеличивается,
+  публикуется `appointment.rescheduled`.
+- **UX-OD-001, `constraints`:** снят constraint про раскрытие
+  неатомарности (относился только к отклонённой механике); добавлены
+  constraints про единую транзакцию, отсутствие промежуточного
+  `cancelled`, запрет переноса terminal-state записи.
+- **UX-OD-001, `deferred_to_W2`:** явно размечено как сужение UX-scope
+  Wave 1, а не следствие доменной механики — AYLA-DEC-0022 допускает смену
+  специалиста в пределах Offering как same-ID при согласии клиента, но
+  Wave 1 эту ветку не открывает.
+  Полная cancellation journey (owner ruling 2026-07-28, вариант Б) этим не
+  затронута и не расширяется.
+  Добавлена **`traceability`** на AYLA-DEC-0022 и `appointment.rescheduled`.
+- UX-OD-002…005 не изменены.
+
+### v0.1 (2026-07-29) — Initial
+
+- Пять решений Product Owner по Owner Review Package 001 применены к
+  UX-документам (UX-SYNC-001).

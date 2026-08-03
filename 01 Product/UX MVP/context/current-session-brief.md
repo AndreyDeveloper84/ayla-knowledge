@@ -3,7 +3,7 @@ node_id: ayla.ux.current-session-brief
 title: Current Session Brief
 type: dashboard
 status: draft
-version: "0.2"
+version: "0.5"
 owner: UX Architecture
 knowledge_area:
   - product
@@ -20,7 +20,7 @@ data_categories:
 security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
-updated: 2026-07-29
+updated: 2026-08-02
 review_cycle: event-driven
 ---
 
@@ -36,7 +36,7 @@ accepted_decisions:
   - AYLA-DEC-0004 (D4): канал пилота — MAX-бот + MAX Mini App; Telegram вне scope
   - AYLA-DEC-0006 (D6): онлайн-оплата клиентом опциональна
   - Канал/поверхность inventory: customer (MAX bot DM + Mini App webview)
-  - UX-OD-001 (2026-07-29, accepted): minimal_conversational_cancel_and_reschedule — отмена через диалог bot DM; перенос = cancel_then_create_new_booking; stage specs — UX-SPEC-001
+  - UX-OD-001 (2026-07-29, accepted; reschedule-механика синхронизирована с каноном 2026-08-02): minimal_conversational_cancel_and_reschedule — отмена через диалог bot DM (C1–C5, minimal conversational, НЕ full Cancellation journey — она отдельно deferred, owner ruling 2026-07-28 вариант Б); перенос (Wave 1, Simple Reschedule) = same-ID, time-only (канон — AYLA-DEC-0022, `appointment.rescheduled`); owner ruling зарегистрирован как AYLA-DEC-0036 (OD-RESCHED-1); stage specs — UX-SPEC-001
   - UX-OD-002 (2026-07-29, accepted): honest_self_service_terminal_fallback — human handoff в MVP не требуется; честный fallback без оператора и без авто-выдачи контактов
   - UX-OD-003 (2026-07-29, accepted_as_temporary_assumption): phase_1_session_only_service_necessity — persistent memory disabled; revalidation before release; не заменяет заключение Privacy Owner
   - UX-OD-004 (2026-07-29, accepted): hybrid_booking_surface — bot DM: compact slots/подтверждение намерения/pending/result/retry; Mini App: календарь/детали/управление; contextual deep link

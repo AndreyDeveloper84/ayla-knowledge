@@ -561,10 +561,18 @@ Booking journey включает:
 - attribution: `recommendation_id` → выбранное действие →
   `booking_id` / `appointment_id` — только если booking произошёл
   (факт — MVP Scope v0.3 §6.3, минимальный direct linkage);
-- cancel / reschedule / status: intent types RESCHEDULE/CANCEL
-  поддерживаются моделью intent, но их операциональная семантика —
-  deferred beyond MVP primary-booking journey (owner ruling 2026-07-28,
-  вариант Б; planned AYLA-DEC-0022 — см. Non-goals);
+- cancel / status: intent type CANCEL_APPOINTMENT поддерживается моделью
+  intent; полноценная ветка cancel journey остаётся deferred beyond MVP
+  primary-booking journey (owner ruling 2026-07-28, вариант Б — см.
+  Non-goals);
+- reschedule (Wave 1, owner decision — Simple Reschedule): same-ID
+  перенос времени/даты в пределах того же Offering (без смены
+  услуги/мастера) — **in scope**; выполняется через intent
+  `RESCHEDULE_APPOINTMENT` и публикует `appointment.rescheduled`
+  (канон — AYLA-DEC-0022 п. 1, п. 9; Domain Event Registry §6.3,
+  `registered`, v0.4). Смена услуги/мастера, replacement, re-offer,
+  cross-tenant перенос, изменение цены/длительности — остаются deferred
+  (AYLA-DEC-0022 — полная ветка replacement; см. Non-goals);
 - fallback при external booking failure — честное состояние booking
   failed с recovery path: повторить, выбрать другой слот, записаться
   позже (см. Negative Scenarios, N7–N9);
@@ -1151,13 +1159,20 @@ counts, detailed gates и operational procedures в этот документ н
   (deferred — CSR §10);
 - платежи пользователя в journey (факт — MVP Scope v0.3 §7; клиент Ayla
   не платит — AYLA-DEC-0032);
-- перенос и отмена записи, late-window, substitute и reschedule
-  sync-конфликты как полноценные ветки journey — **deferred (вариант Б,
-  owner ruling 2026-07-28)**: intent types RESCHEDULE/CANCEL
-  поддерживаются моделью intent, но их операциональная семантика
-  определяется planned AYLA-DEC-0022
-  (`99 Archive/proposals/decision-brief-appointment-reschedule-model.md`);
+- отмена записи как полноценная ветка journey, late-window, substitute и
+  reschedule sync-конфликты — **deferred (вариант Б, owner ruling
+  2026-07-28)**: intent type CANCEL_APPOINTMENT поддерживается моделью
+  intent, операциональная семантика полной ветки определяется AYLA-DEC-0022
+  (accepted, действует —
+  `99 Archive/proposals/decision-brief-appointment-reschedule-model.md`);
   в шагах 1–12 и N1–N16 нет статусов, событий или операций этих веток;
+- **Simple Reschedule — исключение из вышеуказанного deferral (Wave 1,
+  owner decision).** Same-ID перенос времени/даты в пределах того же
+  Offering — in scope: intent `RESCHEDULE_APPOINTMENT`, событие
+  `appointment.rescheduled` (канон — AYLA-DEC-0022 п. 1, п. 9; Domain
+  Event Registry §6.3, `registered`, v0.4). Остаются deferred: смена
+  услуги/мастера, replacement, re-offer, cross-tenant перенос, изменение
+  цены/длительности (полная replacement-ветка AYLA-DEC-0022);
 - Telegram и любые каналы кроме трёх required (факт — MVP Scope v0.3 §8;
   AYLA-DEC-0004/0027);
 - программа лояльности, marketplace-сценарии, несколько стран (факт —

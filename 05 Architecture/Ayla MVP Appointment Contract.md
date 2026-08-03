@@ -4,7 +4,7 @@ title: Ayla MVP Appointment Contract
 type: specification
 status: draft
 decision_status: proposed
-version: "0.1"
+version: "0.2"
 owner: Product Architecture
 priority: P0
 knowledge_area:
@@ -27,7 +27,7 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-29
-updated: 2026-07-29
+updated: 2026-08-02
 review_cycle: monthly
 depends_on:
   - "[[Ayla Constitution]]"
@@ -424,25 +424,54 @@ compensating event и новой projection — с audit trail (CDM §7.12,
 
 ## 14. Event Candidates
 
-Этот документ **не изменяет** Domain Event Registry; регистрация —
-отдельным change set после review и owner rulings. Текущее состояние и
-кандидаты:
+Этот документ **не изменяет** Domain Event Registry напрямую; для
+большинства перечисленных событий регистрация остаётся отдельным change
+set после review и owner rulings. Исключение — `appointment.rescheduled`:
+уже зарегистрирован в DER v0.4 по AYLA-DEC-0022 п. 9 (accepted); этот
+контракт лишь фиксирует ссылку на уже состоявшуюся регистрацию, не
+дублирует и не заменяет её. Текущее состояние (registered/candidate) по
+каждому событию:
 
-| Event | Статус в DER v0.3 | Позиция контракта |
+| Event | Статус в DER | Позиция контракта |
 |---|---|---|
 | `appointment.created` | proposed, defined | Семантика подтверждена (§5); стартовое состояние — OQ-A4 |
 | `appointment.confirmed` | proposed, defined | Семантика подтверждена (§7) |
 | `appointment.completed` | proposed, **incomplete** (OQ-E3) | Остаётся incomplete до owner ruling OQ-A1 (§9) |
 | `appointment.cancelled` | proposed, defined | Семантика подтверждена (§8) |
 | `appointment.rejected` | candidate | Предлагается к определению (§8) — OQ-A5 |
-| `appointment.rescheduled` | candidate | Семантика — AYLA-DEC-0022 п. 9 (same-ID); кандидат к регистрации при DER v0.4 |
+| `appointment.rescheduled` | **registered (DER v0.4)** | Семантика — AYLA-DEC-0022 п. 9 (same-ID); зарегистрировано (Domain Event Registry §6.3, `registration_status: registered`); Wave 1 Simple Reschedule — owner decision (Decision Log, AYLA-DEC-0022, accepted 2026-07-28) |
 | `appointment.no_show` | candidate | Предлагается с обязательным `party` (§10) — после OQ-A2 |
 | `appointment.completion_corrected` / `appointment.status_corrected` | нет | Не регистрировать до OQ-A3 (§11) |
 | `pending_appointment.expired` | technical candidate | Technical signal для `requested/pending_confirmation → expired`; доменным фактом не является **(proposal)** |
 | `completion_confirmation_due` | нет | Internal signal (§9.2); **не** доменное событие, за пределы Appointment context не публикуется **(proposal)** |
 
-Publication scope существующих записей — `cross_repository` (DER v0.3
-§6.3): Appointment — интеграционная граница с Backend/YClients-контуром.
+Publication scope существующих записей — `cross_repository` (DER §6.3:
+v0.3 для proposed-записей, v0.4 для зарегистрированного
+`appointment.rescheduled`): Appointment — интеграционная граница с
+Backend/YClients-контуром.
+
+### 14.1 Legacy Schema Compatibility (temporary, non-canonical)
+
+Для Wave 1 Simple Reschedule runtime/legacy интеграция (YClients-контур,
+`ai-bot-platform-booking`) местами всё ещё использует плоские поля,
+предшествующие Offering/Assignment модели (AYLA-DEC-0020). Временное
+соответствие для чтения legacy-полей при интеграции — **не переопределяет
+CDM и не вводит новые SoR-атрибуты**:
+
+| Legacy поле | Приблизительное соответствие в каноне |
+|---|---|
+| `service_id` (плоский, до Offering/Assignment split) | ≈ Service Offering ref (`offering_id`) — не Catalog Service `service_id` (CDM §7.9 / §12) |
+| `(specialist_id, service_id)` | ≈ Specialist Offering Assignment ref (`specialist_offering_assignment_id`, CDM §7.9) |
+
+Это соответствие — **не канон**: оно не отменяет запрет `specialist_id`
+как SoR-атрибута Appointment (AYLA-DEC-0020 п. 8, CDM §21 инв. 11) и не
+переопределяет `service_id` Catalog Service (CDM §7.9). Оно существует
+только как temporary мостик для чтения legacy runtime payload при
+Simple Reschedule до миграции интеграции на канонические
+`offering_id`/`specialist_offering_assignment_id`. Мостик подлежит
+удалению при закрытии миграции; canonical write commands обязаны
+использовать `specialist_offering_assignment_id` (AYLA-DEC-0022 п. 9,
+`appointment.rescheduled` payload).
 
 ## 15. Privacy and Audit
 
@@ -501,7 +530,9 @@ Publication scope существующих записей — `cross_repository`
       appointment state; timeout ≠ cancelled.
 - [ ] Связь с Recommendation — опциональные ссылки; Appointment не
       объявляет себя результатом Recommendation.
-- [ ] События — только кандидаты; Domain Event Registry не изменён.
+- [ ] События раздела 14 — кандидаты, кроме `appointment.rescheduled`
+      (зарегистрирован отдельным решением, AYLA-DEC-0022 п. 9, DER v0.4);
+      Domain Event Registry этим документом не изменён.
 - [ ] OQ-E3 не закрыт; `appointment.completed` не объявлен fully
       defined; `appointment_completed` остаётся candidate thesis action
       в Recommendation Contract.
@@ -509,6 +540,24 @@ Publication scope существующих записей — `cross_repository`
 - [ ] Validator = 0 errors (по этому файлу).
 
 ## 18. Change Log
+
+### v0.2 (2026-08-02) — Wave 1 Simple Reschedule canon alignment
+
+- **§14:** статус `appointment.rescheduled` обновлён на **registered**
+  (Domain Event Registry v0.4, `registration_status: registered`) —
+  регистрация нормативно предписана AYLA-DEC-0022 п. 9 (accepted
+  2026-07-28); добавлен §14.1 Legacy Schema Compatibility (temporary,
+  non-canonical) — мэппинг legacy runtime-полей `service_id` и
+  `(specialist_id, service_id)` на Offering/Assignment ref для
+  YClients-контура и `ai-bot-platform-booking`; мэппинг не переопределяет
+  AYLA-DEC-0020 и подлежит удалению при закрытии миграции интеграции.
+- **§14 intro, §17:** уточнено, что `appointment.rescheduled` —
+  единственное исключение из общего правила «события раздела —
+  кандидаты»; убрана ссылка на служебный prompt-файл в позиции
+  контракта, заменена на каноническую атрибуцию (Decision Log,
+  AYLA-DEC-0022).
+- `status`/`decision_status` не менялись — изменение point-in-scope,
+  без отдельного owner decision сверх уже принятого AYLA-DEC-0022.
 
 ### v0.1 (2026-07-29) — Initial draft
 

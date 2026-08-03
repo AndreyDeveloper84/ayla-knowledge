@@ -1,6 +1,6 @@
 ---
 artifact: screen-inventory-customer
-version: "0.2"
+version: "0.6"
 status: draft
 date: 2026-07-29
 task_id: UX-CUST-001
@@ -29,7 +29,7 @@ data_categories:
 security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
-updated: 2026-07-29
+updated: 2026-08-02
 review_cycle: monthly
 ---
 
@@ -41,6 +41,41 @@ review_cycle: monthly
 состав, дедупликацию, MVP-волну и readiness.
 
 ## Changelog
+
+### v0.6 (2026-08-02) — SCR-CUST-013 stale source removed
+
+- **SCR-CUST-013 existing_spec:** удалён отсутствующий/устаревший источник
+  `docs/screens/customer-cancellation-reschedule-flow.md` из нормативного
+  списка; `flows/customer-cancel-reschedule-stages.md` остаётся
+  единственным нормативным stage-source. Ссылка на прежний файл сохранена
+  в notes как явно ненормативный historical note (без wikilink/navigation
+  dependency). Readiness и остальные строки таблицы не изменены.
+
+### v0.5 (2026-08-02) — Cancellation scope reconciliation
+
+- **SCR-CUST-012** title/notes: явно помечено как minimal conversational
+  cancel (C1–C5), не full Cancellation journey; добавлена ссылка на
+  AYLA-DEC-0036 в key_dependencies. Устраняет неоднозначность между
+  активной Phase 1 веткой и deferred-статусом полной cancellation journey
+  (owner ruling 2026-07-28, вариант Б). Поведение/readiness не изменены.
+
+### v0.4 (2026-08-02) — Owner ruling formally registered (AYLA-DEC-0036)
+
+- **SCR-CUST-013 key_dependencies/notes:** добавлена ссылка на
+  **AYLA-DEC-0036** (OD-RESCHED-1) — owner ruling для Wave 1 Simple
+  Reschedule формально зарегистрирован в `OWNER_DECISION_REGISTER.md`.
+  Семантика v0.3 (same-ID/time-only, AYLA-DEC-0022) не изменена.
+
+### v0.3 (2026-08-02) — Wave 1 Simple Reschedule canon alignment
+
+- **SCR-CUST-013 notes:** заменена механика `cancel_then_create_new_booking`
+  на same-ID/time-only (Simple Reschedule, Wave 1 — UX-OD-001,
+  синхронизировано с AYLA-DEC-0022 п. 1, п. 2, п. 9); добавлена
+  зависимость AYLA-DEC-0022; OQ-4 из stage specs закрыт.
+- Затронуто точечно: readiness и остальные строки таблицы не менялись.
+  Синхронизировано с `decisions/ux-owner-decisions.md` (UX-OD-001 v0.2),
+  `flows/customer-cancel-reschedule-stages.md` (v0.2), `gaps/UX-GAP-0105.md`,
+  `context/current-session-brief.md`.
 
 ### v0.2 (2026-07-29) — UX-SYNC-001: применены owner decisions UX-OD-001…005
 
@@ -107,8 +142,8 @@ review_cycle: monthly
 | SCR-CUST-009 | Registration / MAX OAuth gate при подтверждении записи | Mini App | W1 | PARTIAL | docs/screens/customer-booking-confirm-registration-spec.md | AYLA-DEC-0016 (identity); UX-GAP-0101; UX-GAP-P1-03 (anonymous mode) | Идентичность нужна для создания записи (backend SoR, SRC-01 §6). Session-only часть подтверждена UX-OD-003 (booking_execution по service_necessity). Модель consent в спеке (152-ФЗ PERSONAL_DATA) расходится с CSR scopes — см. UX-GAP-0101; anonymous mode — P1-03. | Not Started | Not Started | Not Started | Not Started |
 | SCR-CUST-010 | Records list (ближайшие / история) — Mini App home Phase 1 | Mini App | W1 | READY | docs/screens/customer-records-flow.md | CAP-011; доменные статусы записи (Request ≠ Created ≠ Confirmed, SRC-02 этап 11); UX State Contract — UX-GAP-P1-04 (naming) | Подтверждён как home Mini App Phase 1 (UX-OD-005): upcoming bookings, relevant booking states, history when available; contextual navigation может миновать home. Entry point для cancel/reschedule (SRC-12). | Not Started | Not Started | Not Started | Not Started |
 | SCR-CUST-011 | Booking detail (активная/прошлая запись) | Mini App | W1 | READY_WITH_ASSUMPTIONS | docs/screens/customer-records-flow.md (R3) | CAP-011; UX-OD-001; stage specs доставлены (flows/customer-cancel-reschedule-stages.md) | Та же спека; действия по записи определены UX-OD-001 и stage specs UX-SPEC-001 (entry points cancel/reschedule зафиксированы; deep link Mini App→bot DM — proposal, OQ-3). | Not Started | Not Started | Not Started | Not Started |
-| SCR-CUST-012 | Cancel booking flow (подтверждение, причина, результат) | bot DM (+ Mini App при contextual deep link) | W1 | READY_WITH_ASSUMPTIONS | docs/screens/customer-cancellation-reschedule-flow.md (C1–C3); flows/customer-cancel-reschedule-stages.md | CAP-011; UX-OD-001; stage specs доставлены (UX-SPEC-001, draft) | UX-GAP-0105 закрыт (UX-OD-001): отмена через диалог bot DM (identify_booking → show_booking_summary → explicit_confirmation → authoritative_cancellation → result); обязательны cancel_pending и cancel_failed; no cancelled state до authoritative confirmation. Assumptions: stage specs — draft (OQ-1 политика отмены, OQ-3 deep-link механизм — proposals). | Not Started | Not Started | Not Started | Not Started |
-| SCR-CUST-013 | Reschedule booking flow (слоты, подтверждение; смена мастера — W2) | bot DM (+ Mini App для расширенного выбора слота) | W1 | READY_WITH_ASSUMPTIONS | docs/screens/customer-cancellation-reschedule-flow.md (R1–R4); flows/customer-cancel-reschedule-stages.md | CAP-011, CAP-010; UX-OD-001, UX-OD-004; stage specs доставлены (UX-SPEC-001, draft); SCR-CUST-006 | Перенос = cancel_then_create_new_booking (UX-OD-001): bot DM; Mini App — расширенный выбор слота (UX-OD-004). Неатомарность раскрывается заранее. Assumptions: stage specs — draft (OQ-3, OQ-4 — proposals). | Not Started | Not Started | Not Started | Not Started |
+| SCR-CUST-012 | Minimal conversational cancel flow (identify, summary, confirmation, результат) — не full Cancellation journey | bot DM (+ Mini App при contextual deep link) | W1 | READY_WITH_ASSUMPTIONS | docs/screens/customer-cancellation-reschedule-flow.md (C1–C3); flows/customer-cancel-reschedule-stages.md | CAP-011; UX-OD-001; AYLA-DEC-0036 (OD-RESCHED-1); stage specs доставлены (UX-SPEC-001, draft) | UX-GAP-0105 закрыт (UX-OD-001): отмена через диалог bot DM (identify_booking → show_booking_summary → explicit_confirmation → authoritative_cancellation → result); обязательны cancel_pending и cancel_failed; no cancelled state до authoritative confirmation. Это minimal conversational cancel (C1–C5), не full Cancellation journey — policy/deadline/refund flow, standalone full-screen management, late-window/waitlist остаются deferred (owner ruling 2026-07-28, вариант Б; формализовано AYLA-DEC-0036). Assumptions: stage specs — draft (OQ-1 политика отмены, OQ-3 deep-link механизм — proposals). | Not Started | Not Started | Not Started | Not Started |
+| SCR-CUST-013 | Reschedule booking flow (слоты, подтверждение; смена мастера — W2) | bot DM (+ Mini App для расширенного выбора слота) | W1 | READY_WITH_ASSUMPTIONS | flows/customer-cancel-reschedule-stages.md | CAP-011, CAP-010; UX-OD-001, UX-OD-004; AYLA-DEC-0022; AYLA-DEC-0036 (OD-RESCHED-1); stage specs доставлены (UX-SPEC-001, draft); SCR-CUST-006 | Simple Reschedule (Wave 1) = same-ID, time-only (UX-OD-001, канон — AYLA-DEC-0022 п. 1, п. 2, п. 9; owner ruling зарегистрирован как AYLA-DEC-0036): тот же appointment_id, версия монотонно увеличивается, событие appointment.rescheduled; cancel+create не используется. bot DM; Mini App — расширенный выбор слота (UX-OD-004). Assumptions: stage specs — draft (OQ-3 — proposal; OQ-4 закрыт 2026-08-02). Historical, non-normative: docs/screens/customer-cancellation-reschedule-flow.md (R1–R4) ранее использовался как источник reschedule-механики; заменён same-ID моделью (AYLA-DEC-0022/AYLA-DEC-0036), нормативным источником не является. | Not Started | Not Started | Not Started | Not Started |
 | SCR-CUST-014 | Транзакционные уведомления и напоминания по записи | bot DM | W1 | READY_WITH_ASSUMPTIONS | docs/screens/customer-reminders-voice.md (B5/B6) | CAP-021 | Только транзакционный контур записи; проактивность вне MVP (SRC-02 этап 13; SRC-01 §8 Privacy; UX-OD-003). B7 (T-15min), B9 (care notes) — DEFERRED. | Not Started | Not Started | Not Started | Not Started |
 | SCR-CUST-015 | Outcome / feedback prompt (после визита) | bot DM | W1 | PARTIAL | docs/screens/customer-reminders-voice.md (B11, частично) | CAP-006; UX-GAP-P1-05 (OQ6, OQ8) | Этап 14 определён, но статус CAP-006 в MVP не решён (SRC-02 OQ6) и доменный триггер `appointment.completed` pending Domain Event Registry (OQ8). | Not Started | Not Started | Not Started | Not Started |
 | SCR-CUST-016 | Safety boundary message (N8) | bot DM | W1 | READY_WITH_ASSUMPTIONS | — | CAP-014; Killer PRD OD-K6 (по SRC-02 N8) | Поведение определено: остановка, минимальные вопросы о срочности, безопасный следующий шаг, без CTA на заблокированную услугу (SRC-02 N8). Отдельной спеки нет — требуется в следующей задаче. | Not Started | Not Started | Not Started | Not Started |

@@ -21,11 +21,25 @@ data_categories:
 security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
-updated: 2026-07-29
+updated: 2026-08-03
 review_cycle: monthly
 ---
 
 # Owner Review Package 001 — Customer Screen Inventory
+
+> **Superseded in part — 2026-08-02.** Decision 1 (механика переноса
+> записи) заменено: **AYLA-DEC-0036** (OD-RESCHED-1) в
+> `OWNER_DECISION_REGISTER.md` и **AYLA-DEC-0022** в [[Ayla Decision Log]].
+> Для Wave 1 Simple Reschedule действует только модель **same-ID,
+> time-only**: существующая запись сохраняет `appointment_id`, а
+> `cancel + new booking` для этого сценария запрещён.
+>
+> Текст раздела «Decision 1» ниже и строка «перенос = cancel + new
+> booking» в таблице «Резолюции 2026-07-29» сохранены как snapshot
+> первоначального owner review от 2026-07-29 и не являются актуальным
+> нормативным решением в части механики переноса. Действующая
+> синхронизация — `decisions/ux-owner-decisions.md` (UX-OD-001) и
+> `gaps/UX-GAP-0105.md`.
 
 Дата: 2026-07-29. Основание: UX-CUST-001 + UX-INT-001 (integration review:
 PASS_WITH_FIXES, правки внесены). Артефакт: `docs/ux/02-screen-inventory-customer.md`.
@@ -156,3 +170,13 @@ UX-CUST-002: Screen Contracts для READY_WITH_ASSUMPTIONS (SCR-CUST-001, 005, 
 Дополнительно при синхронизации: UX-GAP-0103 закрыт как ошибка синхронизации —
 Ayla Intent Model Specification v0.9.2 существует и approved
 (ayla-knowledge, owner AI Architecture, 2026-07-28).
+
+## Changelog
+
+- 2026-08-03 — Targeted fix (PR #9 review): добавлен supersession-banner к
+  Decision 1 — механика переноса заменена **AYLA-DEC-0036** (OD-RESCHED-1,
+  `OWNER_DECISION_REGISTER.md`) и **AYLA-DEC-0022** ([[Ayla Decision Log]]);
+  для Wave 1 Simple Reschedule действует только same-ID, time-only,
+  `cancel + new booking` запрещён. Текст Decision 1 и таблица «Резолюции
+  2026-07-29» не переписаны — сохранены как исторический snapshot.
+  Decisions 2–5 не затронуты.

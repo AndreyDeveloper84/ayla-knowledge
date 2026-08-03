@@ -25,7 +25,7 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-27
-updated: 2026-07-31
+updated: 2026-08-02
 review_cycle: monthly
 depends_on:
   - "[[Ayla Product Essence]]"
@@ -251,7 +251,12 @@ AYLA-DEC-0014) и не является canonical activation. Новые обл�
 - intent conversation (минимальный набор intent types, proposal CAP-003);
 - объяснимая рекомендация (proposal CAP-004 + CAP-005);
 - выбор следующего действия;
-- booking / reschedule / cancel как опция (proposal CAP-011);
+- booking / reschedule / cancel как опция (proposal CAP-011): same-ID
+  time-only reschedule (Wave 1, Simple Reschedule) — accepted
+  (AYLA-DEC-0022 п. 9, Domain Event Registry v0.4, `appointment.rescheduled`
+  registered); полная cancellation journey, replacement, change
+  specialist/service, re-offer — остаются deferred (AYLA-DEC-0022,
+  owner ruling 2026-07-28, вариант Б);
 - транзакционные уведомления (proposal CAP-021);
 - сравнение состояний и видимый прогресс;
 - контроль данных, Twin и персонализации.
@@ -670,6 +675,19 @@ AYLA-DEC-0027; их создание — часть coordinated migration и exe
 > Этот журнал отражает историю изменений документа и не является
 > нормативной частью спецификации. Нормативным считается текущее состояние
 > разделов 1–15, а не записи ниже.
+
+### v0.3 (2026-08-02) — Wave 1 Simple Reschedule §6.1 alignment
+
+Targeted editorial sync: no scope change, no owner decision, no version
+bump, no canonical status change.
+
+- **§6.1** — уточнена формулировка "booking / reschedule / cancel как
+  опция": same-ID time-only reschedule (Wave 1, Simple Reschedule) —
+  accepted (AYLA-DEC-0022 п. 9, DER v0.4); полная cancellation journey,
+  replacement, change specialist/service, re-offer — deferred. Устранена
+  асимметрия детализации с [[Ayla MVP User Journey Specification]] §16 и
+  [[Ayla MVP Appointment Contract]] §14, где это разграничение уже было
+  зафиксировано.
 
 ### v0.3 (2026-07-31) — Execution scope artifacts added to migration matrix
 
