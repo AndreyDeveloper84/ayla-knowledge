@@ -2,9 +2,10 @@
 node_id: ayla.ai.intent-model
 title: Ayla Intent Model Specification
 type: ai-specification
-status: approved
-decision_status: accepted
-version: "0.9.2"
+status: draft
+decision_status: proposed
+canonical_status: candidate
+version: "1.0"
 owner: AI Architecture
 priority: P0
 knowledge_area:
@@ -26,14 +27,18 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-27
-updated: 2026-07-28
+updated: 2026-08-03
 review_cycle: monthly
 depends_on:
   - "[[Ayla Constitution]]"
-  - "[[Ayla User Journey Specification]]"
+  - "[[Ayla Product Essence]]"
+  - "[[Ayla Product Vision]]"
+  - "[[Ayla MVP Product Thesis]]"
+  - "[[Ayla Product Principles]]"
   - "[[Ayla MVP Scope and Release Contract]]"
   - "[[Ayla Decision Log]]"
 related:
+  - "[[Ayla MVP User Journey Specification]]"
   - "[[Consent Scope Registry]]"
   - "[[Ayla Domain Capability Registry]]"
   - "[[Killer PRD]]"
@@ -41,14 +46,15 @@ related:
 
 # Ayla Intent Model Specification
 
-> **Статус:** approved (decision_status: accepted, 2026-07-28) — принят как
-> implementation candidate для MVP; с этого момента положения документа
-> имеют нормативную силу в объёме MVP-среза. По
-> AYLA-DEC-0011 документ является критическим predecessor для
-> [[Ayla Domain Context Map]] и [[Ayla Core Domain Model Specification]]:
-> эти документы не могут перейти к содержательной канонизации, пока Intent
-> Model не зафиксирован содержательно. AYLA-DEC-0014 помещает этот документ в
-> волну 1 (продуктовые блокеры) и ограничивает его объём MVP-срезом.
+> **Статус:** Draft v1.0 / proposed / canonical candidate — structured
+> revision в Two-Phase Pilot Scope Reconciliation Window. Документ приведён
+> к текущей продуктовой основе: [[Ayla Product Essence]] v1.1,
+> [[Ayla Product Vision]] v2.0, [[Ayla MVP Product Thesis]] v0.5,
+> [[Ayla Product Principles]] v0.1, [[Ayla MVP Scope and Release Contract]]
+> v0.3 и [[Ayla MVP User Journey Specification]] v1.1. Редакция не наследует
+> approval v0.9.2 автоматически и ожидает review и Product Owner approval.
+> Runtime Intent Resolution Output Contract сохраняет `contract_version:
+> "0.5"`; его поля и machine-readable appendix этой ревизией не меняются.
 >
 > **Соглашение о пометках.** Положения, прямо подтверждённые источниками,
 > помечены «Факт — <источник>». Положения, впервые предложенные этим
@@ -57,11 +63,13 @@ related:
 
 ## Purpose
 
-Документ определяет MVP-объём Intent Understanding (CAP-003,
-[[Ayla MVP Scope and Release Contract]] §4.1): какие intent types система
-обязана распознавать, какие слоты заполнять, когда задавать уточняющий вопрос,
-как обрабатывать смену и отмену намерения и в каком формате возвращать
-результат intent resolution.
+Документ определяет каноническую MVP-модель intent: как текущее намерение
+пользователя связано с принадлежащей пользователю Transformation Goal, как
+оно распознаётся и проходит lifecycle, как из него формируется
+recommendation intent и как orchestration переводит подтверждённый выбор в
+downstream action. Внутри этой модели документ сохраняет точный контракт
+Intent Understanding (CAP-003): intent types, slots, clarification,
+supersession/expiry и результат intent resolution.
 
 Задача документа — устранить неопределённость, при которой AI, backend и
 канал реализовали бы intent handling несовместимо (принцип
@@ -69,27 +77,32 @@ related:
 реализацию классификатора (модель, prompt, код) — это зона ayla-ai-core и
 Prompt Canon (Roadmap §3.3).
 
-Проверяемая цель (Факт — Roadmap §9.2): качество intent layer измеряется
-метриками «доля resolved intents» и «clarification rate» в составе главной
-метрики MVP «осмысленный запрос → полезная рекомендация → подтверждённое
-действие», а не количеством сообщений.
+Проверяемая цель: intent layer помогает пройти составной путь MVP
+«Transformation Goal → понятный intent → объяснимая рекомендация →
+подтверждённый следующий шаг → progress / next state» (факт — MVP Scope
+v0.3 §3–§5; MVP User Journey v1.1 §5). `resolved intents` и
+`clarification rate` остаются диагностической телеметрией, а не центром
+продукта (факт — MVP Scope v0.3 §11).
 
 ## Responsibility
 
-Intent Model отвечает за превращение текущего пользовательского сообщения
-(query) в структурированное намерение (intent) со слотами, оценкой уверенности
-и safety-пометками — ровно в объёме, достаточном, чтобы Recommendation,
-Availability и Appointment capabilities могли действовать дальше по сквозному
-сценарию (Факт — [[Ayla MVP Scope and Release Contract]] §3):
+Intent Model отвечает за каноническую связь между пользовательской целью,
+текущим intent, recommendation intent и orchestration decision. Resolver
+часть модели превращает текущее пользовательское сообщение (query) в
+структурированное намерение со слотами, оценкой уверенности и
+safety-пометками — ровно в объёме, достаточном для следующего решения
+Recommendation и orchestration (факт — MVP Scope v0.3 §3–§6; MVP User
+Journey v1.1 §6.4–§6.6):
 
 ```text
-Пользователь выражает потребность
-→ Ayla уточняет intent          ← зона ответственности этого документа
-→ подбирает услугу или действие
-→ объясняет рекомендацию
-→ пользователь подтверждает
-→ Ayla создаёт запись
-→ пользователь получает подтверждение
+Пользователь формулирует Transformation Goal или рабочее намерение
+→ Ayla распознаёт и уточняет user intent       ← resolver contract
+→ связывает intent с целью и разрешённым контекстом
+→ формирует объяснимый recommendation intent  ← relationship contract
+→ пользователь принимает, отклоняет или уточняет следующий шаг
+→ orchestration исполняет только подтверждённое downstream action
+→ результат становится continuity input
+→ пользователь видит progress / next state
 ```
 
 Факт — [[Ayla Glossary]]: Intent — структурированное представление того, что
@@ -98,8 +111,156 @@ Availability и Appointment capabilities могли действовать да�
 нормализованное содержимое текущего обращения, само по себе не достоверный
 факт и не Intent.
 
+## Canonical Intent Relationships
+
+### Transformation Goal and Intent
+
+**Transformation Goal** — центральная доменная сущность и принадлежит
+пользователю (факт — Product Essence §20; Product Principles 4.2). Она
+описывает желаемое направление пути и может жить дольше отдельной сессии в
+пределах соответствующего consent и доменного lifecycle.
+
+**User Intent** — текущее структурированное представление того, что
+пользователь пытается изменить, понять, выбрать или сделать сейчас. Intent
+может поддерживать Transformation Goal, уточнять её, временно не иметь с ней
+явной связи или выражать управление самим journey (например,
+`REVOKE_CONSENT`). Intent не владеет Transformation Goal и не заменяет её.
+Если связь с целью неизвестна, resolver не выдумывает её: связь остаётся
+`unknown/not_established`, а Ayla либо задаёт минимальный вопрос, либо
+продолжает с минимальным рабочим намерением (факт — MVP User Journey v1.1
+§6.2, N1).
+
+**Transformation intent** — роль user intent в изменении состояния на пути к
+Transformation Goal. Это не новый runtime `intent_type` и не отдельная
+сущность: роль связывает распознанный intent с целью и ожидаемым изменением,
+если такая связь подтверждена. Она не превращает прогноз в цель и не обещает
+результат.
+
+### Recommendation Intent
+
+**Recommendation intent** — system-owned структурированная цель текущего
+recommendation pass: какой объяснимый следующий шаг Ayla намерена предложить
+в ответ на resolved user intent, с какой связью с Transformation Goal,
+какими gates и каким допустимым классом действия. Это relationship boundary,
+а не redesign Recommendation architecture и не новое поле Intent Resolution
+Output Contract.
+
+Recommendation intent:
+
+- формируется только после intent-level resolution и обязательных gates;
+- не изменяет user intent и не выдаётся за выбор пользователя;
+- может быть `no_action`, если действие неуместно;
+- не даёт права на side effect: действие требует отдельного явного
+  подтверждения пользователя;
+- принадлежит Recommendation/orchestration layer; Intent Model владеет
+  только правилами связи с user intent.
+
+### Orchestration Intent Model
+
+Orchestration использует следующий нейтральный к каналу порядок:
+
+```text
+entry trigger
+→ query + permitted context
+→ user intent resolution
+→ Transformation Goal relationship (known | unknown)
+→ recommendation intent
+→ explanation + user decision
+→ confirmed downstream action or no_action
+→ outcome / continuity input
+→ progress / next state
+```
+
+Intent resolution не вызывает tools и не создаёт side effects.
+Recommendation не является действием. Orchestration исполняет action только
+после подтверждения пользователя и доменных authorization/safety checks.
+Booking — одна из опций downstream action и не является terminal intent или
+terminal journey state (факт — Product Principles 4.8; MVP Scope v0.3 §4;
+MVP User Journey v1.1 §5, §6.6–§6.7).
+
+### Living Digital Twin Relationship
+
+Living Digital Twin — главный визуальный интерфейс ключевых сценариев, но
+не classifier, не источник intent и не самостоятельный субъект (факт —
+AYLA-DEC-0026; Product Essence §6–§9). Intent Model:
+
+- может использовать только разрешённые user-entered/observed facts и
+  явно маркированные reconstructed/inferred representations;
+- не выводит intent из внешности или Twin без пользовательского сигнала;
+- не смешивает intent, Transformation Goal, prediction и observed state;
+- передаёт подтверждённую связь intent с целью/следующим шагом в
+  orchestration, чтобы owning channel мог показать её через Twin или другую
+  подходящую поверхность;
+- не требует Twin на каждом экране и не обновляет Twin автоматически после
+  каждого intent/action.
+
+Recognition «это я» относится к принятию Twin-представления пользователем,
+а intent recognition — к пониманию текущего намерения. Эти два recognition
+flow независимы и не должны смешиваться.
+
+## Recognition Flow and Intent Lifecycle
+
+### Recognition Flow
+
+Четыре равнозначных trigger-сценария — питание, восстановление, подготовка к
+событию, история посещений/предпочтений — являются только entry context
+(факт — AYLA-DEC-0028; Product Vision §10). Ни один trigger, включая Food
+Scanner, не определяет intent type и не получает приоритет по умолчанию.
+
+```text
+trigger/context received
+→ query normalized without treating it as fact
+→ permitted session context assembled
+→ candidate user intent(s) detected internally
+→ type/slots/confidence/safety resolved
+→ clarification when required
+→ first consumer-meaningful result published
+```
+
+`detected` остаётся внутренним non-runtime lifecycle state по
+AYLA-DEC-0019; первый публикуемый result имеет один из статусов Output
+Contract. Explainability обеспечивается `evidence` и структурированной
+связью с использованным контекстом; правдоподобное объяснение post factum
+запрещено.
+
+### Lifecycle and Ownership
+
+- Пользователь владеет намерением в смысле права сформулировать, уточнить,
+  изменить, отменить или отвергнуть интерпретацию Ayla.
+- Intent resolver владеет resolution result, confidence, slots и lifecycle
+  опубликованного результата в пределах этого контракта.
+- Transformation Goal принадлежит пользователю и своему domain owner;
+  смена intent не изменяет Goal молча.
+- Recommendation layer владеет recommendation intent и candidates;
+  orchestration владеет sequencing и execution decision; domain capability
+  владеет фактическим результатом действия.
+- `resolved` означает распознанность user intent, а не принятие
+  рекомендации, не execution readiness и не достижение Goal.
+- `superseded`/`expired` применяются к intent resolution; они не делают
+  Transformation Goal, память или доменный action автоматически
+  superseded/expired.
+
+Lifecycle одного user intent:
+
+```text
+detected (internal)
+→ resolving
+→ resolved | needs_clarification | unresolved | blocked_safety
+→ superseded | expired                    # только после публикации
+```
+
+Повторная сессия создаёт новый intent resolution. Phase 2 persistent memory
+может дать разрешённый контекст новому resolution, но не делает прежний
+session intent активным и не превращает историю intent в пользовательский
+факт.
+
 ## Owns
 
+- Канонические различия и связи между Transformation Goal, user intent,
+  transformation role, recommendation intent и orchestration action
+  (§ Canonical Intent Relationships) без владения downstream entities.
+- Recognition flow и lifecycle user intent, включая ownership boundaries
+  и отделение session resolution от persistent memory.
 - Реестр MVP intent types, их slot requirements (`all_of`/`any_of`/
   `conditional`) и правила детерминированного disambiguation между типами
   (§ Intent Types, § Disambiguation and Precedence). Имена слотов, типы и
@@ -120,6 +281,12 @@ Availability и Appointment capabilities могли действовать да�
 
 ## Does not own
 
+- **Transformation Goal lifecycle и persistence** — goal принадлежит
+  пользователю и соответствующему Domain owner; Intent Model только
+  определяет связь текущего intent с целью.
+- **Living Digital Twin representation, media pipeline и recognition
+  quality** — Intent Model определяет только границу взаимодействия; Twin
+  не является источником intent.
 - **Recommendation, ranking, candidates** — MVP Recommendation Contract
   (Roadmap §3.2) и [[Killer PRD]]; Intent Model только поставляет resolved
   intent на вход recommendation pipeline.
@@ -140,9 +307,9 @@ Availability и Appointment capabilities могли действовать да�
   Prompt Canon (Roadmap §3.3) и Tool Schema Registry (Roadmap §6.3).
 - **Коммуникативная таксономия** Intent Type (`goal`, `action`, `information`,
   `management`, `feedback`, `correction`) и Goal Category — определены в
-  [[Ayla User Journey Specification]] Stage 3 и [[Ayla Glossary]]; их связь с
-  реестром intent types этого документа — Open Question OQ-4, здесь не
-  переопределяется.
+  [[Ayla Glossary]] и legacy full Journey; их связь с реестром intent types
+  зафиксирована закрытым OQ-4 и machine-readable Intent Registry, здесь не
+  переопределяется и не используется как orchestration state.
 - **Значения слотов и их SoR** — `service_ref`/`service_category` принадлежат
   Service Catalog (CAP-008), `provider_name`/`provider_preference` — Provider
   Management (CAP-009), `time_slot`/`new_time_slot`/`time_window` —
@@ -160,13 +327,16 @@ Availability и Appointment capabilities могли действовать да�
 - расширение реестра сверх 11 продуктовых intent types + sentinel `UNKNOWN`
   (замороженный список из 12 значений, Roadmap §3.1);
 - долгосрочное персонализационное обучение по intent-паттернам (advanced
-  Outcome Learning — deferred, [[Ayla MVP Scope and Release Contract]] §5);
+  Outcome Learning — deferred, [[Ayla MVP Scope and Release Contract]]
+  v0.3 §7);
 - proactive recommendations и cross-domain personalization — выключены до
-  Phase 2 gates (Факт — [[Consent Scope Registry]] §10);
-- persistent memory для intent understanding — Phase 1 session-only
-  (Факт — [[Consent Scope Registry]] §5.1, §10.1);
-- мультиязычная и multi-channel спецификация (единственные каналы MVP —
-  MAX-бот + MAX Mini App, AYLA-DEC-0004);
+  соответствующих Phase 2 gates (факт — [[Consent Scope Registry]] §10);
+- persistence самого session intent как personal memory; Phase 1 использует
+  session-only context, Phase 2 может читать только разрешённые persistent
+  preferences для нового resolution (факт — CSR §5.1/§5.2, §10);
+- screen-level и channel-specific UX: Intent Model cross-channel neutral;
+  required MVP surfaces — Mobile App, MAX Mini App и MAX Bot, feature parity
+  не требуется (факт — AYLA-DEC-0027; MVP Scope v0.3 §8);
 - автоматические медицинские выводы из intent (запрещено — Roadmap §1.2,
   [[Killer PRD]] §9);
 - contract-test fixtures и исполняемые contract tests — не часть этого
@@ -180,8 +350,13 @@ Availability и Appointment capabilities могли действовать да�
 Вход intent resolution (Факт — состав данных ограничен scope
 `intent_understanding`, [[Consent Scope Registry]] §5.1):
 
-- **User Message / Query** — текущее сообщение пользователя в канале MVP
-  (MAX-бот / MAX Mini App).
+- **User Message / Query** — текущее сообщение пользователя из любого
+  required owning channel: Mobile App, MAX Mini App или MAX Bot. Канал не
+  изменяет семантику intent и фиксируется только как provenance/routing
+  context.
+- **Transformation Goal relationship** — подтверждённая текущая Goal или
+  явное состояние `unknown/not_established`; resolver не создаёт Goal из
+  догадки.
 - **Session context** — только разрешённые категории: `explicit_goal`,
   `service_preference`, `provider_preference`, `session_signal`. Persistent
   context этим scope не разрешён; чтение persistent preferences требует
@@ -189,8 +364,9 @@ Availability и Appointment capabilities могли действовать да�
 - **Authorization state** — результат runtime authorization contract
   ([[Consent Scope Registry]] §6): какие категории данных доступны resolver'у
   в этой сессии. Отсутствие consent → deny (fail-closed).
-- **Контекст диалога сессии** — предыдущие сообщения и подтверждённые слоты
-  текущей сессии (нужны для multi-intent, correction, supersession).
+- **Контекст взаимодействия сессии** — предыдущие сообщения/действия и
+  подтверждённые слоты текущей сессии независимо от канала (нужны для
+  multi-intent, correction, supersession и cross-channel continuation).
 - **Safety evaluation input** — red-zone факты и сигналы риска, доступные в
   сессии, для передачи в deterministic safety gates (CAP-014).
 
@@ -235,8 +411,10 @@ Roadmap §1.2, [[Ayla Constitution]]).
 Минимальный набор MVP (Факт — дословно Roadmap §3.1; не расширяется):
 **11 продуктовых intent types + `UNKNOWN` как resolver sentinel** (не
 пользовательский intent, см. примечания). Все 11 продуктовых типов
-MVP-critical: каждый прямо обслуживает сквозной сценарий
-([[Ayla MVP Scope and Release Contract]] §3), included capabilities (§4.1:
+MVP-critical. Это vocabulary **user intent resolution**, а не перечень
+Transformation Goal types, recommendation intents или orchestration states.
+Каждый тип прямо обслуживает сквозной сценарий
+([[Ayla MVP Scope and Release Contract]] v0.3 §4), in-scope capabilities (§6:
 Appointment Management — создание, подтверждение, перенос, отмена; Consent
 Management; Personal Context whitelist) или обязательный негативный сценарий
 «Ayla не поняла запрос» (Roadmap §2.1, обработан через `UNKNOWN`).
@@ -377,14 +555,14 @@ intent_precedence:
   свойство типа само по себе. Колонка означает только одно: resolution этого
   типа обязан проходить обязательную safety evaluation до перехода к
   recommendation/answer, потому что тип *может* нести health-adjacent или
-  red-zone контекст (Факт — механика Safety Check:
-  [[Ayla User Journey Specification]] Stage 3; red-zone факты — аллергии,
-  противопоказания, конфликт целей). Решение о блокировке принимает
+  red-zone контекст (факт — [[Ayla MVP User Journey Specification]] v1.1
+  §6.4, §9; red-zone факты — аллергии, противопоказания, конфликт целей).
+  Решение о блокировке принимает
   deterministic safety gate **по контексту** (конкретные red-zone факты,
   competence boundary), а не по типу intent: `DISCOVER_SERVICE` без red-zone
   контекста проходит evaluation с пустым результатом и не блокируется.
   Тип определяет обязательность проверки; контекст определяет её исход
-  (§ Safety-sensitive Intents).
+  (§ Safety-sensitive Intents; MVP User Journey v1.1 §9).
 - `ASK_ABOUT_SERVICE` помечен safety-sensitive, потому что ответ может
   касаться противопоказаний; запрещённые медицинские выводы контролируются
   Safety Policy, а не этим документом.
@@ -446,7 +624,7 @@ resolution и подчиняются общему session retention резуль
 Consent Management по [[Consent Scope Registry]], а не resolver.
 
 Владение значениями (маппинг CAP — proposal по
-[[Ayla MVP Scope and Release Contract]] §4): Intent Model владеет реестром
+[[Ayla MVP Scope and Release Contract]] v0.3 §6): Intent Model владеет реестром
 имён слотов и правилами их заполнения, но **не** значениями. Разрешение
 значения в сущность и его SoR принадлежат доменным capabilities:
 `service_ref`/`service_category` → Service Catalog (CAP-008);
@@ -464,8 +642,8 @@ Journey), реестр выносится в отдельный документ
   §10.1).
 - Slot, заполненный и подтверждённый, повторно не спрашивается, пока он
   релевантен текущему intent, совместим с purpose и не противоречит новому
-  сигналу (Факт — [[Ayla User Journey Specification]], Incremental
-  Discovery).
+  сигналу (факт — [[Ayla MVP User Journey Specification]] v1.1 §6.4,
+  clarification suppression и allowed context retrieval).
 - Конфликтующие значения одного slot (старое и новое в одной сессии)
   разрешаются через CORRECT_CONTEXT или clarification — не молчаливым
   перезаписыванием.
@@ -532,7 +710,7 @@ change_reason: # initial_fill | user_correction | intent_shift | clarification_a
 - **Intent shift:** значения, нерелевантные новому intent, несовместимые с
   purpose или противоречащие новому сигналу, → `superseded`,
   `change_reason = intent_shift`; автоматический перенос запрещён (Факт —
-  [[Ayla User Journey Specification]], Incremental Discovery).
+  [[Ayla MVP User Journey Specification]] v1.1 §3, §6.4).
 - **Session end:** все значения → `expired`.
 
 Пример («Хочу к Анне» → «Нет, я имел в виду Марию»):
@@ -553,7 +731,8 @@ clarification при противоречии (§ Confidence and Clarification).
 Confidence — оценка надёжности конкретного структурированного вывода, не
 доказательство истинности (Факт — [[Ayla Glossary]]).
 
-Уровни уверенности (Факт — [[Ayla User Journey Specification]] Stage 3,
+Уровни уверенности (факт — [[Ayla MVP User Journey Specification]] v1.1
+§6.4,
 заданы для формулировок в диалоге; числовые пороги — стартовая runtime
 configuration ayla-ai-core по закрытому OQ-1, семантика уровней
 канонична):
@@ -728,8 +907,9 @@ Secondary — дополнительный (Факт — [[Ayla Glossary]]).
      обрабатывается отдельным циклом только после завершения Primary;
      никогда одновременно и никогда в обратном порядке.
 3. Правила учёта multi-intent в метрике resolved intents (denominator,
-   exclusion rules) требуются [[Ayla User Journey Specification]] (Intent
-   Resolution Types), но там не зафиксированы — Open Question OQ-3.
+   exclusion rules) принадлежат Measurement Framework; Journey фиксирует
+   только evidence points без финальных порогов (факт —
+   [[Ayla MVP User Journey Specification]] v1.1 §13) — Open Question OQ-3.
 
 Correction:
 
@@ -740,7 +920,7 @@ Correction:
 2. Исправление факта, влияющего на safety (red-zone), обязано запускать
    повторную safety evaluation до продолжения actionable pipeline (Факт —
    аналог Safety Re-evaluation при Intent Shift,
-   [[Ayla User Journey Specification]], Dynamic Intent Transition).
+   [[Ayla MVP User Journey Specification]] v1.1 §3, §6.4).
 3. Событие `ContextFactCorrected` входит в MVP event set (Факт — Roadmap
    §6.4); persistence исправлений — зона CAP-001 Personal Context и Phase 2
    gates, не этого документа.
@@ -748,7 +928,7 @@ Correction:
 ## Supersession and Expiry
 
 Supersession (смена намерения внутри сессии). Факт —
-[[Ayla User Journey Specification]], Dynamic Intent Transition: пользователь
+[[Ayla MVP User Journey Specification]] v1.1 §3, §6.4: пользователь
 может менять намерение в рамках одной сессии; при сдвиге Ayla:
 
 1. фиксирует Intent Shift;
@@ -776,13 +956,14 @@ Proposal: intent, оставшийся без завершения к концу
 
 ## Safety-sensitive Intents
 
-Механика (Факт — [[Ayla User Journey Specification]] Stage 3 Safety Check):
+Механика (факт — [[Ayla MVP User Journey Specification]] v1.1 §6.4, §9):
 перед переходом к recommendation resolver проверяет red-zone факты (аллергии,
 противопоказания), конфликты целей и риск вреда; при высоком риске или
 competence boundary Ayla не подтверждает и не продолжает небезопасный путь, а
 переходит к Boundary Handling; безопасная альтернатива предлагается только
 после него. Детерминированные safety gates обязательны для всех product
-capabilities (Факт — [[Ayla MVP Scope and Release Contract]] §4.2, CAP-014).
+capabilities (факт — [[Ayla MVP Scope and Release Contract]] v0.3 §6.5,
+proposal CAP-014).
 
 Safety signals ≠ blocking decisions (Proposal, нормативно):
 
@@ -845,6 +1026,40 @@ Safety signals ≠ blocking decisions (Proposal, нормативно):
 4. Если session-only данных достаточно, resolution продолжается с
    ограниченным контекстом; запрос дополнительного consent — решение
    Consent Management и UX, а не intent resolver'а.
+
+### Economic Neutrality and Attribution
+
+Intent resolution и его связь с recommendation intent экономически
+нейтральны (факт — Constitution Ст. IV; Product Principles 4.11; MVP Scope
+v0.3 §3, §13):
+
+- provider revenue, тариф, booking fee, advertising spend, paid placement и
+  вероятность тарифицируемого действия не могут влиять на `intent_type`,
+  confidence, slots, primary/secondary ordering или clarification;
+- intent resolver не получает коммерческий приоритет как evidence;
+- recommendation intent не подменяется booking intent ради конверсии;
+- цена может быть пользовательским constraint (`budget`) и объяснимым
+  фактом, но не скрытым коммерческим весом;
+- `intent_id` обеспечивает direct attribution к `recommendation_id` и
+  выбранному action; `booking_id` / `appointment_id` добавляется только если
+  booking действительно произошёл (факт — MVP Scope v0.3 §6.3; MVP User
+  Journey v1.1 §12).
+
+Attribution описывает связь решений и результата, но не изменяет ownership:
+наличие booking не делает intent «более истинным», а отсутствие booking не
+делает resolved intent неуспешным. Journey может завершиться `no_action` или
+другим полезным next step и всё равно перейти к progress / next state.
+
+### Cross-channel Neutrality
+
+Один intent resolution contract действует для Mobile App, MAX Mini App и
+MAX Bot (факт — AYLA-DEC-0027). `channel` может присутствовать в transport,
+provenance и analytics metadata, но не меняет intent semantics, thresholds,
+safety/consent rules или Output Contract. Cross-channel continuation
+использует общие identity, consent, recommendation state и memory boundary;
+канал не создаёт новый intent автоматически, если пользователь продолжает
+тот же подтверждённый resolution flow. При новом сообщении или изменении
+намерения применяется обычный lifecycle/supersession.
 
 ## Output Contract
 
@@ -1033,7 +1248,7 @@ Matrix) — см. OQ-8.
   быть прослеживаем к пользовательскому вводу (Факт — принцип
   прослеживаемости критических решений: [[Ayla Constitution]]; explainability
   — обязательное требование MVP, [[Ayla MVP Scope and Release Contract]]
-  §4.1 п. 9).
+  v0.3 §10; [[Ayla MVP User Journey Specification]] v1.1 §6.5).
 - `contract_version` присутствует в каждом результате и равна версии
   runtime-контракта, по которой сформирован результат.
 - Контракт additive-расширяем: новые поля допускаются только через change
@@ -1227,7 +1442,7 @@ Matrix) — см. OQ-8.
       незакрытые решения собраны в Open Questions и не подменены выдуманными
       значениями.
 - [x] Содержимое не выходит за MVP-границы
-      [[Ayla MVP Scope and Release Contract]] §4/§5 и consent-режим Phase 1
+      [[Ayla MVP Scope and Release Contract]] v0.3 §6/§7 и consent-режим Phase 1
       ([[Consent Scope Registry]] §10.1).
 - [x] `python scripts/validate_knowledge.py` — 0 errors по этому документу.
 
@@ -1235,6 +1450,43 @@ Matrix) — см. OQ-8.
 
 > Журнал отражает историю изменений документа и не является нормативной частью
 > спецификации.
+
+### v1.0 (2026-08-03) — Structured revision to current product foundation
+
+- **Canonical role expanded:** документ больше не сводит intent model к
+  classifier/output contract; зафиксированы связи Transformation Goal →
+  user intent → transformation role → recommendation intent → confirmed
+  downstream action → progress / next state без redesign Recommendation или
+  Domain Model.
+- **Transformation Goal:** цель закреплена как центральная доменная сущность,
+  принадлежащая пользователю; session intent не владеет целью, не изменяет её
+  молча и не подменяет её прогнозом.
+- **Living Digital Twin:** определена граница взаимодействия с главным
+  визуальным интерфейсом; Twin не является источником intent, classifier или
+  самостоятельным субъектом; Twin recognition и intent recognition разведены.
+- **Lifecycle and ownership:** добавлены recognition flow, ownership
+  boundaries и полный intent lifecycle от internal `detected` до публикуемых
+  states и последующих `superseded`/`expired`; persistent memory не продлевает
+  session intent.
+- **Journey alignment:** booking закреплён как optional downstream action;
+  terminal journey state — progress / next state; `no_action` допустим.
+- **Trigger model:** четыре сценария AYLA-DEC-0028 равнозначны; Food Scanner
+  не определяет тип intent и не является центром пути.
+- **Channels:** применена модель AYLA-DEC-0027 — Mobile App, MAX Mini App и
+  MAX Bot поверх общего intent contract; channel-specific semantics и
+  MAX-only assumptions удалены.
+- **Memory and consent:** Phase 1 session-only отделён от Phase 2 opt-in
+  persistent context; прежний intent не становится persistent user fact;
+  fail-closed и execution authorization остаются вне resolver ownership.
+- **Economic neutrality and attribution:** коммерческие признаки запрещены
+  как вход classification/ordering; intent attribution отделена от booking
+  conversion и не меняет ownership или resolution truth.
+- **Reference migration:** нормативные ссылки переведены на MVP Scope v0.3 и
+  MVP User Journey v1.1; metadata дополнена текущими Foundation inputs.
+- **Runtime compatibility:** 11 product intent types + `UNKNOWN`, slots,
+  Output Contract `0.5` и machine-readable appendix не изменены.
+- **Status:** v1.0 — draft / proposed / canonical candidate; approval v0.9.2
+  не унаследован автоматически. Product Owner Final Review required.
 
 ### v0.9.2 (2026-07-28) — Targeted fixes пакета OQ-9 по приёмке (accept with targeted fixes)
 
