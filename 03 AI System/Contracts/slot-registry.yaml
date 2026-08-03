@@ -1,7 +1,7 @@
 # Ayla Slot Registry — machine-readable appendix к Ayla Intent Model Specification
 #
 # Canonical source: ayla-knowledge / 03 AI System/Contracts/slot-registry.yaml
-# Нормативный источник семантики: 03 AI System/Ayla Intent Model Specification.md (v0.9.2, approved)
+# Нормативный источник семантики: 03 AI System/Ayla Intent Model Specification.md (v1.0, draft / proposed / candidate)
 # registry_version версионирует ЭТОТ реестр независимо;
 # compatible_contract_version указывает совместимую версию runtime output contract.
 # Intent Model владеет именами слотов, типами и правилами заполнения;
@@ -10,9 +10,9 @@ registry: ayla.slot-registry
 registry_version: "1.0"
 compatible_contract_version: "0.5"
 source_document: "03 AI System/Ayla Intent Model Specification.md"
-source_version: "0.9.2"
-status: approved
-updated: 2026-07-28
+source_version: "1.0"
+status: draft
+updated: 2026-08-03
 
 # data_category — категория scope intent_understanding (Consent Scope Registry §5.1)
 # или control_metadata. Control metadata: извлекаются/классифицируются из сообщения,

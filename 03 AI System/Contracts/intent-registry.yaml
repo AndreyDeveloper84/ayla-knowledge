@@ -1,7 +1,7 @@
 # Ayla Intent Registry — machine-readable appendix к Ayla Intent Model Specification
 #
 # Canonical source: ayla-knowledge / 03 AI System/Contracts/intent-registry.yaml
-# Нормативный источник семантики: 03 AI System/Ayla Intent Model Specification.md (v0.9.2, approved)
+# Нормативный источник семантики: 03 AI System/Ayla Intent Model Specification.md (v1.0, draft / proposed / candidate)
 # Change control: изменение этого файла — через change control ayla-knowledge;
 #   additive-изменение = minor, изменение семантики = major (после заморозки "1.0").
 # registry_version версионирует ЭТОТ реестр независимо;
@@ -10,9 +10,9 @@ registry: ayla.intent-registry
 registry_version: "1.0"
 compatible_contract_version: "0.5"
 source_document: "03 AI System/Ayla Intent Model Specification.md"
-source_version: "0.9.2"
-status: approved
-updated: 2026-07-28
+source_version: "1.0"
+status: draft
+updated: 2026-08-03
 
 # Класс исполнения определяет порог подтверждения слотов (requirement_satisfaction):
 #   read_only  — non-reference слоты: filled; reference слоты: однозначный entity_ref
@@ -54,7 +54,7 @@ intents:
         - group_id: specialist_selector
           slots: [provider_name, service_category]
           minimum_present: 1
-    optional_slots: [provider_name, service_category]
+    optional_slots: []
 
   BOOK_APPOINTMENT:
     kind: product
@@ -136,7 +136,7 @@ intents:
         - group_id: availability_subject
           slots: [service_ref, provider_name]
           minimum_present: 1
-    optional_slots: [service_ref, provider_name, time_window]
+    optional_slots: [time_window]
 
   PROVIDE_CONTEXT:
     kind: product

@@ -690,9 +690,9 @@ MVP slot registry (Proposal; категории данных согласова�
 | `provider_preference` | Критерий выбора исполнителя | сообщение | `provider_preference` |
 | `time_preference` | Свободное выражение времени («в пятницу вечером») | сообщение | `session_signal` |
 | `time_window` | Интервал времени для availability-запроса | сообщение | `session_signal` |
-| `time_slot` | Конкретный слот или однозначное время записи | сообщение + Availability (CAP-010) | `session_signal` |
-| `new_time_slot` | Новое время при переносе | сообщение + Availability | `session_signal` |
-| `appointment_ref` | Ссылка на запись: ID или однозначное описание («моя запись в пятницу») | сообщение + Appointment (CAP-011) | `session_signal` |
+| `time_slot` | Конкретный слот или однозначное время записи | сообщение + Availability Management (CAP-010) | `session_signal` |
+| `new_time_slot` | Новое время при переносе | сообщение + Availability Management | `session_signal` |
+| `appointment_ref` | Ссылка на запись: ID или однозначное описание («моя запись в пятницу») | сообщение + Appointment Management (CAP-011) | `session_signal` |
 | `budget` | Бюджет пользователя в свободной форме | сообщение | `explicit_goal` |
 | `comment` | Произвольный комментарий к записи | сообщение | `session_signal` |
 | `reason` | Причина переноса/отмены | сообщение | `session_signal` |
@@ -1594,6 +1594,41 @@ repair (этот проход) и Product Owner Final Review.
 
 > Журнал отражает историю изменений документа и не является нормативной частью
 > спецификации.
+
+### v1.0 (2026-08-03) — Governance and machine-readable synchronization pass
+
+- Governance synchronization после repeat Internal Consistency Review
+  (read-only) следующей за targeted material repair. Не redesign и не новая
+  structured revision: `version`, `status`, `decision_status`,
+  `canonical_status`, `contract_version`, Output Contract, intent types,
+  slot IDs и owner decisions не изменены.
+- **P3 normalization (residual):** нормализованы два оставшихся сокращённых
+  имени capability в таблице § Slots («Availability»/«Appointment» →
+  «Availability Management»/«Appointment Management», CAP-010/CAP-011),
+  пропущенные предыдущим normalization pass.
+- **Machine-readable metadata sync:** `intent-registry.yaml` и
+  `slot-registry.yaml` (`source_version`, `status`, `updated`, header
+  comment) и `intent-output.schema.json` (description) обновлены для
+  отражения текущего состояния документа (v1.0, draft / proposed /
+  candidate) вместо устаревшего v0.9.2/approved; `registry_version`,
+  `compatible_contract_version`, `contract_version`, intent/slot IDs,
+  execution/communicative classes и JSON Schema `allOf`-инварианты не
+  изменены.
+- **`any_of` presentation harmonization:** `optional_slots` в
+  `intent-registry.yaml` для `FIND_SPECIALIST` и `ASK_ABOUT_AVAILABILITY`
+  приведён в соответствие с prose-таблицей Intent Types (не дублирует
+  члены `any_of`-группы как «дополнительные опциональные»); `any_of`
+  requirements не изменены.
+- **Migration Plan correction:** `Ayla MVP v0.3 Downstream Migration Plan`
+  (I-02) скорректирован — требование «добавить новые intent types» для
+  Goal/LDT/check-in/weekly-review/trigger-сценариев заменено на требование
+  semantic coverage через Goal relationship/Context/Orchestration (уже
+  введено § Recommendation Input Boundary v1.0); новые intent types не
+  вводятся ни в этом документе, ни в Migration Plan.
+- Governance-находки предыдущей ревизии, не входящие в mandate этой
+  синхронизации (workstream authorization; `approved`→`draft` lifecycle
+  transition отсутствует в `schema.yaml`), остаются открытыми как
+  Governance Gap и не закрываются этим проходом.
 
 ### v1.0 (2026-08-03) — Targeted material repair after Internal Consistency Review
 

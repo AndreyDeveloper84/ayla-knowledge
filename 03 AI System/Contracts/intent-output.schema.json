@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://ayla.local/schemas/intent-output.schema.json",
   "title": "Ayla Intent Resolution Output Contract",
-  "description": "Machine-readable appendix к Ayla Intent Model Specification v0.9.1+ (approved). 10 обязательных полей — Roadmap §3.1 (заморожены); additive-поля — приняты в v0.9. contract_version этого контракта: 0.5 (pre-release).",
+  "description": "Machine-readable appendix к Ayla Intent Model Specification v1.0 (draft / proposed / candidate). 10 обязательных полей — Roadmap §3.1 (заморожены); additive-поля — приняты в v0.9. contract_version этого контракта: 0.5 (pre-release).",
   "type": "object",
   "additionalProperties": false,
   "required": [
