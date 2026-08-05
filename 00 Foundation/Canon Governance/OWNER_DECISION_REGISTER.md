@@ -19,7 +19,7 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-29
-updated: 2026-08-02
+updated: 2026-08-05
 review_cycle: monthly
 ---
 
@@ -321,3 +321,291 @@ Status:         DECIDED
 Соотношение с AYLA-DEC-0022: уточняет обязательность применения канонической same-ID/time-only модели к Wave 1 UX-scope и явно запрещает `cancel_then_create_new_booking` как альтернативу для этого сценария; не переопределяет саму доменную модель (п. 1, 2, 9, 10 AYLA-DEC-0022 остаются источником механики).
 
 Источник: owner ruling, Product Owner, 2026-08-02; формализация ранее применённого owner direction в UX-документах.
+
+### AYLA-DEC-0037 — Journey Philosophy (OD-1)
+
+```text
+ID:             AYLA-DEC-0037 (owner ruling ID: OD-1)
+Date:           2026-08-04
+Question:       Какова философия сквозного пользовательского пути MVP и что является его терминалом?
+Options:        n/a — прямое решение Product Owner (ruling), не выбор из эскалированных вариантов
+Decision:       Lifecycle approved v1.1 `Conversation → Understanding → Recommendation → Execution → Learning` сохранён и расширен целевым якорем Transformation Goal и Living Digital Twin как непрерывным представлением контекста, состояния и прогресса; booking — опциональное downstream-действие; терминал journey — progress / next state, а не подтверждение записи.
+Rationale:      Утверждённая философия пути продолжает центрировать продукт вокруг человека и его Transformation Goal, сохраняя одобренную в v1.1 структуру.
+Scope:          MVP User Journey Specification v1.2 §Purpose, §Journey Operating Model, §Journey Overview.
+Affected docs:  Ayla MVP User Journey Specification v1.2.
+Status:         DECIDED
+```
+
+Источник: Owner Decision Session 2026-08-04; зафиксировано в Change Log v1.2 документа Ayla MVP User Journey Specification.
+
+### AYLA-DEC-0038 — Conversation Lifecycle (OD-2)
+
+```text
+ID:             AYLA-DEC-0038 (owner ruling ID: OD-2)
+Date:           2026-08-04
+Question:       Должен ли journey документ фиксировать продуктовый lifecycle разговора?
+Options:        n/a — прямое решение Product Owner (ruling), не выбор из эскалированных вариантов
+Decision:       Продуктовый lifecycle разговора (Conversation Lifecycle) зафиксирован как продуктовая логика из 10 элементов, которую позже реализует Conversation Runtime; документ не описывает Conversation Runtime/FSM/Storage/Schema.
+Rationale:      Разграничение продуктовой логики и runtime-реализации сохраняет journey как продуктовый фундамент.
+Scope:          MVP User Journey Specification v1.2 §Journey Operating Model / Conversation Lifecycle.
+Affected docs:  Ayla MVP User Journey Specification v1.2.
+Status:         DECIDED
+```
+
+Источник: Owner Decision Session 2026-08-04; зафиксировано в Change Log v1.2 документа Ayla MVP User Journey Specification.
+
+### AYLA-DEC-0039 — Journey Stages (OD-3)
+
+```text
+ID:             AYLA-DEC-0039 (owner ruling ID: OD-3)
+Date:           2026-08-04
+Question:       Каков состав и роль этапов в MVP Journey v1.2?
+Options:        n/a — прямое решение Product Owner (ruling), не выбор из эскалированных вариантов
+Decision:       Все 14 этапов approved v1.1 сохранены (KEEP/EXTEND); Goal, LDT и Progress оформлены как сквозные концепции, а не обязательные линейные стадии; этапы 10–12 (booking) — опциональная downstream-ветка.
+Rationale:      Сохраняет утверждённую структуру v1.1 при расширении её целевыми якорями.
+Scope:          MVP User Journey Specification v1.2 §Journey Overview, §Stage Specifications.
+Affected docs:  Ayla MVP User Journey Specification v1.2.
+Status:         DECIDED
+```
+
+Источник: Owner Decision Session 2026-08-04; зафиксировано в Change Log v1.2 документа Ayla MVP User Journey Specification.
+
+### AYLA-DEC-0040 — Living Digital Twin Role (OD-4)
+
+```text
+ID:             AYLA-DEC-0040 (owner ruling ID: OD-4)
+Date:           2026-08-04
+Question:       Какова роль Living Digital Twin в MVP Journey?
+Options:        n/a — прямое решение Product Owner (ruling), не выбор из эскалированных вариантов
+Decision:       Living Digital Twin — центральное пользовательское представление контекста, состояния и прогресса, главный визуальный интерфейс ключевых сценариев; не самостоятельный Source of Truth и не единственный центр продукта; Twin baseline/media — backend domain data, не persistent semantic memory.
+Rationale:      Уточняет роль Twin в соответствии с AYLA-DEC-0026 и предотвращает отождествление Twin и memory.
+Scope:          MVP User Journey Specification v1.2 §Terminology, §Journey Operating Model, §Memory Interaction.
+Affected docs:  Ayla MVP User Journey Specification v1.2.
+Status:         DECIDED
+```
+
+Источник: Owner Decision Session 2026-08-04; зафиксировано в Change Log v1.2 документа Ayla MVP User Journey Specification.
+
+### AYLA-DEC-0041 — Three MVP Channels (OD-5)
+
+```text
+ID:             AYLA-DEC-0041 (owner ruling ID: OD-5)
+Date:           2026-08-04
+Question:       Как в journey отражается обязательный набор MVP-каналов?
+Options:        n/a — прямое решение Product Owner (ruling), не выбор из эскалированных вариантов
+Decision:       Раздел Cross-channel Experience приведён в соответствие с AYLA-DEC-0027; доступность конкретных действий определяется channel capability matrix, UX contract и rollout phase.
+Rationale:      Обеспечивает единую Journey для трёх каналов без требования функциональной симметрии.
+Scope:          MVP User Journey Specification v1.2 §Cross-channel Experience.
+Affected docs:  Ayla MVP User Journey Specification v1.2.
+Status:         DECIDED
+```
+
+Источник: Owner Decision Session 2026-08-04; зафиксировано в Change Log v1.2 документа Ayla MVP User Journey Specification.
+
+### AYLA-DEC-0042 — Memory Target State (OD-6)
+
+```text
+ID:             AYLA-DEC-0042 (owner ruling ID: OD-6)
+Date:           2026-08-04
+Question:       Какая модель памяти используется в MVP Journey?
+Options:        n/a — прямое решение Product Owner (ruling), не выбор из эскалированных вариантов
+Decision:       Модель «target state + phase rollout»: Phase 1 — session context + active-flow slots + authoritative backend facts, persistent memory disabled; Phase 2 — opt-in persistent memory после CSR gate; восьмичленное разграничение сущностей — независимы, с собственными владельцами и lifecycle.
+Rationale:      Разграничивает сущности памяти и предотвращает упрощения типа LDT = Memory, Session = Memory, Backend Facts = Memory.
+Scope:          MVP User Journey Specification v1.2 §Memory Interaction.
+Affected docs:  Ayla MVP User Journey Specification v1.2.
+Status:         DECIDED
+```
+
+Источник: Owner Decision Session 2026-08-04; зафиксировано в Change Log v1.2 документа Ayla MVP User Journey Specification.
+
+### AYLA-DEC-0043 — Intent Boundary (OD-7)
+
+```text
+ID:             AYLA-DEC-0043 (owner ruling ID: OD-7)
+Date:           2026-08-04
+Question:       Какие границы Intent Model применяются в journey?
+Options:        n/a — прямое решение Product Owner (ruling), не выбор из эскалированных вариантов
+Decision:       Границы Intent Model v1.0 приняты как journey-level нормативный язык: Transformation Goal ≠ intent, recommendation intent — system-owned, orchestration state ≠ product intent, downstream action — не только LLM; runtime-канон остаётся Intent Model v0.9.2 / Output Contract 0.5.
+Rationale:      Journey использует продуктовую семантику intent, не вводя runtime-контрактов.
+Scope:          MVP User Journey Specification v1.2 §Terminology, §Stage Specifications (этапы 4–5, 7–8).
+Affected docs:  Ayla MVP User Journey Specification v1.2.
+Status:         DECIDED
+```
+
+Источник: Owner Decision Session 2026-08-04; зафиксировано в Change Log v1.2 документа Ayla MVP User Journey Specification.
+
+### AYLA-DEC-0044 — ControlAction (OD-8)
+
+```text
+ID:             AYLA-DEC-0044 (owner ruling ID: OD-8)
+Date:           2026-08-04
+Question:       Как классифицировать управляющие команды пользователя в journey?
+Options:        n/a — прямое решение Product Owner (ruling), не выбор из эскалированных вариантов
+Decision:       Управляющие команды пользователя оформлены как ControlAction — owner-approved product concept; ControlAction управляют memory, consent, personalization и conversation ownership; не ProductIntent и не расширение Product Intent Registry; термин не подразумевает отдельного registry/contract/capability.
+Rationale:      Создаёт чёткую продуктовую категорию для управляющих действий без введения новых runtime-сущностей.
+Scope:          MVP User Journey Specification v1.2 §Terminology, §Stage Specifications (этап 3, N4.2, N4.4).
+Affected docs:  Ayla MVP User Journey Specification v1.2.
+Status:         DECIDED
+```
+
+Источник: Owner Decision Session 2026-08-04; зафиксировано в Change Log v1.2 документа Ayla MVP User Journey Specification.
+
+### AYLA-DEC-0045 — Recommendation Model (OD-9)
+
+```text
+ID:             AYLA-DEC-0045 (owner ruling ID: OD-9)
+Date:           2026-08-04
+Question:       Какова модель рекомендаций в MVP Journey?
+Options:        n/a — прямое решение Product Owner (ruling), не выбор из эскалированных вариантов
+Decision:       Approved lifecycle рекомендаций сохранён; рекомендация привязана к Transformation Goal, если связь установлена; `no_action` — полноценный объяснимый результат; LLM не является ranking authority; acceptance recommendation ≠ booking; attribution осуществляется через `recommendation_id`.
+Rationale:      Сохраняет экономическую нейтральность и ответственность рекомендаций, разделяя рекомендацию и действие.
+Scope:          MVP User Journey Specification v1.2 §Recommendation and Proactivity Gates, §Stage Specifications (этапы 7–9, 12).
+Affected docs:  Ayla MVP User Journey Specification v1.2.
+Status:         DECIDED
+```
+
+Источник: Owner Decision Session 2026-08-04; зафиксировано в Change Log v1.2 документа Ayla MVP User Journey Specification.
+
+### AYLA-DEC-0046 — Recommendation Gates (OD-10)
+
+```text
+ID:             AYLA-DEC-0046 (owner ruling ID: OD-10)
+Date:           2026-08-04
+Question:       Какие recommendation gates активны в MVP?
+Options:        n/a — прямое решение Product Owner (ruling), не выбор из эскалированных вариантов
+Decision:       В MVP существуют только user-initiated рекомендации; Proactive Readiness Gate неактивен; persistent memory сама по себе не открывает proactive behavior; любые proactive recommendations требуют отдельного Product/Privacy owner decision.
+Rationale:      Соответствует CSR §10 и ограничивает проактивность до явного owner decision.
+Scope:          MVP User Journey Specification v1.2 §Recommendation and Proactivity Gates.
+Affected docs:  Ayla MVP User Journey Specification v1.2.
+Status:         DECIDED
+```
+
+Источник: Owner Decision Session 2026-08-04; зафиксировано в Change Log v1.2 документа Ayla MVP User Journey Specification.
+
+### AYLA-DEC-0047 — Negative Scenarios (OD-11)
+
+```text
+ID:             AYLA-DEC-0047 (owner ruling ID: OD-11)
+Date:           2026-08-04
+Question:       Как организованы негативные сценарии в journey v1.2?
+Options:        n/a — прямое решение Product Owner (ruling), не выбор из эскалированных вариантов
+Decision:       Негативные сценарии реорганизованы в 6 классов; добавлены сценарии invalid structured output, unresolved goal, stale state/version conflict, authoritative confirmation delay, memory unavailable, consent revoked, deletion request, abandon/resume, interrupted channel, account linking conflict, human handoff, manual intervention, no_action; runtime mechanics вынесены за пределы документа.
+Rationale:      Сохраняет продуктовую полноту негативных сценариев без погружения в runtime implementation.
+Scope:          MVP User Journey Specification v1.2 §Negative Scenarios.
+Affected docs:  Ayla MVP User Journey Specification v1.2.
+Status:         DECIDED
+```
+
+Источник: Owner Decision Session 2026-08-04; зафиксировано в Change Log v1.2 документа Ayla MVP User Journey Specification.
+
+### AYLA-DEC-0048 — Learning Loop (OD-12)
+
+```text
+ID:             AYLA-DEC-0048 (owner ruling ID: OD-12)
+Date:           2026-08-04
+Question:       Какие уровни learning фиксируются в MVP Journey?
+Options:        n/a — прямое решение Product Owner (ruling), не выбор из эскалированных вариантов
+Decision:       Уровни learning зафиксированы: Session Learning, Outcome Learning, Memory Proposal, Persistent Memory, Model Training, Personalization, Recommendation Analytics; Memory Proposal допускается в Phase 1 без persistent write и без публикации `memory.*`; цепочка Outcome → Feedback → Optional Memory Proposal → Phase 2 Consent & Eligibility → Persistent Memory Write.
+Rationale:      Определяет learning-архитектуру journey без введения runtime storage mechanics.
+Scope:          MVP User Journey Specification v1.2 §Memory Interaction, §Stage Specifications (этап 14).
+Affected docs:  Ayla MVP User Journey Specification v1.2.
+Status:         DECIDED
+```
+
+Источник: Owner Decision Session 2026-08-04; зафиксировано в Change Log v1.2 документа Ayla MVP User Journey Specification.
+
+### AYLA-DEC-0049 — Follow-up and Continuity (OD-13)
+
+```text
+ID:             AYLA-DEC-0049 (owner ruling ID: OD-13)
+Date:           2026-08-04
+Question:       Как устроены follow-up и cross-channel continuity в journey?
+Options:        n/a — прямое решение Product Owner (ruling), не выбор из эскалированных вариантов
+Decision:       Follow-up — транзакционное сообщение или согласованный check-in; cross-channel continuity переносит только разрешённую context projection; conversation ownership не переносится автоматически между каналами.
+Rationale:      Сохраняет контроль пользователя и чёткие границы сессий при cross-channel переходах.
+Scope:          MVP User Journey Specification v1.2 §Cross-channel Experience, §Stage Specifications (этап 13).
+Affected docs:  Ayla MVP User Journey Specification v1.2.
+Status:         DECIDED
+```
+
+Источник: Owner Decision Session 2026-08-04; зафиксировано в Change Log v1.2 документа Ayla MVP User Journey Specification.
+
+### AYLA-DEC-0050 — Scope and Deferred (OD-14)
+
+```text
+ID:             AYLA-DEC-0050 (owner ruling ID: OD-14)
+Date:           2026-08-04
+Question:       Как в journey v1.2 представлен scope?
+Options:        n/a — прямое решение Product Owner (ruling), не выбор из эскалированных вариантов
+Decision:       Добавлен раздел с классификацией IN_SCOPE / PHASED / DEFERRED / TARGET_STATE_ONLY; Journey не дублирует Release Contract; в scope включены простой feedback, Memory Proposal (Phase 1), транзакционные уведомления, booking как опциональная ветка, Simple Reschedule same-ID time-only; phased/deferred элементы явно обозначены.
+Rationale:      Создаёт единую классификацию scope внутри journey и разграничивает её с Release Contract.
+Scope:          MVP User Journey Specification v1.2 §Scope and Deferred.
+Affected docs:  Ayla MVP User Journey Specification v1.2.
+Status:         DECIDED
+```
+
+Источник: Owner Decision Session 2026-08-04; зафиксировано в Change Log v1.2 документа Ayla MVP User Journey Specification.
+
+### AYLA-DEC-0051 — Event Consistency (OD-15)
+
+```text
+ID:             AYLA-DEC-0051 (owner ruling ID: OD-15)
+Date:           2026-08-04
+Question:       Как в journey v1.2 отражается статус domain events?
+Options:        n/a — прямое решение Product Owner (ruling), не выбор из эскалированных вариантов
+Decision:       Все события приведены к Ayla Domain Event Registry v0.4 с точным registration status (`registered` / `registration proposed` / NOT_DEFINED / LEGACY_ALIAS); терминология canonical event name / registration status / registry status разведена; wildcard-статусы заменены per-event перечислениями.
+Rationale:      Гарантирует, что journey не создаёт новых domain events и не повышает их статус.
+Scope:          MVP User Journey Specification v1.2 §Stage Specifications, §Event Usage Summary.
+Affected docs:  Ayla MVP User Journey Specification v1.2.
+Status:         DECIDED
+```
+
+Источник: Owner Decision Session 2026-08-04; зафиксировано в Change Log v1.2 документа Ayla MVP User Journey Specification.
+
+### AYLA-DEC-0052 — Capability Consistency (OD-16)
+
+```text
+ID:             AYLA-DEC-0052 (owner ruling ID: OD-16)
+Date:           2026-08-04
+Question:       Как Journey v1.2 ссылается на capabilities?
+Options:        n/a — прямое решение Product Owner (ruling), не выбор из эскалированных вариантов
+Decision:       Поле «owning capability» заменено на «capability reference»; Journey описывает только product availability; формулировка «Capability mapping will be assigned during Capability Registry Wave 2»; capability mapping — исключительно как reference.
+Rationale:      Journey не зависит от существования конкретных CAP-ID и не вводит capability ownership.
+Scope:          MVP User Journey Specification v1.2 §Stage Specifications (capability reference).
+Affected docs:  Ayla MVP User Journey Specification v1.2.
+Status:         DECIDED
+```
+
+Источник: Owner Decision Session 2026-08-04; зафиксировано в Change Log v1.2 документа Ayla MVP User Journey Specification.
+
+### AYLA-DEC-0053 — Metadata and Domain Consistency (OD-17)
+
+```text
+ID:             AYLA-DEC-0053 (owner ruling ID: OD-17)
+Date:           2026-08-04
+Question:       Какие терминологические и metadata-уточнения внесены в journey v1.2?
+Options:        n/a — прямое решение Product Owner (ruling), не выбор из эскалированных вариантов
+Decision:       Добавлен раздел Terminology (appointment, booking как legacy alias, Transformation Goal, Living Digital Twin, Conversation, Session, Interaction, Dialogue Turn, ControlAction); обязательные разделы типа `user-journey-specification` сохранены; Canon Lineage зафиксирована в текстовом блоке.
+Rationale:      Устраняет неоднозначность терминов и обеспечивает соответствие metadata-правилам.
+Scope:          MVP User Journey Specification v1.2 §Terminology, frontmatter.
+Affected docs:  Ayla MVP User Journey Specification v1.2.
+Status:         DECIDED
+```
+
+Источник: Owner Decision Session 2026-08-04; зафиксировано в Change Log v1.2 документа Ayla MVP User Journey Specification.
+
+### AYLA-DEC-0054 — Downstream Updates (OD-18)
+
+```text
+ID:             AYLA-DEC-0054 (owner ruling ID: OD-18)
+Date:           2026-08-04
+Question:       Каков статус downstream-документов относительно Journey v1.2?
+Options:        n/a — прямое решение Product Owner (ruling), не выбор из эскалированных вариантов
+Decision:       Downstream scope зафиксирован в Canonical Position; Journey — продуктовый фундамент, не центр синхронизации остальных документов; downstream документы синхронизируются относительно Journey, а не наоборот.
+Rationale:      Определяет направление traceability и предотвращает превращение journey в coordination hub.
+Scope:          MVP User Journey Specification v1.2 §Canonical Position.
+Affected docs:  Ayla MVP User Journey Specification v1.2.
+Status:         DECIDED
+```
+
+Источник: Owner Decision Session 2026-08-04; зафиксировано в Change Log v1.2 документа Ayla MVP User Journey Specification.

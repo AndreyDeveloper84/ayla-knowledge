@@ -1,7 +1,10 @@
-schema_version: "1.12"
+schema_version: "1.13"
 specification: "../00 Foundation/Ayla Knowledge Architecture Specification.md"
 
 schema_changes:
+  "1.13":
+    - adopt Variant C Knowledge Node versioning: node_id/title uniqueness is enforced only among Active Canon revisions
+    - replace global node_id uniqueness with Active Canon scoped uniqueness
   "1.12":
     - register domain-context-map, domain-specification and data-inventory-matrix document types
     - define owner vs system_owner semantics; allow optional informative owners array
@@ -308,7 +311,7 @@ field_constraints:
   node_id:
     format: "^[a-z0-9]+(?:[.-][a-z0-9]+)*$"
     immutable: true
-    unique: true
+    unique: false
   system_owner:
     type: list
     min_items: 1
@@ -330,6 +333,35 @@ field_constraints:
     unique_items: true
     # informative only: validator warns when owner is not an element
     warn_unless_contains_field: owner
+
+uniqueness_rules:
+  # Variant C: a Knowledge Node is a logical entity identified by node_id.
+  # Multiple revisions may coexist. Uniqueness is enforced only among
+  # Active Canon revisions (one active canonical revision per node).
+  node_id:
+    source_kind: canonical
+    active_statuses:
+      - approved
+      - approved-with-amendments
+      - implemented
+      - delivered
+    excluded_statuses:
+      - archived
+      - superseded
+      - deprecated
+      - cancelled
+  title:
+    source_kind: canonical
+    active_statuses:
+      - approved
+      - approved-with-amendments
+      - implemented
+      - delivered
+    excluded_statuses:
+      - archived
+      - superseded
+      - deprecated
+      - cancelled
 
 lifecycle_transitions:
   idea: [draft, cancelled]

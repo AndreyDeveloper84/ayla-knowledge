@@ -42,7 +42,7 @@ migration_source:
   imported: 2026-07-19
 generated_from:
   path: .knowledge/schema.yaml
-  schema_version: "1.12"
+  schema_version: "1.13"
   command: python scripts/render_domain_registry.py
 ---
 
@@ -56,7 +56,7 @@ generated_from:
 
 Документ предоставляет авторам и reviewers человекочитаемое представление
 машинного metadata-контракта Ayla. Он не создаёт независимый набор enum:
-таблицы ниже детерминированно сгенерированы из schema v1.12.
+таблицы ниже детерминированно сгенерированы из schema v1.13.
 
 ## 2. Source of truth
 
@@ -257,7 +257,7 @@ provisional_system_owner:
 node_id:
   format: ^[a-z0-9]+(?:[.-][a-z0-9]+)*$
   immutable: true
-  unique: true
+  unique: false
 system_owner:
   type: list
   min_items: 1
@@ -278,6 +278,35 @@ owners:
   type: list
   unique_items: true
   warn_unless_contains_field: owner
+```
+
+### Uniqueness rules
+
+```yaml
+node_id:
+  source_kind: canonical
+  active_statuses:
+  - approved
+  - approved-with-amendments
+  - implemented
+  - delivered
+  excluded_statuses:
+  - archived
+  - superseded
+  - deprecated
+  - cancelled
+title:
+  source_kind: canonical
+  active_statuses:
+  - approved
+  - approved-with-amendments
+  - implemented
+  - delivered
+  excluded_statuses:
+  - archived
+  - superseded
+  - deprecated
+  - cancelled
 ```
 
 ### AI export policy
@@ -309,6 +338,22 @@ prohibited_content:
 - enum и lifecycle не поддерживаются вручную в другом документе;
 - ownership dimensions разделены и не создают скрытого domain mapping;
 - CI проверяет актуальность generated file.
+
+## 12. Knowledge Node versioning (Variant C)
+
+> Source of truth: Owner Decision Session 2026-08-05, Variant C.
+
+**Knowledge Node** — логическая сущность, идентифицируемая неизменным `node_id`. Knowledge Node не является конкретной редакцией документа и не создаётся заново при каждой версии.
+
+**Revision** — материализованная редакция Knowledge Node в конкретный момент времени. Редакции различаются полем `version` и историей Git, но сохраняют один и тот же `node_id`.
+
+**Active Canon** — revision со `source_kind: canonical` и `status` из множества активных canonical-статусов (`approved`, `approved-with-amendments`, `implemented`, `delivered`). На каждый Knowledge Node одновременно допускается только одна Active Canon.
+
+**Historical Revision** — предыдущая редакция Knowledge Node, которая не является Active Canon, но сохраняет тот же `node_id`. Исторические редакции могут существовать одновременно с Active Canon.
+
+**Superseded Revision** — редакция, явно переведённая в терминальный статус `superseded`, `deprecated`, `archived` или `cancelled`. Она не участвует в проверках Active Canon.
+
+**Правило уникальности (Variant C):** уникальность `node_id` и `title` проверяется только среди Active Canon revisions. Coexistence approved-редакции и candidate-редакции одного Knowledge Node не является конфликтом. Одновременное наличие двух Active Canon revisions с одним `node_id` или `title` — ошибка.
 
 # Change Log
 

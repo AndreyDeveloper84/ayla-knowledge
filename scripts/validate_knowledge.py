@@ -308,26 +308,34 @@ def check_required_sections(
             reporter.error(node.label, f"missing required section {section!r}")
 
 
-def check_uniqueness(nodes: list[Node], reporter: Reporter) -> None:
-    by_node_id: dict[str, list[str]] = {}
-    by_title: dict[str, list[str]] = {}
-    for node in nodes:
-        node_id = node.metadata.get("node_id")
-        if isinstance(node_id, str):
-            by_node_id.setdefault(node_id.casefold(), []).append(node.label)
-        if (
-            node.metadata.get("source_kind") == "canonical"
-            and node.metadata.get("status") not in {"archived", "superseded"}
-        ):
-            title = node.metadata.get("title")
-            if isinstance(title, str):
-                by_title.setdefault(title.casefold(), []).append(node.label)
-    for value, paths in by_node_id.items():
-        if len(paths) > 1:
-            reporter.error(", ".join(paths), f"duplicate node_id {value!r}")
-    for value, paths in by_title.items():
-        if len(paths) > 1:
-            reporter.error(", ".join(paths), f"duplicate canonical title {value!r}")
+def _is_active_canonical(node: Node, rule: dict[str, Any]) -> bool:
+    source_kind = rule.get("source_kind")
+    if source_kind is not None and node.metadata.get("source_kind") != source_kind:
+        return False
+    status = node.metadata.get("status")
+    if status in set(rule.get("excluded_statuses", [])):
+        return False
+    return status in set(rule.get("active_statuses", []))
+
+
+def check_uniqueness(
+    nodes: list[Node], schema: dict[str, Any], reporter: Reporter
+) -> None:
+    rules = schema.get("uniqueness_rules", {})
+    for field, rule in rules.items():
+        by_value: dict[str, list[str]] = {}
+        for node in nodes:
+            if not _is_active_canonical(node, rule):
+                continue
+            value = node.metadata.get(field)
+            if isinstance(value, str):
+                by_value.setdefault(value.casefold(), []).append(node.label)
+        for value, paths in by_value.items():
+            if len(paths) > 1:
+                reporter.error(
+                    ", ".join(paths),
+                    f"duplicate active canonical {field} {value!r}",
+                )
 
 
 def check_links(
@@ -413,7 +421,7 @@ def main() -> int:
     for node in nodes:
         check_metadata(node, schema, reporter)
         check_required_sections(node, schema, reporter)
-    check_uniqueness(nodes, reporter)
+    check_uniqueness(nodes, schema, reporter)
     check_links(nodes, schema, reporter)
     check_dependency_cycles(nodes, reporter)
     print(f"Validated {len(nodes)} knowledge node(s)")

@@ -204,6 +204,12 @@ ownership явно, а `to-be-confirmed` допускается только п�
 {yaml_block(schema.get("field_constraints", {}))}
 ```
 
+### Uniqueness rules
+
+```yaml
+{yaml_block(schema.get("uniqueness_rules", {}))}
+```
+
 ### AI export policy
 
 ```yaml
@@ -225,6 +231,22 @@ ownership явно, а `to-be-confirmed` допускается только п�
 - enum и lifecycle не поддерживаются вручную в другом документе;
 - ownership dimensions разделены и не создают скрытого domain mapping;
 - CI проверяет актуальность generated file.
+
+## 12. Knowledge Node versioning (Variant C)
+
+> Source of truth: Owner Decision Session 2026-08-05, Variant C.
+
+**Knowledge Node** — логическая сущность, идентифицируемая неизменным `node_id`. Knowledge Node не является конкретной редакцией документа и не создаётся заново при каждой версии.
+
+**Revision** — материализованная редакция Knowledge Node в конкретный момент времени. Редакции различаются полем `version` и историей Git, но сохраняют один и тот же `node_id`.
+
+**Active Canon** — revision со `source_kind: canonical` и `status` из множества активных canonical-статусов (`approved`, `approved-with-amendments`, `implemented`, `delivered`). На каждый Knowledge Node одновременно допускается только одна Active Canon.
+
+**Historical Revision** — предыдущая редакция Knowledge Node, которая не является Active Canon, но сохраняет тот же `node_id`. Исторические редакции могут существовать одновременно с Active Canon.
+
+**Superseded Revision** — редакция, явно переведённая в терминальный статус `superseded`, `deprecated`, `archived` или `cancelled`. Она не участвует в проверках Active Canon.
+
+**Правило уникальности (Variant C):** уникальность `node_id` и `title` проверяется только среди Active Canon revisions. Coexistence approved-редакции и candidate-редакции одного Knowledge Node не является конфликтом. Одновременное наличие двух Active Canon revisions с одним `node_id` или `title` — ошибка.
 
 # Change Log
 
