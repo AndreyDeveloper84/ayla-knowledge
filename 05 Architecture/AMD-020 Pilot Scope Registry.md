@@ -5,11 +5,13 @@ type: adr
 status: review
 version: "0.3"
 created: 2026-05-15
-updated: 2026-08-05
-last_updated: 2026-08-05
+updated: 2026-08-06
+last_updated: 2026-08-06
 owner: Architecture Domain
 knowledge_area:
   - architecture
+domain:
+  - cross-domain
 system_owner:
   - ayla-knowledge
 source_repository: ayla-knowledge
@@ -61,58 +63,87 @@ The following are explicitly **out of scope** for this alignment:
 | Attribute | Value |
 |-----------|-------|
 | **Normative Domain Owner** | User Context Domain |
-| **Physical Custodian** | W2 Profile Implementation |
-| **Source of Truth** | User Context Domain |
-| **Write Authority** | User (self), System (provisioning) |
+| **Physical Custodian** | W2 Profile Service |
+| **Source of Truth** | W2 Profile Service |
+| **Write Authority** | W2 Profile Service only (initiators: User, System) |
 | **Consumers** | All authenticated services (read-only) |
 | **Consent/Purpose** | Account provisioning, service delivery |
 | **Retention** | Account lifetime + legal hold |
-| **Deletion Orchestrator** | User Context Domain |
+| **Deletion Orchestrator** | W2 Profile Service on user request or account closure |
 
 ### Operational Preferences
 
 | Attribute | Value |
 |-----------|-------|
-| **Normative Domain Owner** | User Context Domain / Notification Preferences Domain |
+| **Normative Domain Owner** | User Context Domain |
 | **Physical Custodian** | W2 Preferences Service |
-| **Source of Truth** | Respective Domain (Notification, Locale, Timezone) |
-| **Write Authority** | User (self), System (defaults) |
+| **Source of Truth** | W2 Preferences Service |
+| **Write Authority** | W2 Preferences Service only (initiators: User, System) |
 | **Consumers** | Notification Service, Localization Service, Scheduling Service |
 | **Consent/Purpose** | Service personalization, communication delivery |
 | **Retention** | Account lifetime |
-| **Deletion Orchestrator** | User Context Domain |
+| **Deletion Orchestrator** | W2 Preferences Service on preference change or account closure |
 
-**Note:** Language, timezone, locale settings belong to User Context Domain. Notification-specific preferences belong to Notification Preferences Domain.
+### Notification Preferences
+
+| Attribute | Value |
+|-----------|-------|
+| **Normative Domain Owner** | Notification Preferences Domain |
+| **Physical Custodian** | Notification Service |
+| **Source of Truth** | Notification Service |
+| **Write Authority** | Notification Service only (initiators: User, System) |
+| **Consumers** | Notification Service, Communication Delivery Service |
+| **Consent/Purpose** | Communication delivery, user engagement |
+| **Retention** | Account lifetime |
+| **Deletion Orchestrator** | Notification Domain on preference change |
+
+**Note:** Language, timezone, locale settings belong to User Context Domain (Operational Preferences). Notification-specific preferences (channels, frequency, quiet hours) belong to Notification Preferences Domain.
 
 ### Consent Records
 
 | Attribute | Value |
 |-----------|-------|
 | **Normative Domain Owner** | Consent Domain |
-| **Physical Custodian** | Consent System Implementation |
-| **Source of Truth** | Consent Domain Registry |
-| **Write Authority** | User (grant/revoke), System (expiry) |
+| **Physical Custodian** | Consent Service |
+| **Source of Truth** | Consent Service |
+| **Write Authority** | Consent Service only |
+| **Initiators** | User grant/revoke requests; System expiry events |
 | **Consumers** | All domains requiring consent verification |
 | **Consent/Purpose** | N/A — this is the consent record itself |
 | **Retention** | Legal requirement period post-revocation |
-| **Deletion Orchestrator** | Consent Domain |
+| **Deletion Orchestrator** | Consent Domain per legal requirements; orchestrates deletion requests |
 
-**Critical Boundary:** All systems must use authoritative consent state either directly from Consent Service or from purpose-bound authoritative cache with established freshness, TTL, and invalidation guarantees. Independent source of truth is prohibited.
+**Critical Boundary:** All systems must use authoritative consent state either directly from Consent Service or from purpose-bound authoritative cache with established freshness, TTL, and invalidation guarantees. Independent source of truth is prohibited. No component may write consent state bypassing Consent Service; User and System act only as initiators of consent state transitions.
 
 ### Raw Wellness History
 
 | Attribute | Value |
 |-----------|-------|
 | **Normative Domain Owner** | Wellness Domain |
-| **Physical Custodian** | Wellness Data Service |
-| **Source of Truth** | Wellness Domain |
-| **Write Authority** | Wellness ingestion pipeline, User (correction) |
+| **Physical Custodian** | Wellness Service |
+| **Source of Truth** | Wellness Service |
+| **Write Authority** | Wellness Service only (initiators: User devices, System ingestion) |
 | **Consumers** | Wellness analytics, Memory proposal gate (input only) |
 | **Consent/Purpose** | Wellness tracking, health insights (requires explicit consent) |
 | **Retention** | User-defined + legal minimum |
-| **Deletion Orchestrator** | Wellness Domain |
+| **Deletion Orchestrator** | Wellness Domain per retention policy |
 
 **Critical Boundary:** Raw wellness records do not constitute memory. They become memory candidates only after passing through the memory proposal and consent gates.
+
+### Wellness-Derived Memory
+
+| Attribute | Value |
+|-----------|-------|
+| **Normative Domain Owner** | Memory & Identity Domain |
+| **Physical Custodian** | W3 Memory Service |
+| **Source of Truth** | W3 Memory Service (after memory gate) |
+| **Write Authority** | W3 Memory Service only (via memory gate) |
+| **Consumers** | Personalization services, Conversation context (purpose-limited) |
+| **Consent/Purpose** | Requires explicit memory consent per purpose; derived from wellness data only after consent gate |
+| **Retention** | User-controlled, subject to privacy requests |
+| **Deletion Orchestrator** | W3 privacy flow on user request |
+
+**Critical Boundary:** Wellness-derived memory is distinct from raw wellness history. Creation requires successful passage through wellness-to-memory proposal and consent gates. W2 has no write authority over this class.
 
 ### Semantic Memory
 
@@ -120,12 +151,12 @@ The following are explicitly **out of scope** for this alignment:
 |-----------|-------|
 | **Normative Domain Owner** | Memory & Identity Domain |
 | **Physical Custodian** | W3 Memory Service |
-| **Source of Truth** | Memory Domain (post-gate entries only) |
-| **Write Authority** | Memory proposal flow (automated), User (correction/deletion) |
+| **Source of Truth** | W3 Memory Service (after proposal/consent/purpose gate) |
+| **Write Authority** | W3 Memory Service only (via proposal/consent/purpose gate) |
 | **Consumers** | Personalization services, Conversation context (purpose-limited) |
 | **Consent/Purpose** | Requires explicit memory consent per purpose |
 | **Retention** | User-controlled, subject to privacy requests |
-| **Deletion Orchestrator** | W3 Privacy Flow |
+| **Deletion Orchestrator** | W3 privacy flow on user request |
 
 **Critical Boundary:** W2 is **not** the owner of semantic memory. W3 serves as technical custodian. Memory entries cannot be created by direct write from other domains.
 
@@ -146,14 +177,16 @@ The following are explicitly **out of scope** for this alignment:
 
 ## Ownership Summary
 
-| Data Class | Normative Owner | Physical Custodian | Source of Truth |
-|------------|-----------------|-------------------|-----------------|
-| Account/Profile | User Context Domain | W2 Profile | User Context Domain |
-| Operational Preferences | User Context / Notification Domain | W2 Preferences | Respective Domain |
-| Consent Records | Consent Domain | Consent System | Consent Domain |
-| Raw Wellness History | Wellness Domain | Wellness Service | Wellness Domain |
-| Semantic Memory | Memory & Identity Domain | W3 Memory Service | Memory Domain |
-| Purpose-Limited Projections | Inherits from source | Varies | Source data class |
+| Data Class | Normative Owner | Physical Custodian | Source of Truth | Write Authority |
+|------------|-----------------|-------------------|-----------------|-----------------|
+| Account/Profile | User Context Domain | W2 Profile Service | W2 Profile Service | W2 Profile Service only |
+| Operational Preferences | User Context Domain | W2 Preferences Service | W2 Preferences Service | W2 Preferences Service only |
+| Notification Preferences | Notification Preferences Domain | Notification Service | Notification Service | Notification Service only |
+| Consent Records | Consent Domain | Consent Service | Consent Service | Consent Service only |
+| Raw Wellness History | Wellness Domain | Wellness Service | Wellness Service | Wellness Service only |
+| Wellness-Derived Memory | Memory & Identity Domain | W3 Memory Service | W3 Memory Service (after memory gate) | W3 Memory Service only |
+| Semantic Memory | Memory & Identity Domain | W3 Memory Service | W3 Memory Service (after proposal/consent/purpose gate) | W3 Memory Service only |
+| Purpose-Limited Projections | Inherits from source | Varies | Source data class | N/A (derived) |
 
 ## Migration Notes
 
@@ -165,12 +198,6 @@ This alignment does **not** require:
 - Immediate refactoring of handoff documents
 
 Future work may address implementation gaps identified during reconciliation, but such changes require separate architectural decisions and migration plans.
-
-## Review State Note
-
-This copy of AMD-020 in `main` was recovered from an uncommitted working tree and does not have a completed review/approval trail. It has been temporarily returned to `status: review` / `decision_status: proposed`.
-
-Substantive reconciliation and alignment with the canonical review gate continue through [PR #8](https://github.com/AndreyDeveloper84/ayla-knowledge/pull/8). This state downgrade does **not** constitute substantive approval of the early version.
 
 ## Change Log
 
@@ -184,12 +211,13 @@ Substantive reconciliation and alignment with the canonical review gate continue
 - Added explicit "Non-Goals" section to protect runtime contracts from unintended changes
 - Added dependency on [[Data Inventory Matrix]]
 
-### v0.2 (2026-06-10) — Pilot Expansion
+Reconciliation update (2026-08-06), closing review findings on PR #8:
 
-- Added wellness data classes
-- Expanded consent scope definitions
+- Aligned Source of Truth, Write Authority, and Deletion Orchestrator wording with the service-level formulations of the [[Data Inventory Matrix]]
+- Restricted Consent Records write authority to Consent Service; User and System reclassified as initiators, not direct writers
+- Removed the unverifiable `migration_source` provenance claim
+- Added the `domain` field required by the knowledge schema conditional rules
 
-### v0.1 (2026-05-15) — Initial Registry
+### Earlier drafts (provenance not verified)
 
-- Established baseline pilot scope definitions
-- Defined initial data class boundaries
+Versions v0.1 and v0.2 are referenced from legacy pilot materials outside this repository. Their content, dates, and history are not independently verified, and they are **not** canonical revisions of this node. The verifiable history of this document is the git history of this repository.
