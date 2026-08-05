@@ -2,11 +2,11 @@
 node_id: amd-020-pilot-scope-registry
 title: AMD-020 Pilot Scope Registry
 type: adr
-status: approved
+status: review
 version: "0.3"
 created: 2026-05-15
-updated: 2026-07-24
-last_updated: 2026-07-24
+updated: 2026-08-05
+last_updated: 2026-08-05
 owner: Architecture Domain
 knowledge_area:
   - architecture
@@ -28,7 +28,7 @@ depends_on:
   - "[[Ayla Constitution]]"
   - "[[Data Inventory Matrix]]"
 adr_id: AMD-020
-decision_status: approved
+decision_status: proposed
 revision: 3
 amendments: []
 superseded_by: null
@@ -165,6 +165,12 @@ This alignment does **not** require:
 - Immediate refactoring of handoff documents
 
 Future work may address implementation gaps identified during reconciliation, but such changes require separate architectural decisions and migration plans.
+
+## Review State Note
+
+This copy of AMD-020 in `main` was recovered from an uncommitted working tree and does not have a completed review/approval trail. It has been temporarily returned to `status: review` / `decision_status: proposed`.
+
+Substantive reconciliation and alignment with the canonical review gate continue through [PR #8](https://github.com/AndreyDeveloper84/ayla-knowledge/pull/8). This state downgrade does **not** constitute substantive approval of the early version.
 
 ## Change Log
 
