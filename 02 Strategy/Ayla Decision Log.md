@@ -624,8 +624,8 @@ reviewed-изменением после проверки commit миграци�
   модели. Зависит от AYLA-DEC-0016.
 - **Затрагивает:** Ayla Core Domain Model Specification; Ayla MVP Scope
   and Release Contract (MVP-срез ролей); Ayla Domain Capability
-  Registry (CAP-009, CAP-019). AMD-020 и Consent Scope Registry не
-  изменяются. Decision brief:
+  Registry (CAP-009, CAP-019). AMD-020 Pilot Scope Registry, AMD-001 C5
+  Export/Forget Contract и Consent Scope Registry не изменяются. Decision brief:
   `99 Archive/proposals/decision-brief-tenant-membership-roles.md`.
 
 ### AYLA-DEC-0018 — Phase 2 and Product Thesis Validation Gate

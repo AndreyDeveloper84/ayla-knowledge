@@ -91,7 +91,7 @@ UX не принимает privacy-решений: артефакт содерж
   blocked (CSR §5.3–5.6, §12).
 - PHOTO_BIOMETRIC (food scanner), MARKETING, HEALTH consent-флоу — кроме
   фиксации их места в mapping-таблице как out-of-Phase-1.
-- Export/forget (AMD-020 C5) — Phase 2+; упоминается только как граница.
+- Export/forget (AMD-001 C5) — Phase 2+; упоминается только как граница.
 - Изменение CSR, Data Inventory Matrix, спецификаций экранов и любого кода.
 - Юридический канцелярит в пользовательских текстах.
 
@@ -119,7 +119,7 @@ UX не принимает privacy-решений: артефакт содерж
   `status: draft-for-privacy-owner`, `owner: Privacy Owner`, явная пометка
   «UX не владеет privacy-правилами».
 - Объём ≤ 2000 слов; всё, что нельзя обосновать источниками (CSR, DIM,
-  SRC-01, UX-OD-003, спеки экранов, AMD-020 C5), — open question, не
+  SRC-01, UX-OD-003, спеки экранов, AMD-001 C5), — open question, не
   домысливание.
 
 ## Do not

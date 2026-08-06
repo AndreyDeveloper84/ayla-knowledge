@@ -11,7 +11,7 @@ basis:
   - Consent Scope Registry v1.1 (approved)
   - Data Inventory Matrix v1.0 (draft)
   - Ayla MVP Scope and Release Contract v0.3 (§8, §10)
-  - AMD-020 C5 Pilot Personal Context Export-Forget Contract
+  - AMD-001 C5 Pilot Personal Context Export-Forget Contract
   - SRC-12: global-bot-welcome-consent-spec, customer-booking-confirm-registration-spec
 disclaimer: >
   UX не владеет privacy-правилами. Этот документ — ПРОЕКТ для Privacy Owner:
@@ -192,7 +192,7 @@ soft-gate Variant A (диалог и booking без согласия допус�
 
 ## 6. Граница Phase 1 / Phase 2 (export/forget)
 
-AMD-020 C5 определяет export/forget для трёх included-классов
+AMD-001 C5 определяет export/forget для трёх included-классов
 (UserPersonalContext, green MemoryEntry, ConsentRecord) — всё это persistent
 контур. В Phase 1 persistent memory и consent records на память отсутствуют,
 поэтому команды CSR §8 («Что Ayla знает обо мне», «Забыть это», отзыв scope)

@@ -486,7 +486,7 @@ Simple Reschedule до миграции интеграции на канонич
 - retention event log и audit — OQ-E5 реестра (вне этого контракта);
 - appointment history не удаляется при cancellation (CAP-011);
   удаление по privacy request — через deletion pipeline и retention
-  policy (AMD-020 C5 / CSR), не через доменные события этого контракта.
+  policy (AMD-001 C5 / CSR), не через доменные события этого контракта.
 
 ## 16. Open Questions
 

@@ -409,8 +409,8 @@ Assignment с `valid_to` переходит в `expired` без ручного �
 > §7.x включая Tenant, §12, §24); Ayla MVP Scope and Release Contract
 > (MVP-срез ролей owner/admin/specialist, deferred-перечень); Ayla Domain
 > Capability Registry (`owned_concepts` CAP-009 и CAP-019; CAP-020 без
-> изменений); зависит от AYLA-DEC-0016. AMD-020 и Consent Scope Registry не
-> изменяются.
+> изменений); зависит от AYLA-DEC-0016. AMD-020 Pilot Scope Registry,
+> AMD-001 C5 Export/Forget Contract и Consent Scope Registry не изменяются.
 
 ## Change Log
 

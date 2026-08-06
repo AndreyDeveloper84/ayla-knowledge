@@ -1211,14 +1211,14 @@ food-first сценарий («сканирует завтрак → дефиц�
 PRD §4 (один из четырёх официальных trigger-сценариев), не изобретаются
 заново в этом документе.
 
-## 11.3 Integration with Data Export (AMD-020 C5)
+## 11.3 Integration with Data Export (AMD-001 C5)
 
 > **Informative, не нормативный раздел** — нормативная модель экспорта
-> целиком в AMD-020 C5, здесь только точка соприкосновения с consent
+> целиком в AMD-001 C5, здесь только точка соприкосновения с consent
 > metadata.
 
 **Модель экспорта не дублируется здесь — только точка соприкосновения с C5.**
-`AMD-020 C5 Pilot Personal Context Export-Forget Contract` уже определяет
+`AMD-001 C5 Pilot Personal Context Export-Forget Contract` уже определяет
 `operation_id`, `operation_type: export|delete`, исполнителя `W3`, и
 барьерную/идемпотентную обработку запросов — это не переизобретается
 здесь.
@@ -1232,7 +1232,7 @@ Wellness/sleep history и Conversations/messages **явно исключены**
 пилотного scope C5 (`excluded_post_pilot_inventory`) — это активно
 отслеживаемый пробел, помеченный в самом контракте как противоречащий
 ожиданиям пользователя (wellness handoff подразумевает экспорт raw sleep
-history, что «directly contradicts AMD-020 exclusion»). Any данные,
+history, что «directly contradicts AMD-001 exclusion»). Any данные,
 подпадающие под `health_related_signal` в этом Registry, наследуют то же
 исключение — экспорт этой категории вне scope MVP, синхронно с тем, что
 она и так `запрещено` для persistent storage (§4).
@@ -1621,7 +1621,7 @@ Legal ruling). Это один открытый вопрос под тремя �
   примером (аллергии — `yellow`, не `red`, по дословной цитате ADR-0012).
 - §11.2 Cross-Domain Personalization Design — без food-first примера (см.
   ниже, почему отклонён).
-- §11.3 Integration with Data Export (AMD-020 C5) — ссылка на реальную
+- §11.3 Integration with Data Export (AMD-001 C5) — ссылка на реальную
   модель C5 (`operation_id`/`operation_type`/`W3`), включая упоминание
   исключения wellness/conversations из пилотного scope.
 - §11.4 Integration with Minor Protection — как открытый вопрос, не как
@@ -1636,7 +1636,7 @@ Legal ruling). Это один открытый вопрос под тремя �
   массаж» — это deprecated food-first сценарий, уже исключённый из Ayla
   Product Vision за противоречие AYLA-DEC-0002; не внесён.
 - Упрощённое описание Data Export — заменено ссылкой на реальную модель
-  AMD-020 C5 вместо параллельного упрощённого пересказа; добавлено
+  AMD-001 C5 вместо параллельного упрощённого пересказа; добавлено
   критичное упущение — исключение wellness/conversations из пилота.
 - Цитаты «ADR-0011 §7.2» (break-glass) и «ADR-0011 §10» (Minor Protection)
   — не приняты как подтверждённые: ADR-0011 в проекте существует только
