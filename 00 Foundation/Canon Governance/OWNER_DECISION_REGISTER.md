@@ -609,3 +609,131 @@ Status:         DECIDED
 ```
 
 Источник: Owner Decision Session 2026-08-04; зафиксировано в Change Log v1.2 документа Ayla MVP User Journey Specification.
+
+### AYLA-DEC-0055 — Conversation Identity (AYLA-OD-CM-008)
+
+```text
+ID:             AYLA-DEC-0055 (owner ruling ID: AYLA-OD-CM-008)
+Date:           2026-08-05
+Question:       Что определяет идентичность Conversation и когда возникает новая Conversation?
+Options:        n/a — прямое решение Product Owner (ruling), не выбор из эскалированных вариантов
+Decision:       Conversation сохраняет идентичность на протяжении всего жизненного цикла; смена Session, канала связи, устройства или временной паузы сама по себе НЕ создаёт новую Conversation. Новая Conversation возникает только если: (1) пользователь начинает новую независимую Transformation Goal; (2) предыдущая Conversation завершена согласно Conversation Lifecycle; (3) владелец системы или пользователь явно инициирует новую Conversation согласно правилам Canon. Каноническая иерархия: Conversation → Session → Interaction → Dialogue Turn; Session принадлежит ровно одной Conversation, Interaction — ровно одной Session, Dialogue Turn — ровно одной Interaction.
+Rationale:      Conversation представляет пользовательскую цель и её развитие во времени; Session — отдельную операционную сессию общения. Разделение сохраняет непрерывность пользовательского опыта, поддерживает multi-session диалог и cross-channel continuity, не смешивает продуктовую модель с runtime и упрощает работу Recommendation, Memory и Runtime Canon. Conversation Identity определяется смыслом пользовательского взаимодействия, а не техническими характеристиками соединения; Runtime Canon реализует эти правила, но не определяет их.
+Scope:          Conversation Model (продуктовая модель); иерархия Conversation / Session / Interaction / Dialogue Turn. Не переопределяет runtime mechanics (ADR-0014) и не изменяет существующие scope-ограничения Consent Scope Registry.
+Affected docs:  Conversation Model Specification v1.0 (Source of Truth, документ планируется); терминология согласуется с Ayla MVP User Journey Specification v1.2 §Terminology.
+Status:         DECIDED
+```
+
+Источник: WINDOW-03 — Owner Decision Session (Conversation Model Canonicalization), 2026-08-05; решение AYLA-OD-CM-008, статус ACCEPTED.
+
+### AYLA-DEC-0056 — Conversation is the Root Entity (AYLA-OD-CM-001)
+
+```text
+ID:             AYLA-DEC-0056 (owner ruling ID: AYLA-OD-CM-001)
+Date:           2026-08-05
+Question:       Является ли Conversation корневой сущностью Conversation Model?
+Options:        n/a — прямое решение Product Owner (ruling), не выбор из эскалированных вариантов
+Decision:       Conversation является корневой сущностью Conversation Model; Conversation может включать несколько Session, Interaction и Dialogue Turn.
+Rationale:      Устанавливает иерархическую роль Conversation как корня модели и чётко определяет её состав.
+Scope:          Conversation Model (продуктовая модель); иерархия Conversation / Session / Interaction / Dialogue Turn.
+Affected docs:  Conversation Model Specification v1.0 (Source of Truth, документ планируется).
+Status:         DECIDED
+```
+
+Источник: WINDOW-03 — Owner Decision Session (Conversation Model Canonicalization), 2026-08-05; решение AYLA-OD-CM-001, статус ACCEPTED.
+
+### AYLA-DEC-0057 — Session is a Canonical Entity (AYLA-OD-CM-002)
+
+```text
+ID:             AYLA-DEC-0057 (owner ruling ID: AYLA-OD-CM-002)
+Date:           2026-08-05
+Question:       Является ли Session самостоятельной канонической продуктовой сущностью?
+Options:        n/a — прямое решение Product Owner (ruling), не выбор из эскалированных вариантов
+Decision:       Session является самостоятельной канонической продуктовой сущностью с собственным концептуальным lifecycle; Session не является только технической runtime-концепцией.
+Rationale:      Разграничивает продуктовую сущность Session и runtime implementation, предотвращая свёртывание Session в технический деталь.
+Scope:          Conversation Model (продуктовая модель); lifecycle и статус Session.
+Affected docs:  Conversation Model Specification v1.0 (Source of Truth, документ планируется).
+Status:         DECIDED
+```
+
+Источник: WINDOW-03 — Owner Decision Session (Conversation Model Canonicalization), 2026-08-05; решение AYLA-OD-CM-002, статус ACCEPTED.
+
+### AYLA-DEC-0058 — Interaction is a Conversation Episode (AYLA-OD-CM-003)
+
+```text
+ID:             AYLA-DEC-0058 (owner ruling ID: AYLA-OD-CM-003)
+Date:           2026-08-05
+Question:       Какой канонический термин описывает логически связанный эпизод общения в Conversation Model?
+Options:        n/a — прямое решение Product Owner (ruling), не выбор из эскалированных вариантов
+Decision:       Interaction — логически связанный эпизод общения, состоящий из одного или нескольких Dialogue Turn; канонический термин — Interaction. Interaction Episode может сохраняться только как исторический или поясняющий alias в существующих документах.
+Rationale:      Фиксирует каноническую терминологию, допуская legacy alias без переписывания существующих документов.
+Scope:          Conversation Model (продуктовая модель); терминология Interaction / Interaction Episode.
+Affected docs:  Conversation Model Specification v1.0 (Source of Truth, документ планируется).
+Status:         DECIDED
+```
+
+Источник: WINDOW-03 — Owner Decision Session (Conversation Model Canonicalization), 2026-08-05; решение AYLA-OD-CM-003, статус ACCEPTED.
+
+### AYLA-DEC-0059 — Conversation State is Conceptual (AYLA-OD-CM-004)
+
+```text
+ID:             AYLA-DEC-0059 (owner ruling ID: AYLA-OD-CM-004)
+Date:           2026-08-05
+Question:       Какой характер имеет Conversation State в Conversation Model?
+Options:        n/a — прямое решение Product Owner (ruling), не выбор из эскалированных вариантов
+Decision:       Conversation State описывает смысловое состояние разговора; Conversation Model не определяет runtime FSM, enum, storage state machine или конкретную реализацию переходов.
+Rationale:      Разграничивает концептуальную модель и runtime implementation, оставляя технические детали Runtime Canon.
+Scope:          Conversation Model (продуктовая модель); conceptual Conversation State.
+Affected docs:  Conversation Model Specification v1.0 (Source of Truth, документ планируется).
+Status:         DECIDED
+```
+
+Источник: WINDOW-03 — Owner Decision Session (Conversation Model Canonicalization), 2026-08-05; решение AYLA-OD-CM-004, статус ACCEPTED.
+
+### AYLA-DEC-0060 — Conversation Owns Only Conversation Context (AYLA-OD-CM-005)
+
+```text
+ID:             AYLA-DEC-0060 (owner ruling ID: AYLA-OD-CM-005)
+Date:           2026-08-05
+Question:       Каким данными владеет Conversation в рамках Conversation Model?
+Options:        n/a — прямое решение Product Owner (ruling), не выбор из эскалированных вариантов
+Decision:       Conversation владеет только Conversation Context; Conversation не владеет persistent memory, authoritative backend facts, recommendation context, consent state или user profile. Эти данные могут использоваться только через разрешённую Context Projection.
+Rationale:      Ограничивает область ответственности Conversation, предотвращая неявное поглощение чужих доменов и обеспечивая чёткое разделение ownership.
+Scope:          Conversation Model (продуктовая модель); ownership и Context Projection.
+Affected docs:  Conversation Model Specification v1.0 (Source of Truth, документ планируется).
+Status:         DECIDED
+```
+
+Источник: WINDOW-03 — Owner Decision Session (Conversation Model Canonicalization), 2026-08-05; решение AYLA-OD-CM-005, статус ACCEPTED.
+
+### AYLA-DEC-0061 — Runtime Boundary (AYLA-OD-CM-006)
+
+```text
+ID:             AYLA-DEC-0061 (owner ruling ID: AYLA-OD-CM-006)
+Date:           2026-08-05
+Question:       Какие аспекты определяет Conversation Model, а какие остаются за пределами её scope?
+Options:        n/a — прямое решение Product Owner (ruling), не выбор из эскалированных вариантов
+Decision:       Conversation Model определяет сущности, отношения, identity, ownership, conceptual lifecycle, invariants и context projection. Conversation Model не определяет prompts, prompt assembly, orchestration graph, LLM routing, tool dispatch implementation, retry/reconciliation mechanics, database schema, API или runtime FSM.
+Rationale:      Чётко разграничивает продуктовую модель и runtime/implementation details, предотвращая размывание ответственности модели.
+Scope:          Conversation Model (продуктовая модель); границы scope.
+Affected docs:  Conversation Model Specification v1.0 (Source of Truth, документ планируется).
+Status:         DECIDED
+```
+
+Источник: WINDOW-03 — Owner Decision Session (Conversation Model Canonicalization), 2026-08-05; решение AYLA-OD-CM-006, статус ACCEPTED.
+
+### AYLA-DEC-0062 — Source of Truth Ownership (AYLA-OD-CM-007)
+
+```text
+ID:             AYLA-DEC-0062 (owner ruling ID: AYLA-OD-CM-007)
+Date:           2026-08-05
+Question:       Какие домены находятся в ownership Conversation Model как Source of Truth?
+Options:        n/a — прямое решение Product Owner (ruling), не выбор из эскалированных вариантов
+Decision:       Conversation Model становится Source of Truth для Conversation, Session, Interaction, Dialogue Turn, Conversation Identity, Conversation Lifecycle, conceptual Conversation State и Context Projection. Она не становится Source of Truth для Intent (Intent Model), Transformation Goal (canonical product concept / Journey), Recommendation (Recommendation Contract), Memory (Memory Model), Consent (Consent Scope Registry), Runtime FSM (Runtime Canon) или domain entities and authoritative backend facts (Core Domain Model).
+Rationale:      Фиксирует границы authority Conversation Model, предотвращая конфликты Source of Truth с другими доменами.
+Scope:          Conversation Model (продуктовая модель); Source of Truth ownership.
+Affected docs:  Conversation Model Specification v1.0 (Source of Truth, документ планируется); соответствующие документы остаются Source of Truth для своих доменов.
+Status:         DECIDED
+```
+
+Источник: WINDOW-03 — Owner Decision Session (Conversation Model Canonicalization), 2026-08-05; решение AYLA-OD-CM-007, статус ACCEPTED.
