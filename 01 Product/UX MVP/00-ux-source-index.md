@@ -41,7 +41,7 @@ review_cycle: monthly
 | SRC-06 | Ayla Decision Log | `Ayla/ayla-knowledge/02 Strategy/` | Owner decisions AYLA-DEC-0001+ | canonical | Перед любым предположением — проверить, нет ли решения |
 | SRC-07 | Ayla Constitution v2.2 | `Ayla/ayla-knowledge/00 Foundation/` | Права пользователя, границы | approved 2026-07-16 | Спорные UX-решения: память, вето, объяснение, монетизация |
 | SRC-08 | ADR-0012 Dynamic User Model | `Ayla/ayla-knowledge/05 Architecture/` | Memory lifecycle | accepted | Memory-зависимости экранов |
-| SRC-09 | Consent export/forget: AMD-020 C5 | `Ayla/ayla-knowledge/05 Architecture/` | Export/forget contract | accepted-track | Экраны приватности, удаление данных |
+| SRC-09 | Consent export/forget: AMD-001 C5 | `Ayla/ayla-knowledge/05 Architecture/` | Export/forget contract | accepted-track | Экраны приватности, удаление данных |
 | SRC-10 | Data Inventory Matrix | `Ayla/ayla-knowledge/06 Safety and Governance/` | Категории данных | normative | required_data экрана, допустимость показа actor-у |
 | SRC-11 | Domain Capability Registry | `Ayla/ayla-knowledge/00 Foundation/` | owning_capabilities | normative | Поле owning_capabilities в Screen Contract |
 | SRC-12 | Customer screen specs (10 файлов, 2026-05) | `ai-bot-platform/docs/screens/customer-*.md` | Существующие драфты UX | **draft, stale** (pilot 15.07 → канон 15.08) | Материал ревизии для inventory, НЕ канон |

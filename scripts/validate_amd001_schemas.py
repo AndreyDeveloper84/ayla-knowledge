@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
-"""Validate AMD-020 JSON Schema 2020-12 blocks and positive/negative fixtures.
+"""Validate AMD-001 JSON Schema 2020-12 blocks and positive/negative fixtures.
 
 Run from repository root:
-    python scripts/validate_amd020_schemas.py
+    python scripts/validate_amd001_schemas.py
 
-The script extracts all JSON Schema 2020-12 blocks from the AMD-020 Contract,
+The script extracts all JSON Schema 2020-12 blocks from the AMD-001 Contract,
 checks that each is a valid meta-schema, verifies stable `$id` values are unique,
 validates positive fixtures, and verifies that negative fixtures are rejected.
+
+Note: the contract was renumbered from AMD-020 to AMD-001 (DRF-899); stable
+schema `$id` URLs retain the historical `amd020` path segment.
 """
 
 import json
@@ -19,8 +22,8 @@ from jsonschema import Draft202012Validator
 from referencing.jsonschema import DRAFT202012
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-CONTRACT = ROOT / "05 Architecture" / "AMD-020 C5 Pilot Personal Context Export-Forget Contract.md"
-FIXTURE_DIR = ROOT / "tests" / "fixtures" / "amd020"
+CONTRACT = ROOT / "05 Architecture" / "AMD-001 C5 Pilot Personal Context Export-Forget Contract.md"
+FIXTURE_DIR = ROOT / "tests" / "fixtures" / "amd001"
 EXPECTED_SCHEMA_COUNT = 7
 
 
@@ -159,9 +162,9 @@ def run() -> int:
     print(f"Negative fixtures: {negative_ok} rejected, {negative_fail} unexpectedly valid, {fixture_missing} missing")
 
     if exit_code == 0:
-        print("\nAll AMD-020 schema checks passed.")
+        print("\nAll AMD-001 schema checks passed.")
     else:
-        print("\nAMD-020 schema checks FAILED.")
+        print("\nAMD-001 schema checks FAILED.")
     return exit_code
 
 

@@ -102,8 +102,8 @@ Draft / proposed nodes (в vault, НЕ канон; approval ограничен A
 | [[Ayla Intent Model Specification]] | 0.9.2 | approved / accepted | intent types и output contract |
 | [[Killer PRD]] | 1.4.1 | draft / proposed | killer flow и память |
 | [[ADR-0012 Dynamic User Model]] | 0.2 | draft / proposed | динамическая модель пользователя |
-| [[AMD-020 C5 Implementation Amendment]] | 0.8 | draft / proposed | поправка реализации C5 |
-| [[AMD-020 C5 Pilot Personal Context Export-Forget Contract]] | 0.8 | draft / proposed | export/forget контракт |
+| [[AMD-001 C5 Implementation Amendment]] | 0.8.1 | draft / proposed | поправка реализации C5 |
+| [[AMD-001 C5 Pilot Personal Context Export-Forget Contract]] | 0.8.1 | draft / proposed | export/forget контракт |
 | [[AMD-020 Pilot Scope Registry]] | 0.3 | review / proposed | memory ownership alignment |
 | [[Ayla Domain Context Map]] | 1.0 | draft / proposed | DDD-методология и контексты |
 | [[Ayla Core Domain Model Specification]] | 1.0 | draft / proposed | заглушка, требует наполнения |

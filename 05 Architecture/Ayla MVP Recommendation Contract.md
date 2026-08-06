@@ -907,7 +907,7 @@ Architecture** (R1, R2/R10, R6), **B — Product + Measurement** (R4, R5),
   period; deletion vs legal hold; интерпретация derived data; являются
   ли digests personal data; export format; обработка immutable audit
   records; эффект удаления аккаунта; cross-repository deletion
-  (совместно с AMD-020 C5 export/forget). OQ-R9 **не блокирует**
+  (совместно с AMD-001 C5 export/forget). OQ-R9 **не блокирует**
   регистрацию базовых recommendation events — privacy-minimum записи
   сохранён (§3), события не содержат чувствительных значений.
 

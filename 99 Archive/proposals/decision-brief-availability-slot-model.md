@@ -625,8 +625,8 @@ Contract]] §11:
 > (регистрация событий availability по AYLA-DEC-0025); Ayla MVP Scope
 > and Release Contract (§4.1 формулировка CAP-010, deferred-перечень);
 > зависит от AYLA-DEC-0016, AYLA-DEC-0017, AYLA-DEC-0020. Ayla Domain
-> Capability Registry (состав CAP-010), AMD-020 и Consent Scope Registry
-> не изменяются.
+> Capability Registry (состав CAP-010), AMD-020 Pilot Scope Registry, AMD-001
+> C5 Export/Forget Contract и Consent Scope Registry не изменяются.
 
 ## Change Log
 
