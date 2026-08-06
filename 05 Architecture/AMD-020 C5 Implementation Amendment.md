@@ -7,7 +7,7 @@ aliases:
 type: specification
 status: draft
 decision_status: proposed
-version: "0.8"
+version: "0.8.1"
 canonical_status: draft
 owner: Chief Product Architect
 priority: P0
@@ -27,7 +27,7 @@ system_owner:
   - ayla-knowledge
 source_repository: ayla-knowledge
 created: 2026-07-23
-updated: 2026-07-24
+updated: 2026-08-06
 source_kind: canonical
 source_kind_note: "source_kind=canonical identifies the document as originating in the ayla-knowledge canonical repository; maturity/approval is expressed by status, decision_status, and canonical_status."
 classification: internal
@@ -60,12 +60,12 @@ review_cycle: event-driven
 |---|---|
 | Document status | Draft |
 | Decision status | Proposed |
-| Version | 0.8 (2026-07-24) |
+| Version | 0.8.1 (2026-08-06) |
 | Canonical status | draft |
 | Review status | pending_technical_re_review |
 
 Этот документ — извлечённый перечень code deltas для W2/W3, необходимых для
-реализации AMD-001 v0.8. Он не включает Verification Evidence (создаётся W6
+реализации AMD-001 v0.8.1. Он не включает Verification Evidence (создаётся W6
 после реализации) и не меняет код самостоятельно.
 
 ---
@@ -130,7 +130,7 @@ review_cycle: event-driven
 | `norm_id` | AMD001-DEL-004 |
 | Source section | AMD-001 §5 |
 | Current implemented fact | W3 returns raw dict from `privacy.py`; W2 returns `success_response({"user_id", "deleted"})` or 404. No machine error codes. |
-| Required delta | Implement JSON Schema 2020-12 for success/partial/failure/export/subject-gone; each root schema must have a stable `$id`; shared `$defs` (`subject`, `perStepResults`, `retainedItem`, `error`) duplicated per schema; mark `personal_context` and `MemoryEntry.content` as `opaque_payload`; add export failure schema; synchronize failure `enum` with full error taxonomy (`upstream_timeout`, `upstream_unavailable`, `upstream_error`, `upstream_malformed`, `init_data_expired`, etc.); `format_version` on all responses; `per_step_results`; remove `consents` from `deleted[]`; map each error class to HTTP + machine code; external 500 for internal credential failures with internal security-incident classification; commit runnable schema validation script (`scripts/validate_amd020_schemas.py`). |
+| Required delta | Implement JSON Schema 2020-12 for success/partial/failure/export/subject-gone; each root schema must have a stable `$id`; shared `$defs` (`subject`, `perStepResults`, `retainedItem`, `error`) duplicated per schema; mark `personal_context` and `MemoryEntry.content` as `opaque_payload`; add export failure schema; synchronize failure `enum` with full error taxonomy (`upstream_timeout`, `upstream_unavailable`, `upstream_error`, `upstream_malformed`, `init_data_expired`, etc.); `format_version` on all responses; `per_step_results`; remove `consents` from `deleted[]`; map each error class to HTTP + machine code; external 500 for internal credential failures with internal security-incident classification; commit runnable schema validation script (`scripts/validate_amd001_schemas.py`). |
 | Repository/module | W2: `users/personal_data_api.py`; W3: `apps/miniapp_api/views.py`, `apps/identity/services/privacy.py` |
 | W2/W3 window | W2 + W3 |
 | Dependency | operation_id (AMD001-DEL-003) |
@@ -452,7 +452,8 @@ secondary deltas.
 - Renumbered title references from `AMD-020` to `AMD-001` to match the renamed
   contract (`AMD-001 C5 Pilot Personal Context Export-Forget Contract`, DRF-899).
 - The `node_id` retains the historical `amd020` segment for identity stability.
-- The amendment content, version, status and decision status were not changed.
+- The amendment content, status and decision status were not changed; the
+  document version was bumped to 0.8.1 to record the renumber metadata change.
 
 ### v0.7 — 2026-07-23
 
