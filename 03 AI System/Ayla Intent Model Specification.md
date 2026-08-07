@@ -27,7 +27,7 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-27
-updated: 2026-08-03
+updated: 2026-08-05
 review_cycle: monthly
 depends_on:
   - "[[Ayla Constitution]]"
@@ -121,6 +121,11 @@ Journey v1.1 §6.4–§6.6):
 описывает желаемое направление пути и может жить дольше отдельной сессии в
 пределах соответствующего consent и доменного lifecycle.
 
+> **Note.** Transformation Goal — продуктовая концепция, используемая
+> несколькими canonical документами (в т.ч. этим). Её определение находится
+> вне Domain Model; этот документ не вводит и не предполагает существование
+> отдельного Domain Aggregate для Transformation Goal.
+
 **User Intent** — текущее структурированное представление того, что
 пользователь пытается изменить, понять, выбрать или сделать сейчас. Intent
 может поддерживать Transformation Goal, уточнять её, временно не иметь с ней
@@ -175,8 +180,8 @@ Recommendation/orchestration получает как минимум два ло�
   `goal_ref`, `goal_relationship`, `transformation_goal_ref` и т.п.) в него
   не вводятся;
 - Goal context не копируется в output resolver'а молча: связь intent с
-  целью читается orchestration/Recommendation из владеющего доменного
-  источника Transformation Goal, а не из Intent Output;
+  целью читается orchestration/Recommendation из canonical concept source
+  Transformation Goal, а не из Intent Output;
 - Intent Model владеет только семантической связью intent↔Goal
   (§ Transformation Goal and Intent), а не persistence Goal и не сборкой
   входа Recommendation — это ответственность Recommendation/orchestration
@@ -1609,6 +1614,26 @@ repair (этот проход) и Product Owner Final Review.
 
 > Журнал отражает историю изменений документа и не является нормативной частью
 > спецификации.
+
+### v1.0 (2026-08-05) — WINDOW-02 targeted alignment
+
+- **§ Recommendation Input Boundary:** формулировка «владеющий доменный
+  источник Transformation Goal» заменена на «canonical concept source»,
+  чтобы не подразумевать существование отдельного Domain Aggregate для
+  Transformation Goal в Core Domain Model. Семантика правила не изменена.
+- **§ Transformation Goal and Intent дополнен Note:** Transformation Goal —
+  продуктовая концепция, используемая несколькими canonical документами; её
+  определение находится вне Domain Model.
+- **Будущая синхронизация:** после approval Ayla Domain Event Registry
+  (текущая версия 0.4, § Migration Mapping) события `IntentResolved` и
+  `ContextFactCorrected`, используемые в этом документе, потребуют
+  синхронизации с их каноническими кандидатами (`intent.resolution_produced`,
+  `memory.entry_superseded`). До approval реестра переименование не
+  выполняется (консистентно с правилом реестра о том, что миграция
+  потребителей не выполняется до approval).
+- 11 продуктовых intent types + sentinel `UNKNOWN`, 18 слотов, Output
+  Contract `0.5` и machine-readable appendix не изменены. Status остаётся
+  candidate. CANON_INDEX не затронут (отдельное окно).
 
 ### v1.0 (2026-08-03) — D1 Product/Journey boundary clarification
 
