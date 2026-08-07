@@ -2,9 +2,9 @@
 node_id: ayla.ai.intent-model
 title: Ayla Intent Model Specification
 type: ai-specification
-status: draft
-decision_status: proposed
-canonical_status: candidate
+status: approved
+decision_status: accepted
+canonical_status: approved
 version: "1.0"
 owner: AI Architecture
 priority: P0
@@ -27,7 +27,7 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-27
-updated: 2026-08-05
+updated: 2026-08-08
 review_cycle: monthly
 depends_on:
   - "[[Ayla Constitution]]"
@@ -46,15 +46,15 @@ related:
 
 # Ayla Intent Model Specification
 
-> **Статус:** Draft v1.0 / proposed / canonical candidate — structured
-> revision в Two-Phase Pilot Scope Reconciliation Window. Документ приведён
-> к текущей продуктовой основе: [[Ayla Product Essence]] v1.1,
-> [[Ayla Product Vision]] v2.0, [[Ayla MVP Product Thesis]] v0.5,
-> [[Ayla Product Principles]] v0.1, [[Ayla MVP Scope and Release Contract]]
-> v0.3 и [[Ayla MVP User Journey Specification]] v1.1. Редакция не наследует
-> approval v0.9.2 автоматически и ожидает review и Product Owner approval.
-> Runtime Intent Resolution Output Contract сохраняет `contract_version:
-> "0.5"`; его поля и machine-readable appendix этой ревизией не меняются.
+> **Статус:** Approved v1.0 (2026-08-08, Product Owner) — Active Canon
+> revision в WINDOW-02 Intent Model v1.0 / Final Closure Package. Документ
+> приведён к текущей продуктовой основе: [[Ayla Product Essence]] v1.2,
+> [[Ayla Product Vision]] v2.1, [[Ayla MVP Product Thesis]] v0.6,
+> [[Ayla Product Principles]] v0.2, [[Ayla MVP Scope and Release Contract]]
+> v0.4 и [[Ayla MVP User Journey Specification]] v1.2. Runtime Intent
+> Resolution Output Contract сохраняет `contract_version: "0.5"`; его поля
+> и machine-readable appendix этой ревизией не менялись. Положения имеют
+> нормативную силу в границах MVP.
 >
 > **Соглашение о пометках.** Положения, прямо подтверждённые источниками,
 > помечены «Факт — <источник>». Положения, впервые предложенные этим
@@ -81,9 +81,9 @@ Prompt Canon (Roadmap §3.3).
 Проверяемая цель: intent layer помогает пройти составной путь MVP
 «Transformation Goal → понятный intent → объяснимая рекомендация →
 подтверждённый следующий шаг → progress / next state» (факт — MVP Scope
-v0.3 §3–§5; MVP User Journey v1.1 §5). `resolved intents` и
+v0.4 §3–§5; MVP User Journey v1.2 §5). `resolved intents` и
 `clarification rate` остаются диагностической телеметрией, а не центром
-продукта (факт — MVP Scope v0.3 §11).
+продукта (факт — MVP Scope v0.4 §11).
 
 ## Responsibility
 
@@ -92,8 +92,8 @@ Intent Model отвечает за каноническую связь межд�
 часть модели превращает текущее пользовательское сообщение (query) в
 структурированное намерение со слотами, оценкой уверенности и
 safety-пометками — ровно в объёме, достаточном для следующего решения
-Recommendation и orchestration (факт — MVP Scope v0.3 §3–§6; MVP User
-Journey v1.1 §6.4–§6.6):
+Recommendation и orchestration (факт — MVP Scope v0.4 §3–§6; MVP User
+Journey v1.2 §6.4–§6.6):
 
 ```text
 Пользователь формулирует Transformation Goal или рабочее намерение
@@ -116,10 +116,10 @@ Journey v1.1 §6.4–§6.6):
 
 ### Transformation Goal and Intent
 
-**Transformation Goal** — центральная доменная сущность и принадлежит
-пользователю (факт — Product Essence §20; Product Principles 4.2). Она
-описывает желаемое направление пути и может жить дольше отдельной сессии в
-пределах соответствующего consent и доменного lifecycle.
+**Transformation Goal** — canonical product concept, принадлежащий
+пользователю (факт — Product Essence §20; Product Principles 4.2). Он
+описывает желаемое направление пути и может использоваться на протяжении
+нескольких сессий в пределах соответствующего consent и product lifecycle.
 
 > **Note.** Transformation Goal — продуктовая концепция, используемая
 > несколькими canonical документами (в т.ч. этим). Её определение находится
@@ -133,7 +133,7 @@ Journey v1.1 §6.4–§6.6):
 `REVOKE_CONSENT`). Intent не владеет Transformation Goal и не заменяет её.
 Если связь с целью неизвестна, resolver не выдумывает её: связь остаётся
 `unknown/not_established`, а Ayla либо задаёт минимальный вопрос, либо
-продолжает с минимальным рабочим намерением (факт — MVP User Journey v1.1
+продолжает с минимальным рабочим намерением (факт — MVP User Journey v1.2
 §6.2, N1).
 
 **Transformation intent** — роль user intent в изменении состояния на пути к
@@ -209,8 +209,8 @@ Intent resolution не вызывает tools и не создаёт side effect
 Recommendation не является действием. Orchestration исполняет action только
 после подтверждения пользователя и доменных authorization/safety checks.
 Booking — одна из опций downstream action и не является terminal intent или
-terminal journey state (факт — Product Principles 4.8; MVP Scope v0.3 §4;
-MVP User Journey v1.1 §5, §6.6–§6.7).
+terminal journey state (факт — Product Principles 4.8; MVP Scope v0.4 §4;
+MVP User Journey v1.2 §5, §6.6–§6.7).
 
 ### Living Digital Twin Relationship
 
@@ -274,8 +274,9 @@ Contract. Explainability обеспечивается `evidence` и структ
   изменить, отменить или отвергнуть интерпретацию Ayla.
 - Intent resolver владеет resolution result, confidence, slots и lifecycle
   опубликованного результата в пределах этого контракта.
-- Transformation Goal принадлежит пользователю и своему domain owner;
-  смена intent не изменяет Goal молча.
+- Transformation Goal — canonical product concept, принадлежащий
+  пользователю; Intent Model не владеет им и не определяет его lifecycle
+  или persistence; смена intent не изменяет Goal молча.
 - Recommendation layer владеет recommendation intent и candidates;
   orchestration владеет sequencing и execution decision; domain capability
   владеет фактическим результатом действия.
@@ -353,9 +354,9 @@ Core Domain Model владеет:
 
 ## Does not own
 
-- **Transformation Goal lifecycle и persistence** — goal принадлежит
-  пользователю и соответствующему Domain owner; Intent Model только
-  определяет связь текущего intent с целью.
+- **Transformation Goal as canonical product concept** — goal принадлежит
+  пользователю и находится вне владения Intent Model; Intent Model только
+  определяет связь текущего intent с этим canonical concept.
 - **Living Digital Twin representation, media pipeline и recognition
   quality** — Intent Model определяет только границу взаимодействия; Twin
   не является источником intent.
@@ -434,7 +435,7 @@ Core Domain Model владеет:
   preferences для нового resolution (факт — CSR §5.1/§5.2, §10);
 - screen-level и channel-specific UX: Intent Model cross-channel neutral;
   required MVP surfaces — Mobile App, MAX Mini App и MAX Bot, feature parity
-  не требуется (факт — AYLA-DEC-0027; MVP Scope v0.3 §8);
+  не требуется (факт — AYLA-DEC-0027; MVP Scope v0.4 §8);
 - автоматические медицинские выводы из intent (запрещено — Roadmap §1.2,
   [[Killer PRD]] §9);
 - contract-test fixtures и исполняемые contract tests — не часть этого
@@ -495,7 +496,9 @@ orchestration/capability layer — см. § Safety-sensitive Intents,
   `requires_clarification = true`;
 - safety gate заблокировал дальнейший pipeline при blocking safety decision;
 - audit/attribution могли связать последующее действие с конкретным
-  `intent_id` (событие `IntentResolved` — MVP event, Roadmap §6.4);
+  `intent_id` (событие `IntentResolved` — legacy/current name; pending
+  migration to `intent.resolution_produced`, registration_status: proposed,
+  Domain Event Registry v0.4 §6.1 / §11);
 - orchestration восстановила очередь secondary intents без повторного
   анализа сообщения (поле `secondary_intents`).
 
@@ -663,7 +666,7 @@ intent_precedence:
   свойство типа само по себе. Колонка означает только одно: resolution этого
   типа обязан проходить обязательную safety evaluation до перехода к
   recommendation/answer, потому что тип *может* нести health-adjacent или
-  red-zone контекст (факт — [[Ayla MVP User Journey Specification]] v1.1
+  red-zone контекст (факт — [[Ayla MVP User Journey Specification]] v1.2
   §6.4: safety constraints проверяются перед рекомендацией; §8 N13: Boundary
   Handling при конфликте с safety-critical контекстом; red-zone факты —
   аллергии, противопоказания, конфликт целей — иллюстративные примеры этого
@@ -673,7 +676,7 @@ intent_precedence:
   competence boundary), а не по типу intent: `DISCOVER_SERVICE` без red-zone
   контекста проходит evaluation с пустым результатом и не блокируется.
   Тип определяет обязательность проверки; контекст определяет её исход
-  (§ Safety-sensitive Intents; MVP User Journey v1.1 §6.4, §8).
+  (§ Safety-sensitive Intents; MVP User Journey v1.2 §6.4, §8).
 - `ASK_ABOUT_SERVICE` помечен safety-sensitive, потому что ответ может
   касаться противопоказаний; запрещённые медицинские выводы контролируются
   Safety Policy, а не этим документом.
@@ -754,7 +757,7 @@ Journey), реестр выносится в отдельный документ
   §10.1).
 - Slot, заполненный и подтверждённый, повторно не спрашивается, пока он
   релевантен текущему intent, совместим с purpose и не противоречит новому
-  сигналу (факт — [[Ayla MVP User Journey Specification]] v1.1 §6.4,
+  сигналу (факт — [[Ayla MVP User Journey Specification]] v1.2 §6.4,
   clarification suppression и allowed context retrieval).
 - Конфликтующие значения одного slot (старое и новое в одной сессии)
   разрешаются через CORRECT_CONTEXT или clarification — не молчаливым
@@ -822,7 +825,7 @@ change_reason: # initial_fill | user_correction | intent_shift | clarification_a
 - **Intent shift:** значения, нерелевантные новому intent, несовместимые с
   purpose или противоречащие новому сигналу, → `superseded`,
   `change_reason = intent_shift`; автоматический перенос запрещён (Факт —
-  [[Ayla MVP User Journey Specification]] v1.1 §3, §6.4).
+  [[Ayla MVP User Journey Specification]] v1.2 §3, §6.4).
 - **Session end:** все значения → `expired`.
 
 Пример («Хочу к Анне» → «Нет, я имел в виду Марию»):
@@ -843,7 +846,7 @@ clarification при противоречии (§ Confidence and Clarification).
 Confidence — оценка надёжности конкретного структурированного вывода, не
 доказательство истинности (Факт — [[Ayla Glossary]]).
 
-Уровни уверенности (факт — [[Ayla MVP User Journey Specification]] v1.1
+Уровни уверенности (факт — [[Ayla MVP User Journey Specification]] v1.2
 §6.4,
 заданы для формулировок в диалоге; числовые пороги — стартовая runtime
 configuration ayla-ai-core по закрытому OQ-1, семантика уровней
@@ -1021,7 +1024,7 @@ Secondary — дополнительный (Факт — [[Ayla Glossary]]).
 3. Правила учёта multi-intent в метрике resolved intents (denominator,
    exclusion rules) принадлежат Measurement Framework; Journey фиксирует
    только evidence points без финальных порогов (факт —
-   [[Ayla MVP User Journey Specification]] v1.1 §13) — Open Question OQ-3.
+   [[Ayla MVP User Journey Specification]] v1.2 §13) — Open Question OQ-3.
 
 Correction:
 
@@ -1032,15 +1035,17 @@ Correction:
 2. Исправление факта, влияющего на safety (red-zone), обязано запускать
    повторную safety evaluation до продолжения actionable pipeline (Факт —
    аналог Safety Re-evaluation при Intent Shift,
-   [[Ayla MVP User Journey Specification]] v1.1 §3, §6.4).
-3. Событие `ContextFactCorrected` входит в MVP event set (Факт — Roadmap
-   §6.4); persistence исправлений — зона CAP-001 Personal Context и Phase 2
-   gates, не этого документа.
+   [[Ayla MVP User Journey Specification]] v1.2 §3, §6.4).
+3. Событие `ContextFactCorrected` — legacy/current name; pending
+   migration to `memory.entry_superseded` (resolved mapping per
+   AYLA-DEC-0024 п. 4; registration_status: proposed, Domain Event Registry
+   v0.4 §6.4 / §11). Persistence исправлений — зона CAP-001 Personal Context
+   и Phase 2 gates, не этого документа.
 
 ## Supersession and Expiry
 
 Supersession (смена намерения внутри сессии). Факт —
-[[Ayla MVP User Journey Specification]] v1.1 §3, §6.4: пользователь
+[[Ayla MVP User Journey Specification]] v1.2 §3, §6.4: пользователь
 может менять намерение в рамках одной сессии; при сдвиге Ayla:
 
 1. фиксирует Intent Shift;
@@ -1054,9 +1059,10 @@ Supersession (смена намерения внутри сессии). Факт
 Proposal (операционализация для output contract): сменившийся intent получает
 новый `intent_id`; прежний результат получает `status = superseded` со
 `status_reason = intent_shift` и недоступен для execution. Связь «новый
-вытесняет старый» фиксируется в audit-следе события `IntentResolved`, а не в
-полях output contract (состав обязательных полей заморожен Roadmap §3.1 —
-см. OQ-6).
+вытесняет старый» фиксируется в audit-следе события `IntentResolved`
+(legacy/current name; pending migration to `intent.resolution_produced`),
+а не в полях output contract (состав обязательных полей заморожен
+Roadmap §3.1 — см. OQ-6).
 
 Expiry. Факт — [[Consent Scope Registry]] §5.1: validity scope
 `intent_understanding` — текущая сессия; следовательно, resolved intent
@@ -1068,7 +1074,7 @@ Proposal: intent, оставшийся без завершения к концу
 
 ## Safety-sensitive Intents
 
-Механика (факт — [[Ayla MVP User Journey Specification]] v1.1 §6.4: safety
+Механика (факт — [[Ayla MVP User Journey Specification]] v1.2 §6.4: safety
 constraints проверяются перед переходом к рекомендации; §8 N13: при
 конфликте с safety-critical контекстом или competence boundary Ayla
 останавливает обработку и переходит в Boundary Handling): перед переходом к
@@ -1158,8 +1164,8 @@ v0.3 §3, §13):
   фактом, но не скрытым коммерческим весом;
 - `intent_id` обеспечивает direct attribution к `recommendation_id` и
   выбранному action; `booking_id` / `appointment_id` добавляется только если
-  booking действительно произошёл (факт — MVP Scope v0.3 §6.3; MVP User
-  Journey v1.1 §12).
+  booking действительно произошёл (факт — MVP Scope v0.4 §6.3; MVP User
+  Journey v1.2 §12).
 
 Attribution описывает связь решений и результата, но не изменяет ownership:
 наличие booking не делает intent «более истинным», а отсутствие booking не
@@ -1393,7 +1399,7 @@ Matrix) — см. OQ-8.
   быть прослеживаем к пользовательскому вводу (Факт — принцип
   прослеживаемости критических решений: [[Ayla Constitution]]; explainability
   — обязательное требование MVP, [[Ayla MVP Scope and Release Contract]]
-  v0.3 §10; [[Ayla MVP User Journey Specification]] v1.1 §6.5).
+  v0.3 §10; [[Ayla MVP User Journey Specification]] v1.2 §6.5).
 - `contract_version` присутствует в каждом результате и равна версии
   runtime-контракта, по которой сформирован результат.
 - Контракт additive-расширяем: новые поля допускаются только через change
@@ -1441,8 +1447,10 @@ Matrix) — см. OQ-8.
   поведение при повторной неоднозначности требуют решения Privacy Owner и
   согласования с [[Consent Scope Registry]] §8 (команды пользователя).
 - **OQ-6. Представление supersession-связи** (новый intent вытесняет старый):
-  audit-след события `IntentResolved` vs дополнительное поле контракта.
-  Текущее решение — audit-след, чтобы не расширять замороженный контракт.
+  audit-след события `IntentResolved` (legacy/current name; pending
+  migration to `intent.resolution_produced`) vs дополнительное поле
+  контракта. Текущее решение — audit-след, чтобы не расширять замороженный
+  контракт.
 - **OQ-7 (ЗАКРЫТ — owner ruling 2026-07-28). Владение safety-кодами.**
   Intent Model владеет формой safety-интеграции: структурой `safety_flags`,
   правилом signal ≠ blocking decision и инвариантом `blocked_safety`.
@@ -1615,6 +1623,34 @@ repair (этот проход) и Product Owner Final Review.
 > Журнал отражает историю изменений документа и не является нормативной частью
 > спецификации.
 
+### v1.0 (2026-08-07) — WINDOW-02 final closure alignment
+
+- **Transformation Goal terminology:** формулировка «центральная доменная
+  сущность» заменена на «canonical product concept, принадлежащий
+  пользователю» в § Transformation Goal and Intent и § Lifecycle and
+  Ownership; § Does not own уточнён — Transformation Goal находится вне
+  владения Intent Model. Цель: устранить ложное впечатление, что
+  Transformation Goal уже является Domain Aggregate.
+- **Domain Event Registry compatibility:** события `IntentResolved` и
+  `ContextFactCorrected` отражены как legacy/current name с pending
+  canonical migration direction (`intent.resolution_produced` и
+  `memory.entry_superseded` соответственно), без повышения proposed-событий
+  до registered/canonical.
+- **Journey dependency:** нормативные ссылки на
+  `01 Product/User Journeys/Ayla MVP User Journey Specification.md`
+  (v1.2) приведены к актуальной редакции; убрана зависимость от
+  устаревших semantics (mandatory LDT, booking-as-terminal-value,
+  memory-absent MVP).
+- **Metadata:** `updated` обновлён на 2026-08-07; статус остаётся draft /
+  proposed / candidate — pending final owner review.
+
+**Final owner approval (2026-08-08):**
+
+- Статус переведён в `approved` / `accepted` / `canonical`.
+- Intent Model v1.0 — Active Canon revision узла `ayla.ai.intent-model`;
+  предыдущая approved revision v0.9.2 находится в Git history и больше не
+  является Active Canon.
+
 ### v1.0 (2026-08-05) — WINDOW-02 targeted alignment
 
 - **§ Recommendation Input Boundary:** формулировка «владеющий доменный
@@ -1765,7 +1801,7 @@ repair (этот проход) и Product Owner Final Review.
   как вход classification/ordering; intent attribution отделена от booking
   conversion и не меняет ownership или resolution truth.
 - **Reference migration:** нормативные ссылки переведены на MVP Scope v0.3 и
-  MVP User Journey v1.1; metadata дополнена текущими Foundation inputs.
+  MVP User Journey v1.2; metadata дополнена текущими Foundation inputs.
 - **Runtime compatibility:** 11 product intent types + `UNKNOWN`, slots,
   Output Contract `0.5` и machine-readable appendix не изменены.
 - **Status:** v1.0 — draft / proposed / canonical candidate; approval v0.9.2

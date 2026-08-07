@@ -2,8 +2,9 @@
 node_id: ayla.product.mvp-user-journey
 title: Ayla MVP User Journey Specification
 type: user-journey-specification
-status: approved
+status: superseded
 decision_status: accepted
+canonical_status: deprecated
 version: "1.1"
 owner: Product Owner
 priority: P0
@@ -26,7 +27,7 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-27
-updated: 2026-07-29
+updated: 2026-08-08
 review_cycle: monthly
 depends_on:
   - "[[Ayla Constitution]]"
@@ -44,18 +45,11 @@ related:
 
 # Ayla MVP User Journey Specification
 
-> **Статус:** Approved v1.1 (2026-07-29, Product Owner). v1.1 —
-> conforming amendment: миграция имён событий `recommendation.*` и
-> `qualified_action.attributed` по [[Ayla Domain Event Registry]] v0.3
-> (§6.5/§6.6, registered) и [[Ayla MVP Recommendation Contract]] v0.3,
-> закрытие Open Question №11, обновление Open Question №8; бизнес-логика
-> этапов, scope и негативные сценарии не изменены. Документ принят
-> после устранения обязательного замечания F1 (синхронизация этапов 4–5 с
-> утверждённой [[Ayla Intent Model Specification]]) и внесения ремарки F2;
-> положения имеют нормативную силу в границах MVP. Документ остаётся
-> производным MVP-срезом [[Ayla User Journey Specification]] по решению
-> AYLA-DEC-0014 ([[Ayla MVP Documentation Roadmap]] §2.1) и не заменяет
-> полную спецификацию.
+> **Статус:** Superseded v1.1 (2026-08-08). Был approved 2026-07-29
+> (Product Owner) и переведён в `superseded` при approval Journey v1.2
+> (2026-08-08). Историческая редакция сохраняется как точка отсчёта
+> линии v1.1; нормативная сила перенесена на Active Canon revision
+> `01 Product/User Journeys/Ayla MVP User Journey Specification.md` v1.2.
 >
 > **Соглашение о метках.** Утверждения, дословно или близко следующие из
 > канонических источников, помечены как *(факт — источник §)*. Предложения,

@@ -2,9 +2,9 @@
 node_id: ayla.product.mvp-user-journey
 title: Ayla MVP User Journey Specification
 type: user-journey-specification
-status: draft
-decision_status: proposed
-canonical_status: candidate
+status: approved
+decision_status: accepted
+canonical_status: approved
 version: "1.2"
 owner: Product Owner
 priority: P0
@@ -27,7 +27,7 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-27
-updated: 2026-08-05
+updated: 2026-08-08
 review_cycle: monthly
 depends_on:
   - "[[Ayla Constitution]]"
@@ -50,26 +50,26 @@ related:
 
 # Ayla MVP User Journey Specification
 
-> **Статус:** Draft v1.2 (2026-08-05) — эволюция owner-approved v1.1
-> (2026-07-29) по итогам архитектурной Owner Decision Session (решения
-> OD-1…OD-18, подтверждены Product Owner 2026-08-04). Состояние: draft /
-> proposed / candidate — pending review и owner approval.
-> Owner directions OD-1…OD-18 applied to draft.
-> OD-1…OD-18 registered as AYLA-DEC-0037…AYLA-DEC-0054 in [[OWNER_DECISION_REGISTER]].
-> Formal canonical approval remains pending.
+> **Статус:** Approved v1.2 (2026-08-08, Product Owner). Эволюция
+> owner-approved v1.1 (2026-07-29) по итогам архитектурной Owner Decision
+> Session (решения OD-1…OD-18, подтверждены Product Owner 2026-08-04), с
+> финальным alignment pass по AYLA-DEC-0063…AYLA-DEC-0066 (OD-MVP-1…4,
+> 2026-08-07). Состояние: approved / accepted / canonical. Положения
+> имеют нормативную силу в границах MVP. OD-1…OD-18 зарегистрированы как
+> AYLA-DEC-0037…AYLA-DEC-0054; OD-MVP-1…OD-MVP-4 зарегистрированы как
+> AYLA-DEC-0063…AYLA-DEC-0066 в [[OWNER_DECISION_REGISTER]].
 >
-> **Canon Lineage.** v1.2 является новой candidate-редакцией, основанной
-> на owner-approved MVP Journey v1.1 (2026-07-29), выборочных улучшениях
-> draft-линии v1.1 (2026-07-31 / 2026-08-03) и owner rulings OD-1…OD-18.
-> Формула редакции: Approved v1.1 + явно принятые owner decisions +
-> выборочные улучшения из draft + синхронизация с актуальным каноном.
-> До owner approval v1.2 **не** supersede approved v1.1; approved v1.1 не
-> переводится в superseded до отдельного approval package. Frontmatter не
-> содержит полей `supersedes` / `derived_from`: `supersedes` на
-> [[Ayla MVP User Journey Specification]] создавал self-reference на
-> текущий узел (и был бы преждевременным до approval), а `derived_from`
-> отсутствует в relationship semantics
-> [[Ayla Domain and Metadata Registry]] v1.0 §7 (см. Open Questions №9).
+> **Canon Lineage.** v1.2 — Active Canon revision Knowledge Node
+> `ayla.product.mvp-user-journey`, основанная на owner-approved MVP Journey
+> v1.1 (2026-07-29), выборочных улучшениях draft-линии v1.1
+> (2026-07-31 / 2026-08-03) и owner rulings OD-1…OD-18. Формула редакции:
+> Approved v1.1 + явно принятые owner decisions + выборочные улучшения из
+> draft + синхронизация с актуальным каноном. С owner approval v1.2
+> предыдущая approved revision v1.1 переведена в статус `superseded`
+> (`approved_v1_1.md`, 2026-08-08); историческая редакция сохраняется в
+> Git history и snapshot-файле. Active Canon uniqueness по Variant C
+> соблюдена: только одна revision узла находится в active canonical
+> статусе.
 >
 > **Соглашение о метках.** Утверждения, дословно или близко следующие из
 > канонических источников, помечены как *(факт — источник §)*. Положения,
@@ -238,7 +238,7 @@ v1.1):
   Transformation Goal → Ayla понимает потребность и intent → подбирает
   услугу или действие → объясняет рекомендацию → пользователь подтверждает
   → Ayla выполняет подтверждённое действие → пользователь видит прогресс
-  или следующее состояние (факт — MVP Scope v0.3 §4; owner decision OD-1).
+  или следующее состояние (факт — MVP Scope v0.4 §4; owner decision OD-1).
 - **Три required channels — один продукт:** Mobile App, MAX Mini App,
   MAX Bot — разные поверхности одной продуктовой системы, а не три
   независимых продукта (факт — AYLA-DEC-0027; MVP Scope v0.3 §8; см.
@@ -353,7 +353,9 @@ Transformation Goal, Living Digital Twin и Progress **не являются
 пользовательское представление контекста, состояния и прогресса; главный
 визуальный интерфейс ключевых сценариев (факт — AYLA-DEC-0026); не
 самостоятельный Source of Truth и не единственный центр продукта (owner
-decision OD-4). Положения:
+decision OD-4). Living Digital Twin — strategic / conditional
+representation capability: он не является обязательным critical-path
+элементом первого MVP (AYLA-DEC-0063 / OD-MVP-1). Положения:
 
 - Twin — долгоживущее цифровое представление пользователя, а не разовая
   генерация изображения (факт — Manifesto §3);
@@ -362,15 +364,16 @@ decision OD-4). Положения:
 - Twin объединяет восприятие состояния, прогресса и данных из разных
   областей, но не владеет доменами и не подменяет их (факт — Manifesto §3);
 - Twin ≠ memory: Twin baseline и media-артефакты — authoritative backend
-  domain data с собственным media consent, не persistent semantic memory;
-  поэтому Twin доступен в Phase 1 в объёме MVP Scope §6.4 MUST_HAVE
+  domain data с собственным media consent, не persistent semantic memory
   (owner decision OD-4; разграничение сущностей — Memory Interaction);
-- обязательные experience points (факт — MVP Scope v0.3 §6.4 MUST_HAVE;
-  Manifesto §14): baseline; управляемая фотофиксация; recognition «это
-  я»; сигнал «это не похоже на меня»; correction / rebuild; identity
-  continuity; comparison over time; state-class distinction; deletion /
-  user control. Owning channel для визуально-зависимых experience —
-  Mobile App (факт — AYLA-DEC-0027);
+- если конкретный релиз включает LDT, обязательные experience points
+  (факт — MVP Scope v0.4 §6.4 MUST_HAVE, если LDT включён; Manifesto §14):
+  baseline; управляемая фотофиксация; recognition «это я»; сигнал «это
+  не похоже на меня»; correction / rebuild; identity continuity;
+  comparison over time; state-class distinction; deletion / user control.
+  Если LDT не включён, эти experience points не являются обязательными
+  для MVP (AYLA-DEC-0063). Owning channel для визуально-зависимых
+  experience — Mobile App (факт — AYLA-DEC-0027);
 - классы достоверности (факт — Manifesto §9): user-entered fact, observed
   fact, reconstructed representation (включая сам Twin), inferred state,
   predicted scenario, desired outcome (Transformation Goal) — не
@@ -389,8 +392,8 @@ decision OD-4). Положения:
 прогрессом / следующим состоянием, а не подтверждением записи (факт — MVP
 Scope v0.3 §4 шаг 10; owner decision OD-1):
 
-- пользователь видит сравнение состояний во времени через Twin и/или
-  поддерживаемые представления;
+- пользователь видит сравнение состояний во времени через поддерживаемые
+  представления, включая Twin, если он включён в релиз;
 - прогресс показывается без давления и стыда (факт — Principles 4.10;
   Manifesto §13);
 - следующее состояние формулируется честно: что наблюдаемо, что оценено,
@@ -595,7 +598,7 @@ memory в Phase 1 технически отключена (факт — CSR §10
 | actor | Ayla |
 | trigger | Получено пользовательское сообщение с потребностью |
 | пользовательская цель | Чтобы Ayla поняла, чего пользователь хочет достичь, а не только что написал (Query vs Intent — факт, полная UJS Stage 3) |
-| системное действие | Извлечь intent и slots из сообщения; определить confidence; проверить safety constraints до перехода к рекомендации (факт — полная UJS, Stage 3 Intent Extraction / Safety Check). Поддерживаемые intent types, required/optional slots и confidence levels определяет [[Ayla Intent Model Specification]] v0.9.2 (approved/accepted — действующий runtime-канон, owner decision OD-7: 11 продуктовых intent types + sentinel `UNKNOWN`) и её machine-readable contracts — `03 AI System/Contracts/intent-registry.yaml`, `slot-registry.yaml`, `intent-output.schema.json` (contract_version 0.5) (факт — Intent Model § Intent Types, § Output Contract). Intent интерпретируется в контексте Transformation Goal и разрешённых данных; связь intent с целью читается из владеющего доменного источника, а не из intent output; если связь неизвестна, она не выдумывается (owner decision OD-7; Intent Model v1.0, candidate). **(proposal, v0.2)** Для разрешения ссылок на прошлый опыт («как в прошлый раз», «к ней», «снова») допускается targeted memory retrieval до окончательного разрешения intent — в пределах активного scope |
+| системное действие | Извлечь intent и slots из сообщения; определить confidence; проверить safety constraints до перехода к рекомендации (факт — полная UJS, Stage 3 Intent Extraction / Safety Check). Поддерживаемые intent types, required/optional slots и confidence levels определяет [[Ayla Intent Model Specification]] v0.9.2 (approved/accepted — действующий runtime-канон, owner decision OD-7: 11 продуктовых intent types + sentinel `UNKNOWN`) и её machine-readable contracts — `03 AI System/Contracts/intent-registry.yaml`, `slot-registry.yaml`, `intent-output.schema.json` (contract_version 0.5) (факт — Intent Model § Intent Types, § Output Contract). Intent интерпретируется в контексте Transformation Goal и разрешённых данных; связь intent с целью читается из canonical concept source Transformation Goal, а не из intent output; если связь неизвестна, она не выдумывается (owner decision OD-7; Intent Model v1.0, candidate). **(proposal, v0.2)** Для разрешения ссылок на прошлый опыт («как в прошлый раз», «к ней», «снова») допускается targeted memory retrieval до окончательного разрешения intent — в пределах активного scope |
 | отображаемое состояние | Формулировка понимания с уровнем уверенности через язык (факт — полная UJS, Stage 3 Confidence) |
 | ошибка | `INTENT_UNRESOLVED` — intent не распознан или confidence ниже порога (соответствует `intent_type = UNKNOWN` со `status = unresolved` / `needs_clarification`; `UNKNOWN` — resolver sentinel, execution по нему запрещён — факт, Intent Model § Intent Types, § Output Contract) |
 | fallback | Переход к этапу 5 (Clarification); при повторной неудаче — см. Negative Scenarios N1.1 |
@@ -672,7 +675,7 @@ pipeline inference → confirmation → persist — факт, AYLA-DEC-0023 п. 
 | actor | Ayla (ayla-ai-core Recommendation Composer) |
 | trigger | Intent resolved + разрешённый контекст получен |
 | пользовательская цель | Получить один понятный следующий шаг, а не каталог |
-| системное действие | Выполнить decision pipeline: consent/privacy gate → safety gate → eligibility/availability → relevance → preference boost → economic-neutrality check → primary output (факт — [[Killer PRD]] §5.1). Сформировать одну primary recommendation с `recommendation_id`; кандидат, исключённый на любом этапе, не возвращается (факт — там же). Recommendation привязана к Transformation Goal, если связь установлена (owner decision OD-9). **LLM не является ranking authority** (owner decision OD-9): LLM может понимать запрос, участвовать в clarification и формировать explanation, но admissible set, ranking constraints, eligibility и authoritative ordering определяются каноническими правилами, registries и authoritative backend data. `no_action` (обоснованное «ничего не делать») — полноценный объяснимый результат (owner decision OD-9; факт — MVP Scope v0.3 §5 п. 6). **(proposal, v0.2)** Роль памяти не сводится к preference boost — см. Recommendation and Proactivity Gates, «Memory influence model» |
+| системное действие | Выполнить decision pipeline: consent/privacy gate → safety gate → eligibility/availability → relevance → preference boost → economic-neutrality check → primary output (факт — [[Killer PRD]] §5.1). Сформировать одну primary recommendation с `recommendation_id`; кандидат, исключённый на любом этапе, не возвращается (факт — там же). Recommendation привязана к Transformation Goal, если связь установлена (owner decision OD-9). **LLM не является ranking authority** (owner decision OD-9): LLM может понимать запрос, участвовать в clarification и формировать explanation, но admissible set, ranking constraints, eligibility и authoritative ordering определяются каноническими правилами, registries и authoritative backend data. `no_action` (обоснованное «ничего не делать») — полноценный объяснимый результат (owner decision OD-9; факт — MVP Scope v0.4 §5 п. 6). **(proposal, v0.2)** Роль памяти не сводится к preference boost — см. Recommendation and Proactivity Gates, «Memory influence model» |
 | отображаемое состояние | recommendation ready (одна карточка primary); no recommendation — если кандидатов не осталось |
 | ошибка | `NO_CANDIDATES`; `SAFETY_BLOCKED`; `ranking_economic_neutrality_alert` (внутренний policy/observability alert, не user-facing ошибка: блокирует выдачу до разбора — факт, Killer PRD §5.2/§5.3) |
 | fallback | При `NO_CANDIDATES` — честное состояние no recommendation + обычный поиск/запись без персонализированной primary (факт — Killer PRD §5.3 Fallback); при safety-блокировке — Boundary Handling (см. Negative Scenarios N4.5) |
@@ -792,7 +795,7 @@ behavior (owner decision OD-10).
 | actor | Ayla → User |
 | trigger | Время записи прошло (запись состоялась или завершилась) либо завершён иной подтверждённый next action; надёжный доменный триггер — см. Open Question №8 (OQ-E3) |
 | пользовательская цель | Быстро оценить результат одним действием |
-| системное действие | Спросить, как прошло, с прогрессивным раскрытием (базовая оценка → при негативе уточнение причины) (факт — полная UJS, Stage 6 Feedback Collection). Результат и follow-up становятся continuity input (факт — MVP Scope v0.3 §4 шаг 9, PARTIAL). Feedback создаёт только Memory Proposal — предложение сохранить знание, допускается уже в Phase 1; Memory Proposal не является persistent write, не требует публикации незарегистрированных `memory.*` events и не изменяет долгосрочную память (owner decision OD-12). Persistent memory обновляется только после consent, purpose validation, eligibility и Phase 2 rollout (owner decision OD-12; факт — CSR §10.2). **(proposal, v0.2)** Этап 14 — не конец journey, а вход в Memory Evaluation and Update (см. Memory Interaction): outcome интерпретируется, классифицируется и — после подтверждения пользователя — становится входом следующего journey |
+| системное действие | Спросить, как прошло, с прогрессивным раскрытием (базовая оценка → при негативе уточнение причины) (факт — полная UJS, Stage 6 Feedback Collection). Результат и follow-up становятся continuity input (факт — MVP Scope v0.4 §4 шаг 9, PARTIAL). Feedback создаёт только Memory Proposal — предложение сохранить знание, допускается уже в Phase 1; Memory Proposal не является persistent write, не требует публикации незарегистрированных `memory.*` events и не изменяет долгосрочную память (owner decision OD-12). Persistent memory обновляется только после consent, purpose validation, eligibility и Phase 2 rollout (owner decision OD-12; факт — CSR §10.2). **(proposal, v0.2)** Этап 14 — не конец journey, а вход в Memory Evaluation and Update (см. Memory Interaction): outcome интерпретируется, классифицируется и — после подтверждения пользователя — становится входом следующего journey |
 | отображаемое состояние | Сообщение с вариантами оценки; путь продолжается к progress / next state независимо от исхода booking (Journey Operating Model) |
 | ошибка | Пользователь не отвечает — молчание не интерпретируется как согласие или отрицание (факт — полная UJS, Learning Signals) |
 | fallback | Не повторять prompt навязчиво; feedback остаётся опциональным **(proposal)**; задержка доменного события завершения не блокирует пользовательский путь (см. Negative Scenarios N3.3) |
@@ -1490,7 +1493,7 @@ immutable `memory_snapshot_ref` (`memory_version`, `value_digest`); заднее
 
 | Channel | Роль в journey |
 |---|---|
-| **Mobile App** | REQUIRED / primary product experience: полная визуальная и longitudinal experience — Living Digital Twin, photo capture, прогресс, история, контроль данных |
+| **Mobile App** | REQUIRED / primary product experience: полная визуальная и longitudinal experience — photo capture, прогресс, история, контроль данных; Living Digital Twin — conditional representation capability, доступный, если включён в релиз отдельным owner decision (AYLA-DEC-0063 / OD-MVP-1) |
 | **MAX Mini App** | REQUIRED / lightweight embedded companion: статус цели, рекомендация, booking, быстрый check-in, продолжение пути |
 | **MAX Bot** | REQUIRED / conversational, notification and routing companion: диалог, уточнения, объяснения, напоминания, транзакционные уведомления, быстрые действия, маршрутизация |
 
@@ -1704,8 +1707,10 @@ rollout-подробности, не влияющие непосредствен
   доступность всех функций во всех каналах: доступность конкретного
   действия определяется channel capability matrix, UX contract и rollout
   phase (owner decision OD-5);
-- Twin baseline и связанные MVP-возможности — в объёме, подтверждённом MVP
-  Scope v0.3 §6.4 MUST_HAVE (owner decision OD-14);
+- Living Digital Twin — conditional / deferred-by-default representation
+  capability; Twin baseline и связанные experience points обязательны
+  только если LDT включён в конкретный релиз отдельным owner decision
+  (факт — MVP Scope v0.4 §6.4; AYLA-DEC-0063 / OD-MVP-1);
 - session context, active-flow slots, authoritative backend facts;
 - простой feedback (этап 14); Memory Proposal (Phase 1, без persistent
   write — owner decision OD-12);
@@ -2072,6 +2077,44 @@ pass; архитектура и принятые решения не менял�
   MVP journey surfaces, без обещания функциональной симметрии) и
   TARGET_STATE_ONLY (channel-agnostic expansion beyond the three MVP
   channels и additional future channels).
+
+**Final closure alignment (2026-08-07, WINDOW-01 Journey v1.2 / OD-MVP-1…4):**
+
+- **AYLA-DEC-0063 / OD-MVP-1 (LDT):** Living Digital Twin переведён из
+  обязательного critical-path элемента первого MVP в strategic /
+  conditional representation capability. Сквозные концепции,
+  Cross-channel Experience и Scope and Deferred приведены в соответствие
+  с MVP Scope v0.4 §6.4: LDT обязателен только если включён в конкретный
+  релиз; долгосрочная модель LDT, его strategic role и требования
+  honesty / recognizability / identity continuity / correction /
+  user-control (при включении) сохранены. LDT не удалён, не deprecated.
+- **AYLA-DEC-0064 / OD-MVP-2 (Everyday Signal / Food Intelligence):**
+  проверено, что Food Scanner остаётся first concrete MVP implementation
+  of Everyday Signal, но не центральной сущностью, не единственным
+  сигналом, не calorie-tracking продуктом, не медицинским inference
+  source и не permanent identity of Ayla; материальных изменений не
+  потребовалось (de-centered framing уже действует).
+- **AYLA-DEC-0065 / OD-MVP-3 (Memory Foundation):** проверено, что
+  progressive memory model (Working Context → Memory Candidate → Policy /
+  Consent Gate → Persistent Memory) уже отражена в Memory Interaction;
+  формулировки «Phase 1 = no memory» отсутствуют; persistent memory
+  остаётся отключённой в Phase 1, но Memory Proposal допускается.
+- **AYLA-DEC-0066 / OD-MVP-4 (MVP value loop):** проверено, что Journey
+  совместим со сквозным циклом Goal → Signal → Context → Recommendation
+  → Action → Memory → Progress; существующая структура
+  Conversation → Understanding → Recommendation → Execution → Learning /
+  Continuity сохранена; booking остаётся одним из возможных downstream
+  Action, а не terminal product value.
+- **Metadata:** `updated` обновлён на 2026-08-07; статус остаётся draft /
+  proposed / candidate — pending final owner review. Упоминания pending
+  alignment с AYLA-DEC-0063…0066 удалены из статусного баннера.
+
+**Final owner approval (2026-08-08):**
+
+- Статус переведён в `approved` / `accepted` / `canonical`.
+- Предыдущая approved revision v1.1 (`approved_v1_1.md`) переведена в
+  `superseded`; историческая редакция сохранена.
+- Journey v1.2 — Active Canon revision узла `ayla.product.mvp-user-journey`.
 
 ### v1.1 (2026-08-03) — D1 Product/Journey consistency repair
 
