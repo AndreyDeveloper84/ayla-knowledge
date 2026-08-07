@@ -19,7 +19,7 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-29
-updated: 2026-08-07
+updated: 2026-08-08
 review_cycle: monthly
 ---
 
@@ -59,5 +59,6 @@ SUPERSEDED
 | Ayla Single-Provider Technical Pilot Execution Scope | Strategy execution | `02 Strategy\Ayla Single-Provider Technical Pilot Execution Scope.md` | DRAFT (v0.3, proposed, CROSS_DOCUMENT_ALIGNED) | — | Non-canonical execution scope for A0/A1/A2. Downstream of MVP Scope v0.3; не входит в Foundation hierarchy и не создаёт canonical dependency edge. |
 | Ayla Multi-Provider Product Validation Execution Scope | Strategy execution | `02 Strategy\Ayla Multi-Provider Product Validation Execution Scope.md` | DRAFT (v0.2, proposed, CROSS_DOCUMENT_ALIGNED) | — | Non-canonical execution scope for B0/B1. Downstream of MVP Scope v0.3 и Single-Provider Execution Scope v0.3; не входит в Foundation hierarchy. |
 | Ayla MVP v0.3 Downstream Migration Plan | Strategy execution | `02 Strategy\Ayla MVP v0.3 Downstream Migration Plan.md` | DRAFT (v0.1, proposed, INTERNALLY_APPROVED) | — | Non-canonical migration execution plan (waves D0–D6). Downstream of MVP Scope v0.3 и обоих execution scopes; не входит в Foundation hierarchy. |
-| MVP User Journey | Foundation | `01 Product\User Journeys\Ayla MVP User Journey Specification.md` | PARTIALLY_ALIGNED (v1.2, содержит собственные owner decisions AYLA-DEC-0037…0054, 2026-08-04) | v1.1, v1.0 | Foundation Window документ №5. Требует alignment pass с AYLA-DEC-0063…0066 (OD-MVP-1…4, 2026-08-07): §6.3/§6.4-ссылки на MVP Scope §6.4 MUST_HAVE Twin-требования устарели после MVP Scope v0.4. Follow-up gate, не выполнен в этой канонизации. |
+| MVP User Journey | Foundation | `01 Product\User Journeys\Ayla MVP User Journey Specification.md` | CANONICAL (v1.2, approved / accepted / canonical, 2026-08-08) | v1.1 (superseded 2026-08-08), v1.0 | Owner-approved. Alignment complete. Active Canon revision of `ayla.product.mvp-user-journey`. |
+| Intent Model v1.0 | AI System | `03 AI System\Ayla Intent Model Specification.md` | CANONICAL (v1.0, approved / accepted / canonical, 2026-08-08) | v0.9.2 (historical approved/accepted, 2026-07-28; superseded by v1.0) | Owner-approved. Alignment complete. Active Canon revision of `ayla.ai.intent-model`. |
 | Killer PRD | Legacy | `02 Strategy\Killer PRD.md`; `D:\Проекты\Ayla\Killer_PRD_v1.1_RU.md` | LEGACY REFERENCE ONLY | — | Только для поиска требований/решений/рисков. Не родительский документ и не основа структуры MVP Scope. |
