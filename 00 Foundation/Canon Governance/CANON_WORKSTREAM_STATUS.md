@@ -19,7 +19,7 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-29
-updated: 2026-07-31
+updated: 2026-08-07
 review_cycle: monthly
 ---
 
@@ -28,18 +28,39 @@ review_cycle: monthly
 Статус рабочих направлений канонизации.
 
 ```text
-Current gate: FOUNDATION_IN_PROGRESS
-Blocker: NONE
-Current Foundation document: MVP Scope
-MVP Scope: v0.3 / CROSS_DOCUMENT_ALIGNED / migration in progress
-Migration Plan: v0.1 / INTERNALLY_APPROVED / D0_COMPLETE
-Wave D0: COMPLETE
-Current migration wave: D1 — Product/Journey Alignment
-Product Owner Final Review: DEFERRED until MIGRATION_COMPLETE
-Next action: Start D1 with Ayla MVP User Journey Specification revision
+Current gate: FOUNDATION_REOPENED_BY_OWNER_DECISION
+Blocker: NONE (owner decisions decided; document re-review pending)
+Reopening basis: AYLA-DEC-0063…0066 (OD-MVP-1…4, 2026-08-07) — Living
+  Digital Twin excluded from mandatory first-MVP critical path
+Documents reopened: Product Essence (v1.1→v1.2), LDT Manifesto §14 only
+  (v1.0→v1.1), Product Vision (v2.0→v2.1), Product Thesis (v0.5→v0.6),
+  Product Principles (v0.1→v0.2), MVP Scope (v0.3→v0.4) — all
+  status: draft / canonical_status: candidate, awaiting Product Owner
+  Final Review
+Prior MVP Scope migration (v0.3, Wave D0 COMPLETE, D1 next) — SUPERSEDED
+  BY MVP Scope v0.4 candidate; Migration Plan v0.1 waves D0-D6 require
+  re-evaluation against v0.4 before D1 resumes
+Next action: Product Owner Final Review for the six candidate documents
+  above, in upstream→downstream order; then re-plan downstream migration
+  (User Journey v1.2 alignment; execution scope docs; Migration Plan v0.1)
 ```
 
-Foundation Canon Window открыто 2026-07-30 (Essence v1.1 CANONICAL, Manifesto v1.0 CANONICAL). Порядок канонизации: Vision → Thesis → Principles → MVP Scope → User Journey. **Product Vision — COMPLETE / CANONICAL (v2.0). Product Thesis — COMPLETE / CANONICAL (v0.5). Product Principles — COMPLETE / CANONICAL (v0.1, owner approved 2026-07-31).** Текущий документ — MVP Scope (v0.3, draft / proposed / candidate, CROSS_DOCUMENT_ALIGNED; canonization NOT_COMPLETE). Оба execution scope (Single-Provider v0.3, Multi-Provider v0.2) non-canonical и CROSS_DOCUMENT_ALIGNED. Downstream-миграция выполняется по Ayla MVP v0.3 Downstream Migration Plan v0.1 (INTERNALLY_APPROVED, waves D0–D6) в окне Two-Phase Pilot Scope Reconciliation Window. Downstream-документы, зависящие от MVP Scope, не разблокируются до его канонизации.
+> **2026-08-07 — MVP v2 canonization pass.** Owner Decisions OD-MVP-1…4
+> (`Ayla MVP v2 — Owner Decisions`) reopened five Foundation documents
+> previously marked COMPLETE/CANONICAL below (Essence, Vision, Thesis,
+> Principles) plus MVP Scope (previously draft/candidate, migration
+> in-progress) and the LDT Manifesto (minimal §14 fix only). This is an
+> explicit, owner-authorized reopening — not a canon violation. The D0/D1
+> MVP Scope v0.3 migration status described below is now historical
+> context for what was in progress *before* this reopening; it does not
+> describe current state. See amendment plans in this canonization pass
+> and the six documents' own Change Logs for what changed and why.
+> `Ayla MVP User Journey Specification v1.2` was **not** touched by this
+> pass (it carries its own recent owner decision session, AYLA-DEC-0037…
+> 0054, 2026-08-04) — its alignment with AYLA-DEC-0063…0066 is a
+> registered follow-up gate.
+
+Foundation Canon Window открыто 2026-07-30 (Essence v1.1 CANONICAL, Manifesto v1.0 CANONICAL). Порядок канонизации: Vision → Thesis → Principles → MVP Scope → User Journey. **Product Vision — was COMPLETE / CANONICAL (v2.0); reopened, now v2.1 candidate. Product Thesis — was COMPLETE / CANONICAL (v0.5); reopened, now v0.6 candidate. Product Principles — was COMPLETE / CANONICAL (v0.1, owner approved 2026-07-31); reopened, now v0.2 candidate.** Текущий документ (pre-reopening) — MVP Scope (v0.3, draft / proposed / candidate, CROSS_DOCUMENT_ALIGNED; canonization NOT_COMPLETE), теперь также reopened как v0.4 candidate. Оба execution scope (Single-Provider v0.3, Multi-Provider v0.2) non-canonical и ссылаются на MVP Scope v0.3 — version-pin устарел после v0.4, зарегистрировано как follow-up. Downstream-миграция по Ayla MVP v0.3 Downstream Migration Plan v0.1 (waves D0–D6, D0 was COMPLETE) требует пересмотра относительно MVP Scope v0.4 до возобновления D1.
 
 ## Модель источников
 

@@ -19,7 +19,7 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-29
-updated: 2026-08-05
+updated: 2026-08-07
 review_cycle: monthly
 ---
 
@@ -737,3 +737,169 @@ Status:         DECIDED
 ```
 
 Источник: WINDOW-03 — Owner Decision Session (Conversation Model Canonicalization), 2026-08-05; решение AYLA-OD-CM-007, статус ACCEPTED.
+
+### AYLA-DEC-0063 — Living Digital Twin excluded from mandatory MVP critical path (OD-MVP-1)
+
+```text
+ID:             AYLA-DEC-0063 (owner ruling ID: OD-MVP-1)
+Date:           2026-08-07
+Question:       Является ли Living Digital Twin обязательной частью
+                critical path первого MVP?
+Options:        n/a — прямое решение Product Owner (ruling), не выбор из
+                эскалированных вариантов
+Decision:       Living Digital Twin исключается из обязательного critical
+                path первого MVP. LDT не является условием запуска MVP,
+                controlled pilot, доказательства основной MVP-гипотезы или
+                прохождения MVP release gate. LDT сохраняется как
+                strategic visual capability, potential differentiator,
+                personal representation layer и future validation track —
+                не удаляется из продукта и не признаётся ошибочной
+                концепцией. Если LDT используется в конкретном релизе,
+                LDT-specific требования (recognizability, honesty, identity
+                continuity, correction, user control) продолжают
+                действовать без ослаблений.
+Rationale:      Первый MVP должен проверить способность Ayla создавать
+                повторяемую пользовательскую ценность через понимание
+                цели, повседневного контекста, рекомендации, действия,
+                память и прогресс — не жизнеспособность отдельной
+                Twin-модели.
+Scope:          Ayla Product Essence (v1.1 → v1.2); Ayla — Product Vision
+                (v2.0 → v2.1); Ayla MVP Product Thesis (v0.5 → v0.6); Ayla
+                Product Principles (v0.1 → v0.2); Ayla Living Digital Twin
+                Manifesto §14 (v1.0 → v1.1, minimal conditional amendment);
+                Ayla MVP Scope and Release Contract (v0.3 → v0.4).
+Affected docs:  Essence v1.2, Vision v2.1, Thesis v0.6, Principles v0.2,
+                LDT Manifesto v1.1, MVP Scope v0.4 (все candidate, ожидают
+                Product Owner Final Review). Follow-up: Ayla MVP User
+                Journey Specification v1.2 alignment (не выполнено в этой
+                канонизации — отдельный gate).
+Status:         DECIDED
+```
+
+Соотношение с AYLA-DEC-0026: уточняет и частично заменяет — AYLA-DEC-0026
+(2026-07-29) установила LDT главным визуальным интерфейсом и не делала
+различия между MVP и долгосрочным продуктом. AYLA-DEC-0063 сохраняет
+долгосрочную стратегическую роль LDT из AYLA-DEC-0026, но явно разделяет
+long-term direction (LDT remains important) и MVP scope (LDT not
+mandatory). AYLA-DEC-0026 в части «LDT — долгоживущее цифровое отражение,
+потенциальный differentiator» не отменена.
+
+Источник: `Ayla MVP v2 — Owner Decisions` (Owner Approved), раздел
+OD-MVP-1; передано в задаче канонизации `AGENT_AYLA_MVP_CANON_AMENDMENTS_AND_ALIGNMENT`.
+
+### AYLA-DEC-0064 — Food Intelligence as first concrete Everyday Signal in MVP (OD-MVP-2)
+
+```text
+ID:             AYLA-DEC-0064 (owner ruling ID: OD-MVP-2)
+Date:           2026-08-07
+Question:       Является ли Food Intelligence / Food Scanner обязательной
+                частью MVP, и если да — какова его роль?
+Options:        n/a — прямое решение Product Owner (ruling)
+Decision:       Food Intelligence / Food Scanner входит в обязательный MVP
+                как первый реализованный источник повседневного
+                пользовательского контекста (Everyday Signal). Не является
+                самостоятельным calorie-tracking продуктом, полноценным
+                дневником питания или источником медицинских выводов.
+                Food НЕ становится центральной сущностью Ayla и НЕ
+                становится вечной частью Product Essence/Thesis — на
+                верхних уровнях канона используется generic понятие
+                `Signal` / `Everyday Signal`; exact Food scope принадлежит
+                MVP Scope and Release Contract.
+Rationale:      Даёт MVP конкретный, реализуемый источник контекста для
+                Goal → Signal → Context → Recommendation loop без
+                превращения продукта в food-first identity.
+Scope:          Essence v1.2 §12 (Signal остаётся generic); Thesis v0.6
+                §4.1, §4.2, §6; Principles v0.2 §4.4, §4.12 (Observation ≠
+                medical fact); MVP Scope v0.4 §3, §4, §6.1.
+Affected docs:  Essence v1.2, Thesis v0.6, Principles v0.2, MVP Scope v0.4.
+Status:         DECIDED
+```
+
+Соотношение с AYLA-DEC-0028 (Food Scanner — FOUR_EQUAL_TRIGGER_MODEL):
+уточняет для MVP-контекста — Food остаётся одним из равнозначных
+trigger-сценариев на уровне Vision/Killer PRD (AYLA-DEC-0028 не отменена),
+и одновременно становится первой конкретной MVP-реализацией класса
+`Everyday Signal` на уровне MVP Scope. Оба решения совместимы: trigger
+neutrality на продуктовом уровне, конкретный release choice на MVP уровне.
+
+Источник: `Ayla MVP v2 — Owner Decisions` (Owner Approved), раздел
+OD-MVP-2.
+
+### AYLA-DEC-0065 — Memory Foundation in MVP from the start, progressive persistence (OD-MVP-3)
+
+```text
+ID:             AYLA-DEC-0065 (owner ruling ID: OD-MVP-3)
+Date:           2026-08-07
+Question:       Входит ли Memory Foundation в MVP с самого начала, и в
+                каком объёме?
+Options:        n/a — прямое решение Product Owner (ruling)
+Decision:       Memory Foundation входит в MVP с самого начала, но MVP не
+                обязан до первого пилота реализовывать полноценную
+                long-term personalization platform. Используется
+                progressive model: Working Context → Memory Candidate →
+                Policy/Consent Gate → Persistent Memory. Memory
+                оценивается через continuity value, а не через количество
+                сохранённых фактов. Persistent memory не следует
+                автоматически из любого observation (Observation ≠
+                Persistent Memory Fact; AI inference ≠ User Fact).
+Rationale:      Обеспечивает MVP работоспособной моделью continuity без
+                преждевременного обязательства по полной персонализации.
+Scope:          Essence (implicit via §12 Memory Continuity); Thesis v0.6
+                §4.3, §8.1 S3; Principles v0.2 §4.5 (Progressive Memory +
+                User Control); MVP Scope v0.4 §3, §6.1 (Memory Foundation),
+                §6.3.
+Affected docs:  Thesis v0.6, Principles v0.2, MVP Scope v0.4.
+Status:         DECIDED
+```
+
+Источник: `Ayla MVP v2 — Owner Decisions` (Owner Approved), раздел
+OD-MVP-3.
+
+### AYLA-DEC-0066 — MVP hypothesis: Goal → Signal → Context → Recommendation → Action → Memory → Progress (OD-MVP-4)
+
+```text
+ID:             AYLA-DEC-0066 (owner ruling ID: OD-MVP-4)
+Date:           2026-08-07
+Question:       Какова целевая проверяемая гипотеза первого MVP?
+Options:        n/a — прямое решение Product Owner (ruling)
+Decision:       MVP больше не обязан доказывать ценность Living Digital
+                Twin. Первый MVP должен доказать способность Ayla
+                создавать повторяемый полезный цикл: Goal → Signal →
+                Context → Recommendation → Action → Memory → Progress (⟲).
+                Booking является одним из downstream Action, а не конечной
+                ценностью продукта. Количество сообщений, DAU, число
+                booking, время в приложении, число распознанных фото и
+                число memory facts — не являются самостоятельным
+                доказательством успеха (допустимы как диагностические
+                метрики).
+Rationale:      Разворачивает и делает проверяемой формулировку central
+                thesis без обязательной зависимости от LDT.
+Scope:          Essence v1.2 §12, §17 (главный продуктовый цикл и MVP
+                hypothesis); Thesis v0.6 §4.1, §4.3 (central hypothesis и
+                validation loop); MVP Scope v0.4 §3.
+Affected docs:  Essence v1.2, Thesis v0.6, MVP Scope v0.4.
+Status:         DECIDED
+```
+
+Источник: `Ayla MVP v2 — Owner Decisions` (Owner Approved), раздел
+OD-MVP-4; итоговый owner ruling зафиксирован дословно в исходном документе.
+
+**Canonization note (2026-08-07):**
+
+> AYLA-DEC-0063…0066 проведены через Product Essence (v1.1 → v1.2), Ayla —
+> Product Vision (v2.0 → v2.1, minimal derived-alignment amendment без
+> отдельного amendment plan), Ayla MVP Product Thesis (v0.5 → v0.6), Ayla
+> Product Principles (v0.1 → v0.2), Ayla Living Digital Twin Manifesto
+> (v1.0 → v1.1, единственное minimal targeted изменение §14) и Ayla MVP
+> Scope and Release Contract (v0.3 → v0.4). Все шесть документов
+> переведены в статус `draft` / `canonical_status: candidate` и ожидают
+> Product Owner Final Review — они не объявлены CANONICAL этой
+> канонизацией. `Ayla MVP User Journey Specification v1.2` содержит
+> собственный недавний набор owner decisions (AYLA-DEC-0037…0054,
+> 2026-08-04) и MUST_HAVE-ссылки на прежний MVP Scope §6.4; alignment этого
+> документа с AYLA-DEC-0063…0066 зарегистрирован как отдельный follow-up
+> gate и не выполнен в рамках этой канонизации. Три non-canonical execution
+> scope/migration документа (Single-Provider Execution Scope, Multi-Provider
+> Execution Scope, MVP v0.3 Downstream Migration Plan) содержат
+> version-pinned ссылки на «MVP Scope v0.3» и также зарегистрированы как
+> follow-up. См. итоговый отчёт канонизации для полного списка.

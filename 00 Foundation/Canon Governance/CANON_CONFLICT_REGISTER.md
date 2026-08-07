@@ -19,7 +19,7 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-29
-updated: 2026-08-05
+updated: 2026-08-07
 review_cycle: monthly
 ---
 
@@ -105,3 +105,38 @@ Status:          RESOLVED
 - Исторические редакции (draft, candidate, superseded, archived и др.) могут сосуществовать с Active Canon.
 - Изменены: `.knowledge/schema.yaml` v1.13, `Ayla Domain and Metadata Registry.md`, `scripts/validate_knowledge.py`.
 - `scripts/validate_knowledge.py` после изменений проходит без ошибок; Journey v1.1 (approved) и Journey v1.2 (candidate) больше не конфликтуют.
+
+### CFT-002 — LDT Manifesto §14 claimed authority over exact MVP scope, conflicting with OD-MVP-1
+
+```text
+ID:              CFT-002
+Severity:        P0
+Documents:       Ayla Living Digital Twin Manifesto v1.0 §14 ("MVP обязан
+                 проверить жизнеспособность Living Digital Twin");
+                 Owner Decisions AYLA-DEC-0063 (OD-MVP-1) — LDT excluded
+                 from mandatory first-MVP critical path
+Contradiction:   Manifesto §14 нормативно утверждал обязательность LDT для
+                 любого MVP — прямое противоречие AYLA-DEC-0063, принятому
+                 позже (2026-08-07). §14 claimed authority over exact MVP
+                 scope, что запрещено LDT ownership rule этой канонизации
+                 (документы, посвящённые непосредственно LDT, не
+                 переписываются автоматически под representation-neutral
+                 model, но если документ claims authority over exact MVP
+                 scope — конфликт фиксируется и предлагается minimal
+                 amendment).
+Ladder result:   RESOLVED_BY_OWNER_DECISION
+Resolution path: OWNER_DECISION (AYLA-DEC-0063 / OD-MVP-1) — minimal
+                 targeted amendment: §14 первое предложение сделано
+                 условным («если LDT включён в релиз»); остальные 17
+                 разделов Manifesto не переоткрывались.
+Status:          RESOLVED
+```
+
+Прохождение по лестнице разрешения P0:
+
+1. **Product Essence** — разрешает: Essence v1.2 §18 уже устанавливает, что LDT не обязателен для MVP;
+2. **Утверждённые Owner Decisions** — разрешают: AYLA-DEC-0063 (OD-MVP-1) прямо адресует этот вопрос;
+3. **Удаление legacy-положения** — не потребовалось: минимальная правка одного предложения достаточна;
+4. Остальные шаги лестницы не понадобились — конфликт разрешён на шаге 2.
+
+Manifesto v1.0 → v1.1 (minimal amendment, 2026-08-07); см. Change Log документа.
