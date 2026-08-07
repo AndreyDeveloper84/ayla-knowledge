@@ -2,9 +2,9 @@
 node_id: ayla.foundation.living-digital-twin-manifesto
 title: Ayla Living Digital Twin Manifesto
 type: foundation
-status: approved
-canonical_status: approved
-version: "1.0"
+status: draft
+canonical_status: candidate
+version: "1.1"
 owner: Product Owner
 priority: P0
 depends_on:
@@ -23,22 +23,36 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-30
-updated: 2026-07-30
+updated: 2026-08-07
 review_cycle: monthly
 ---
 
 # Ayla Living Digital Twin Manifesto
 
-**Статус:** CANONICAL
-**Версия:** 1.0
-**Подготовлено:** Living Digital Twin Manifesto Authoring Window
-**Основание:** Ayla Product Essence v1.1; AYLA-DEC-0026; Product Owner approval 2026-07-30
+**Статус:** DRAFT / canonical candidate — minimal targeted amendment
+(§14), ожидает Product Owner Final Review; остальные разделы (1–13, 15–18)
+остаются в силе как approved v1.0 content и не переоткрываются
+**Версия:** 1.1
+**Подготовлено:** Living Digital Twin Manifesto Authoring Window (v1.0);
+targeted amendment v1.0 → v1.1 в рамках канонизации Owner Decisions
+OD-MVP-1…4
+**Основание:** Ayla Product Essence v1.2 (candidate); Owner Decisions
+OD-MVP-1…4; AYLA-DEC-0026
 **Владелец:** Product Owner
 **Слой:** Foundation
-**Роль:** обязательные продуктовые принципы Living Digital Twin
+**Роль:** обязательные продуктовые принципы Living Digital Twin — там, где
+LDT используется
 
-> Документ утверждён Product Owner и является каноническим в пределах своего scope.
-> Он находится ниже Ayla Product Essence v1.1 и не может её переопределять.
+> Документ находится ниже Ayla Product Essence v1.2 и не может её
+> переопределять. **Minimal amendment (v1.1):** §14 «MVP Principles»
+> claimed authority over exact MVP scope («MVP обязан проверить
+> жизнеспособность Living Digital Twin»), что прямо конфликтует с OD-MVP-1
+> (LDT исключён из обязательного MVP critical path). Per LDT ownership
+> rule канонизации: это единственное изменение в документе — остальные
+> принципы (Recognition, Identity Preservation, Authentic Future, State
+> and Evidence Separation, User Control, Body Dignity и др.) не
+> переоткрываются и продолжают действовать полностью там, где LDT
+> используется.
 
 ## 1. Purpose
 
@@ -240,7 +254,9 @@ Ayla работает с внешностью и телом человека. Э
 
 ## 14. MVP Principles
 
-MVP обязан проверить жизнеспособность Living Digital Twin и обеспечить минимально достаточный пользовательский контроль и доверие. Точный состав реализации фиксируется в MVP Scope; этот раздел задаёт только обязательные принципы.
+> **Изменено (v1.1, OD-MVP-1).** Было: «MVP обязан проверить жизнеспособность Living Digital Twin». Living Digital Twin не является обязательным элементом первого MVP (Product Essence v1.2 §18; Owner Decision OD-MVP-1). Этот раздел определяет обязательные принципы, применимые **только если** Product Owner отдельным решением включает Living Digital Twin в конкретный MVP или последующий релиз — без ослаблений.
+
+Если Living Digital Twin включён в релиз, этот релиз обязан проверить жизнеспособность Living Digital Twin и обеспечить минимально достаточный пользовательский контроль и доверие. Точный состав реализации фиксируется в MVP Scope; этот раздел задаёт только обязательные принципы для этого условного сценария.
 
 **Core value:**
 
@@ -354,3 +370,16 @@ Long-term элементы не могут нарушать принципы э�
 - **Domain, UX, AI, Safety и Engineering определяют реализацию** в пределах принципов этого Manifesto.
 
 Изменение Manifesto выполняется через стандартный процесс канонизации; статус CANONICAL присваивается только после owner approval. Этот документ не может неявно изменять Product Essence, AYLA-DEC-0026 или любой другой вышестоящий источник.
+
+## Change Log
+
+> Этот журнал отражает историю изменений документа и не является нормативной частью спецификации.
+
+### v1.1 (2026-08-07) — Minimal targeted amendment: §14 conditional on LDT inclusion
+
+Обнаружено при канонизации Owner Decisions OD-MVP-1…4: §14 нормативно утверждал, что MVP обязан проверить жизнеспособность Living Digital Twin — прямой конфликт с OD-MVP-1 (LDT исключён из обязательного MVP critical path) и claim of authority over exact MVP scope, запрещённый правилом LDT ownership этой канонизации.
+
+- **§14** — первое предложение сделано условным: обязательные MVP-принципы Twin применяются только если LDT отдельно включён в релиз owner decision.
+- **Frontmatter/header** — версия 1.0 → 1.1; статус approved → draft/candidate, ожидает Product Owner Final Review.
+- **Не изменено:** §1–13, §15–18 — не переоткрывались; все принципы (Recognition, Identity Preservation, Authentic Future, State and Evidence Separation, Explainable Transformation, User Control, Consent and Data Dignity, Body Dignity, Long-Term Vision Boundaries, Downstream Obligations, Decision Tests, Canonical Relationship) остаются в силе без изменений там, где Living Digital Twin используется.
+- **Next gate:** Product Owner Final Review для Manifesto v1.1, параллельно с Product Essence v1.2 и MVP Scope v0.4.

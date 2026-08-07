@@ -5,7 +5,7 @@ type: specification
 status: draft
 decision_status: proposed
 canonical_status: candidate
-version: "0.3"
+version: "0.4"
 owner: Product Owner
 priority: P0
 knowledge_area:
@@ -25,7 +25,7 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-27
-updated: 2026-08-02
+updated: 2026-08-07
 review_cycle: monthly
 depends_on:
   - "[[Ayla Product Essence]]"
@@ -45,27 +45,33 @@ related:
 supersedes: []
 ---
 
-# Ayla MVP Scope and Release Contract v0.3
+# Ayla MVP Scope and Release Contract v0.4
 
 **Статус:** DRAFT / proposed / canonical candidate
-**Версия:** 0.3
+**Версия:** 0.4
 **Положение:** Foundation document №4 (Vision → Thesis → Principles →
 **MVP Scope** → User Journey)
 **Владелец:** Product Owner
-**Revision mode:** STRUCTURED_REVISION_FROM_CURRENT_CANON
+**Revision mode:** TARGETED_AMENDMENT_FROM_OWNER_DECISIONS (OD-MVP-1…4)
 **Artifact path and node identity:** preserved
 (`02 Strategy/Ayla MVP Scope and Release Contract.md`,
 `ayla.strategy.mvp-scope-release-contract`)
-**Owner decision:** APPROVE_STRUCTURED_REVISION_ROUTE
-(OD-MS-1: STRUCTURED_REVISION_SAME_PATH; OD-MS-2: V0_3_CANDIDATE_SAME_PATH;
-OD-MS-3: PATH_STABILITY_WITH_COORDINATED_MIGRATION)
+**Основание:** Owner Decisions OD-MVP-1…4 (`Ayla MVP v2 — Owner
+Decisions`); Ayla Product Essence v1.2, Ayla — Product Vision v2.1, Ayla
+MVP Product Thesis v0.6, Ayla Product Principles v0.2 (все candidates,
+пока не прошли Product Owner Final Review)
 
-> v0.2 не был canonical и остаётся PRE_CANON_ARTIFACT в Git history. v0.3 —
-> material structured revision под текущий канон: документ переписан
-> содержательно, а не отредактирован точечно. Downstream-ссылки на разделы
-> v0.2 не считаются выровненными автоматически и требуют coordinated
-> migration (§14). Документ не становится CANONICAL до internal consistency
-> review, migration readiness review и отдельного owner approval.
+> v0.3 не был canonical (draft/proposed/candidate). v0.4 — targeted
+> amendment: обязательный Living Digital Twin critical path заменён на
+> representation-neutral release composition (Goal → Everyday Signal →
+> Context → Recommendation → Action → Memory → Progress); Food
+> Intelligence и Memory Foundation введены как явные release capabilities.
+> Artifact identity, path и history сохранены. Downstream-ссылки на
+> разделы v0.3 (в т.ч. MVP User Journey Specification v1.2 §6.4
+> MUST_HAVE-ссылки) **не считаются выровненными автоматически** — см. §14
+> и итоговый отчёт канонизации. Документ не становится CANONICAL до
+> internal consistency review, migration readiness review и отдельного
+> owner approval.
 
 ## 1. Purpose and Release Contract Role
 
@@ -102,11 +108,11 @@ MVP Scope не доказывает Thesis целиком: он фиксируе
 ## 2. Position in Canon
 
 ```text
-Ayla Product Essence v1.1 — высший продуктовый источник
+Ayla Product Essence v1.2 (candidate) — высший продуктовый источник
 ├── Living Digital Twin Manifesto v1.0 — sibling / согласующий input (LDT-темы)
-├── Product Vision v2.0 — sibling
-├── Product Thesis v0.5 — sibling
-├── Product Principles v0.1 — sibling
+├── Product Vision v2.1 (candidate) — sibling
+├── Product Thesis v0.6 (candidate) — sibling
+├── Product Principles v0.2 (candidate) — sibling
 └── MVP Scope (этот документ)
       ↓
 User Journey → Domain → UX → Architecture → Engineering
@@ -124,10 +130,16 @@ User Journey → Domain → UX → Architecture → Engineering
 - **[[Killer PRD]]** — legacy reference only (CANON_INDEX): не является
   нормативным источником этого документа и не основа его структуры.
 
-Этот документ не создаёт новую иерархию и находится ниже Essence v1.1;
-Manifesto v1.0 — authoritative input для его LDT-положений, не родитель.
+Этот документ не создаёт новую иерархию и находится ниже Essence v1.2;
+Manifesto v1.1 — authoritative input для его LDT-положений, не родитель.
 
 ## 3. MVP Product Boundary
+
+> **Изменено (v0.4, OD-MVP-1…4).** Composite formula заменена на
+> representation-neutral value loop. Living Digital Twin baseline/
+> recognition убраны из обязательного состава; Everyday Signal (Food
+> Intelligence) и Memory Foundation введены как явные обязательные
+> элементы.
 
 MVP — минимальный релиз, который проверяет **составную продуктовую
 ценность** ([[Ayla MVP Product Thesis]] §4.3):
@@ -135,39 +147,51 @@ MVP — минимальный релиз, который проверяет **�
 ```text
 Transformation Goal
 +
-Living Digital Twin baseline / recognition
+Everyday Signal (Food Intelligence — первая реализация)
 +
-memory continuity
+Context Understanding
 +
-explainable recommendation
+Explainable Recommendation
 +
-realistic action
+Realistic Action
 +
-progress continuity
+Memory Continuity
++
+Goal-relative Progress
 ```
 
 Ни один элемент отдельно не является целью релиза; проверяется их
 сочетание. Память — механизм continuity внутри составного пути, а не
-центр продукта и не самостоятельная цель MVP.
+центр продукта и не самостоятельная цель MVP. Living Digital Twin не
+входит в обязательный состав (OD-MVP-1): если он включён в конкретный
+релиз, он усиливает `Context / State / Progress` как опциональный
+representation layer (§6.4).
 
 Явные границы:
 
 - MVP — **не booking flow**: запись — одно из downstream-действий плана
-  ([[Ayla Product Essence]] §20; [[Ayla Product Principles]] 4.8);
+  ([[Ayla Product Essence]] §20; [[Ayla Product Principles]] 4.7);
 - **не набор disconnected trackers**: питание, вода, сон, активность —
-  инструменты пути к цели, не самостоятельные центры продукта;
+  инструменты пути к цели, не самостоятельные центры продукта; Food
+  Intelligence — первая реализация `Everyday Signal`, не self-contained
+  calorie-tracking продукт (OD-MVP-2);
 - **не полный marketplace**: только seed-контур пилотных провайдеров;
-- **не final Living Digital Twin**: проверяется жизнеспособность Twin
-  (viability), не полная модель (§6.4);
+- **не обязателен Living Digital Twin**: LDT — опциональная стратегическая
+  capability (OD-MVP-1; §6.4); если включён — проверяется его
+  жизнеспособность (viability), не полная модель;
 - **не medical product**: медицинская диагностика и выводы о здоровье
-  запрещены ([[Ayla Constitution]] Ст. XII);
-- **не long-term personalization platform**: проверяется минимально
-  полезная continuity, а не платформа персонализации;
+  запрещены ([[Ayla Constitution]] Ст. XII); food/behavioral-сигналы не
+  становятся медицинским фактом (Observation ≠ Fact; Principles 4.4, 4.12);
+- **не long-term personalization platform**: Memory Foundation входит в
+  MVP с начала, но проверяется минимально полезная continuity через
+  progressive lifecycle (working context → memory candidate → policy/
+  consent gate → persistent memory), а не полная платформа персонализации
+  (OD-MVP-3; Principles 4.5);
 - **«ничего не делать» — валидный outcome** рекомендации
-  ([[Ayla — Product Vision]] §19; Principles 4.7);
+  ([[Ayla — Product Vision]] §19; Principles 4.6);
 - **economic neutrality обязательна**: коммерческий статус, тариф или
   платёж провайдера никогда не влияют на персональные рекомендации
-  (Constitution Ст. IV; Principles 4.11).
+  (Constitution Ст. IV; Principles 4.10).
 
 **Пилотная граница (факт, без дублирования Thesis):** территория пилота —
 Пенза (дата пилота — AYLA-DEC-0003); клиентская сторона — пользователи в
@@ -180,17 +204,23 @@ provider-профиль — соло-мастер и малый салон до 
 
 ## 4. Primary End-to-End Journey
 
+> **Изменено (v0.4, OD-MVP-1, OD-MVP-2).** Twin baseline/recognition
+> переведены из OBLIGATORY в CONDITIONAL (только если LDT включён в
+> релиз). Добавлен обязательный шаг Everyday Signal / Food Intelligence.
+
 Единственный обязательный сквозной сценарий MVP — путь вокруг цели и
 видимого прогресса, а не цепочка «запрос → запись»:
 
 ```text
 1.  Пользователь формулирует или уточняет Transformation Goal   — OBLIGATORY
 2.  Пользователь предоставляет минимальные разрешённые inputs   — OBLIGATORY
-3.  Ayla создаёт или подтверждает Twin baseline                 — OBLIGATORY
-4.  Пользователь узнаёт себя или исправляет Twin                — OBLIGATORY
+2a. Ayla получает Everyday Signal (Food Intelligence — первая
+    реализация) и связывает его с контекстом цели                — OBLIGATORY
+3.  Ayla создаёт или подтверждает Twin baseline                 — CONDITIONAL (только если LDT включён в релиз)
+4.  Пользователь узнаёт себя или исправляет Twin                — CONDITIONAL (только если LDT включён в релиз)
 5.  Ayla интерпретирует intent в контексте                      — OBLIGATORY
 6.  Ayla формирует объяснимую рекомендацию                      — OBLIGATORY
-7.  Пользователь выбирает реалистичный следующий шаг            — OBLIGATORY
+7.  Пользователь выбирает реалистичный следующий шаг             — OBLIGATORY
 8.  Запись может произойти как одна из downstream-опций         — OPTIONAL
 9.  Результат / follow-up становится continuity input           — PARTIAL
 10. Пользователь видит прогресс или следующее состояние         — OBLIGATORY (минимальная форма)
@@ -198,10 +228,16 @@ provider-профиль — соло-мастер и малый салон до 
 
 Обязательные условия сценария:
 
-- **Consent gates** действуют на входных данных (шаг 2), media (шаг 3) и
-  персистентной памяти (шаг 9) — по [[Consent Scope Registry]] §10;
-- **recognition point обязательна** (шаг 4): сигнал «это не похоже на меня»
-  и исправление/перестроение Twin — часть сценария, не опция;
+- **Consent gates** действуют на входных данных (шаг 2), Signal-данных
+  (шаг 2a), media при включённом LDT (шаг 3) и персистентной памяти
+  (шаг 9) — по [[Consent Scope Registry]] §10;
+- **Observation ≠ confirmed fact** (шаг 2a): Food/Signal-наблюдение не
+  становится автоматически подтверждённым или медицинским фактом
+  (Principles 4.4, 4.12);
+- **recognition point обязательна только при включённом LDT** (шаг 4):
+  если Twin включён в релиз, сигнал «это не похоже на меня» и
+  исправление/перестроение Twin — часть сценария, не опция; если Twin не
+  включён, шаги 3–4 не применяются и не блокируют сценарий;
 - **Phase 1 — session-only memory**; **Phase 2 — opt-in persistent
   memory**; Phase 2 не является условием релиза Phase 1;
 - **booking optional** (шаг 8): сценарий не обязан завершаться записью;
@@ -214,23 +250,33 @@ provider-профиль — соло-мастер и малый салон до 
 
 ## 5. In-Scope User Outcomes
 
+> **Изменено (v0.4, OD-MVP-1, OD-MVP-2).** Twin baseline/recognition
+> переведены в conditional outcome (только при включённом LDT); добавлен
+> обязательный outcome для Everyday Signal.
+
 MVP обязан обеспечить следующие пользовательские результаты
 (outcome-level, без CAP-first framing и без числовых порогов):
 
 1. личная Transformation Goal установлена или уточнена;
-2. Twin baseline создан на разрешённых данных;
-3. пользователь узнаёт себя в Twin или исправляет его;
-4. intent понят в контексте пользователя;
-5. рекомендация объяснена (что, почему, на каких данных, с какой
+2. Everyday Signal получен и связан с контекстом цели (Food Intelligence —
+   первая реализация; observation отделено от подтверждённого факта);
+3. intent понят в контексте пользователя;
+4. рекомендация объяснена (что, почему, на каких данных, с какой
    неопределённостью);
-6. реалистичный следующий шаг выбран — включая обоснованное «ничего не
+5. реалистичный следующий шаг выбран — включая обоснованное «ничего не
    делать»;
-7. booking возможен как downstream action;
-8. прогресс / следующее состояние видимы (сравнение состояний во времени);
-9. разрешённый continuity context сохраняется и используется в повторном
-   пути;
-10. user control реализуем на практике: просмотр, исправление, удаление,
-    отзыв согласия.
+6. booking возможен как downstream action;
+7. прогресс / следующее состояние видимы (сравнение состояний во времени
+   или другое понятное representation);
+8. разрешённый continuity context сохраняется через progressive memory
+   lifecycle и используется в повторном пути;
+9. user control реализуем на практике: просмотр, исправление, удаление,
+   отзыв согласия.
+
+**Conditional (только если Living Digital Twin включён в релиз):**
+
+10. Twin baseline создан на разрешённых данных;
+11. пользователь узнаёт себя в Twin или исправляет его.
 
 ## 6. In-Scope Capabilities
 
@@ -242,12 +288,26 @@ AYLA-DEC-0014) и не является canonical activation. Новые обл�
 
 ### 6.1 Client-facing
 
+> **Изменено (v0.4, OD-MVP-1, OD-MVP-2, OD-MVP-3).** Twin baseline/
+> recognition/correction переведены в CONDITIONAL блок. Food Intelligence
+> introduction и Memory Foundation добавлены как явные IN_SCOPE
+> capabilities.
+
 - Transformation Goal creation / refinement (минимальная структура цели;
   детальная модель — Domain);
 - минимальные разрешённые inputs (progressive profiling, Constitution
   Ст. VI);
-- управляемая фотофиксация и Twin baseline;
-- recognition / correction Twin;
+- **Food Intelligence (OD-MVP-2)** — приём food input, включая фото;
+  распознавание; пользовательская коррекция существенной ошибки
+  распознавания; связывание наблюдения с Transformation Goal как
+  разрешённого контекста рекомендаций; наблюдение может стать memory
+  candidate. Не входит автоматически: полноценный дневник питания, точный
+  calorie tracking, обязательный подсчёт БЖУ, диетические программы,
+  медицинские выводы (Observation ≠ medical fact);
+- **Memory Foundation (OD-MVP-3)** — working/session context; различие
+  observation и confirmed fact; memory candidates; policy/consent gate;
+  Phase 2 opt-in persistent memory; explainability сохранённого контекста,
+  влияющего на рекомендацию (детали — §6.3);
 - intent conversation (минимальный набор intent types, proposal CAP-003);
 - объяснимая рекомендация (proposal CAP-004 + CAP-005);
 - выбор следующего действия;
@@ -258,8 +318,14 @@ AYLA-DEC-0014) и не является canonical activation. Новые обл�
   specialist/service, re-offer — остаются deferred (AYLA-DEC-0022,
   owner ruling 2026-07-28, вариант Б);
 - транзакционные уведомления (proposal CAP-021);
-- сравнение состояний и видимый прогресс;
-- контроль данных, Twin и персонализации.
+- видимый прогресс относительно цели (сравнение состояний во времени или
+  другое понятное representation — §6.4);
+- контроль данных, memory и персонализации.
+
+**Conditional (только если Living Digital Twin включён в релиз, OD-MVP-1):**
+
+- управляемая фотофиксация и Twin baseline;
+- recognition / correction Twin.
 
 **Канальное распределение (факт, AYLA-DEC-0027):** client-facing
 capabilities распределяются по owning channels: **Mobile App** —
@@ -277,13 +343,13 @@ capability обязана быть доступна в назначенном ow
 
 | Input | Статус |
 |---|---|
-| food | CONDITIONAL — только как разрешённый контекст рекомендаций (один из равнозначных trigger-сценариев, Vision §10); dedicated tracking — DEFERRED |
+| food | IN_SCOPE (v0.4, OD-MVP-2) — первая конкретная реализация Everyday Signal: приём input/фото, распознавание, пользовательская коррекция, связывание с Transformation Goal как разрешённого контекста рекомендаций; dedicated full food diary/точный calorie tracking — DEFERRED; один из равнозначных trigger-сценариев (Vision §10, AYLA-DEC-0028) |
 | water | DEFERRED |
 | sleep | DEFERRED |
 | mood | DEFERRED; без inferred mental state (Constitution Ст. X) |
 | symptoms | OUT_OF_SCOPE |
 | activity / body signals | DEFERRED |
-| photos | IN_SCOPE (управляемая фотофиксация для Twin; особо чувствительный input — Manifesto §12) |
+| photos | CONDITIONAL (v0.4) — управляемая фотофиксация для Twin baseline только если LDT включён в релиз (OD-MVP-1); особо чувствительный input, где применяется — Manifesto §12 |
 | manual notes | CONDITIONAL (минимальный пользовательский ввод фактов — whitelist personal context) |
 | conversation-derived context | IN_SCOPE в пределах consent; с разделением классов достоверности |
 
@@ -327,16 +393,25 @@ Memory-first framing запрещён: память поддерживает с�
 
 ### 6.4 Living Digital Twin
 
-MVP обязан проверить жизнеспособность Living Digital Twin и обеспечить
-минимально достаточный контроль и доверие ([[Ayla Product Essence]] §18;
-[[Ayla Living Digital Twin Manifesto]] §14):
+> **Изменено (v0.4, OD-MVP-1).** Living Digital Twin переведён из
+> обязательной MVP capability в опциональную/DEFERRED-по-умолчанию
+> capability. MVP как таковой не обязан проверять жизнеспособность LDT.
+> Если Product Owner отдельным решением включает LDT в конкретный релиз,
+> действуют требования ниже без ослаблений — они остаются
+> нормативными для этого сценария.
+
+Living Digital Twin **не входит в обязательный состав первого MVP**
+(Essence v1.2 §18; Thesis v0.6 §6; Principles v0.2 4.3, 4.14). Если LDT
+включён в релиз отдельным решением, MVP обязан обеспечить минимально
+достаточный контроль и доверие ([[Ayla Living Digital Twin Manifesto]]
+§14):
 
 | Класс | Состав |
 |---|---|
-| MUST_HAVE | управляемая фотофиксация; baseline; recognition («это я»); сигнал «это не похоже на меня»; исправление/перестроение модели; сохранение идентичности между версиями (identity drift — дефект); сравнение состояний во времени; разделение факта, реконструкции, прогноза и цели; body dignity и anti-shaming; удаление исходных и производных данных |
-| SHOULD_HAVE | отображение уверенности в поддерживаемой форме (не обязательные проценты); объяснение ограничений модели |
-| CONDITIONAL | видео — только при подтверждённой необходимости для качества модели |
-| DEFERRED | более богатая Living Timeline; более глубокая персонализация; более объяснимые прогнозы (Manifesto §15) |
+| MUST_HAVE, если LDT включён | управляемая фотофиксация; baseline; recognition («это я»); сигнал «это не похоже на меня»; исправление/перестроение модели; сохранение идентичности между версиями (identity drift — дефект); сравнение состояний во времени; разделение факта, реконструкции, прогноза и цели; body dignity и anti-shaming; удаление исходных и производных данных |
+| SHOULD_HAVE, если LDT включён | отображение уверенности в поддерживаемой форме (не обязательные проценты); объяснение ограничений модели |
+| CONDITIONAL | видео — только при подтверждённой необходимости для качества модели, и только если LDT включён |
+| DEFERRED (по умолчанию, v0.4) | включение Living Digital Twin в MVP как таковое остаётся deferred до отдельного owner decision (OD-MVP-1: критерий возвращения — доказуемое улучшение понимания пользователя, рекомендаций или прогресса); более богатая Living Timeline; более глубокая персонализация; более объяснимые прогнозы (Manifesto §15) — если/когда LDT включён |
 | OUT_OF_SCOPE | full morphing engine; идеализированное будущее тело; medical simulation; medical-grade reconstruction; неподдержанный/гарантированный прогноз (в т.ч. 30/60/90 дней); произвольная генерация аватаров; точный состав тела по камере; автоматическое обновление Twin после каждого действия |
 
 ### 6.5 Safety / Consent / Control
@@ -402,7 +477,11 @@ MVP обязан проверить жизнеспособность Living Digi
 - внутренний баланс провайдера с выводом T+24ч (эпик этапа 2,
   AYLA-DEC-0008);
 - richer Living Timeline, advanced forecasts, deeper personalization
-  (Manifesto §15).
+  (Manifesto §15);
+- **Living Digital Twin как обязательная MVP capability (v0.4, OD-MVP-1)**
+  — deferred до отдельного owner decision о включении в конкретный релиз;
+  не удалён из продукта и не признан ошибочной концепцией (Essence v1.2
+  §6, §18).
 
 **MVP Provider Monetary Boundary (факт, AYLA-DEC-0015):** в MVP входит
 ограниченный денежный контур провайдера — списание подписки; списание
@@ -449,9 +528,10 @@ YooKassa. Этот контур **не означает активацию CAP-0
 - **YooKassa** — обязательная интеграция только для provider-side
   monetary flow (§7); клиентская оплата и полноценный Payment Processing
   остаются вне MVP (AYLA-DEC-0015);
-- **LDT media pipeline** — downstream architecture dependency для Twin
-  baseline и фотофиксации; техническая граница реализации определяется в
-  Architecture-документах и здесь не фиксируется (§15);
+- **LDT media pipeline (CONDITIONAL, v0.4)** — downstream architecture
+  dependency для Twin baseline и фотофиксации, применяется только если
+  LDT включён в релиз (§6.4, OD-MVP-1); техническая граница реализации
+  определяется в Architecture-документах и здесь не фиксируется (§15);
 - **Mobile application distribution infrastructure** — internal testing /
   closed distribution / store publication path; конкретный mobile store не
   фиксируется как единственный канал распространения (AYLA-DEC-0027);
@@ -476,10 +556,14 @@ YooKassa. Этот контур **не означает активацию CAP-0
 - **AI:** закреплённые версии prompt; совместимые tool schemas; token
   budget; протестированные hallucination-сценарии; определённый
   model/provider fallback; prompt/tool version traceability;
-- **Living Digital Twin:** recognition/correction поддерживаются
-  продуктово; identity preservation между версиями; честное разделение
-  факта, реконструкции, оценки, прогноза и цели; body dignity; удаление
-  исходных и производных данных;
+- **Everyday Signal / Memory (v0.4):** observation отделено от
+  подтверждённого факта; food-сигнал не становится медицинским выводом;
+  memory candidate проходит policy/consent gate перед persistent записью;
+- **Living Digital Twin (CONDITIONAL — только если включён в релиз,
+  OD-MVP-1):** recognition/correction поддерживаются продуктово; identity
+  preservation между версиями; честное разделение факта, реконструкции,
+  оценки, прогноза и цели; body dignity; удаление исходных и производных
+  данных;
 - **Explainability:** существенная рекомендация объяснима и трассируема к
   структурированным причинам (Constitution Ст. VII);
 - **Operations:** monitoring; alerts; support process; назначенный
@@ -505,13 +589,17 @@ MVP Scope фиксирует только **release evidence** — какие ф
 attribution принадлежат Measurement Framework (planned) и здесь не
 вводятся (Thesis §8.1: пороги — design candidates).
 
+> **Изменено (v0.4, OD-MVP-1, OD-MVP-2).** Twin baseline/recognition
+> переведены в conditional evidence; добавлен обязательный Everyday
+> Signal evidence.
+
 Release evidence минимум:
 
 - goal established — пользователь сформулировал/уточнил Transformation
   Goal;
-- Twin baseline created;
-- recognition/correction captured — включая сигнал «это не похоже на
-  меня» и его разрешение;
+- everyday signal captured — Food Intelligence input получен, распознан и
+  при необходимости скорректирован пользователем; наблюдение связано с
+  Transformation Goal;
 - recommendation explained;
 - next action accepted/rejected — включая валидный исход «ничего не
   делать»;
@@ -524,8 +612,9 @@ Release evidence минимум:
 - channel continuity (AYLA-DEC-0027) — account linking completed;
   cross-channel state preserved; consent state consistent;
   recommendation/result continuity preserved; channel source captured;
-  deep-link/route outcome captured; mobile-owned LDT/photo/progress path
-  observable; bot/Mini App companion path observable.
+  deep-link/route outcome captured; mobile-owned progress path observable
+  (LDT/photo path observable дополнительно, только если LDT включён в
+  релиз); bot/Mini App companion path observable.
 
 Диагностический минимум пилота (resolved intents, clarification rate,
 recommendation shown/acceptance rate, rejection reasons, unsafe block
@@ -543,10 +632,10 @@ Validation Gate §8.4.
 | Killer PRD | LEGACY_REFERENCE_ONLY / NOT_A_BLOCKER (его canonical approval заблокирован ADR-0012 OD-1/OD-2 — это блокер downstream approvals самого Killer PRD, не этого документа) |
 | Consent Scope Registry §10 gates | ACTIVE — Phase 1: scopes `intent_understanding` и `provider_selection` approved, persistent memory технически отключена; Phase 2 gate — по Registry §10.2 |
 | Safety/privacy review | ACTIVE — обязателен при approval этого документа |
-| LDT media pipeline feasibility | REQUIRES_REVALIDATION — на этапе Architecture (§9, §15) |
-| Recognition quality bar | REQUIRES_REVALIDATION — точный бар определяется downstream (§15) |
+| LDT media pipeline feasibility | NOT_A_BLOCKER_FOR_MVP (v0.4, OD-MVP-1) — применяется только если LDT отдельно включён в релиз; тогда REQUIRES_REVALIDATION на этапе Architecture (§9, §15) |
+| Recognition quality bar | NOT_A_BLOCKER_FOR_MVP (v0.4, OD-MVP-1) — применяется только если LDT отдельно включён в релиз |
 | Provider supply readiness | OPERATIONS_DEPENDENCY / NOT_DOCUMENT_BLOCKER (операционный трек пилота, AYLA-DEC-0003) |
-| User Journey / Intent Model predecessor alignment | REQUIRES_REVALIDATION после v0.3 — оба документа ссылаются на разделы v0.2 и проходят coordinated migration (§14); User Journey дополнительно ожидает LDT-alignment как Foundation document №5 |
+| User Journey v1.2 alignment с OD-MVP-1…4 | ACTIVE / REQUIRED — Journey v1.2 содержит MUST_HAVE-ссылки на §6.4 Twin-требования этого документа (её собственные AYLA-DEC-0037…0054), которые устаревают после v0.4; alignment pass зарегистрирован как отдельный follow-up gate (см. итоговый отчёт канонизации), не блокирует канонизацию этого документа, но блокирует downstream-согласованность до выполнения |
 | Mobile channel readiness | ACTIVE / REQUIRED (AYLA-DEC-0027) — internal/closed mobile distribution validated; account linking; deep links; push path where required; crash monitoring; privacy/safety review для camera/media/local storage; store review/publication timing отслеживается как operational dependency и не является абсолютным blocker для internal testing |
 
 Resolved-элементы не сохраняются в статусе blockers. Governance Exit фазы
@@ -644,12 +733,17 @@ AYLA-DEC-0027; их создание — часть coordinated migration и exe
 - **CAP mapping для Transformation Goal и LDT (KEEP_NON_BLOCKING).**
   Новые области получают Capability-маппинг в волне 2 перевода Registry в
   MVP-active (AYLA-DEC-0014), а не в этом документе.
-- **Exact recognition quality bar (KEEP_NON_BLOCKING).** Принцип
+- **Exact recognition quality bar (KEEP_NON_BLOCKING, CONDITIONAL v0.4).**
+  Применяется только если LDT включён в релиз (OD-MVP-1). Принцип
   узнаваемости канонизирован (Manifesto §5); измерение — downstream
   AI/Measurement.
-- **Exact LDT media pipeline implementation boundary
-  (KEEP_NON_BLOCKING).** Architecture topic; здесь зафиксирована только
-  зависимость (§9).
+- **Exact LDT media pipeline implementation boundary (KEEP_NON_BLOCKING,
+  CONDITIONAL v0.4).** Применяется только если LDT включён в релиз.
+  Architecture topic; здесь зафиксирована только зависимость (§9).
+- **Living Digital Twin re-admission to MVP (NEW, v0.4, KEEP_NON_BLOCKING).**
+  Owner decision о включении LDT в конкретный релиз может быть принят
+  отдельно по мере появления доказательств (OD-MVP-1: критерий
+  возвращения). Не блокирует канонизацию этого документа.
 - **Числовые пороги release evidence (KEEP_NON_BLOCKING).** Принадлежат
   Measurement Framework (Thesis §8.1, §10).
 - **Post-MVP wellness trackers (KEEP_NON_BLOCKING).** Возврат dedicated
@@ -675,6 +769,60 @@ AYLA-DEC-0027; их создание — часть coordinated migration и exe
 > Этот журнал отражает историю изменений документа и не является
 > нормативной частью спецификации. Нормативным считается текущее состояние
 > разделов 1–15, а не записи ниже.
+
+### v0.4 (2026-08-07) — Targeted amendment: release composition per OD-MVP-1…4
+
+Выполнено как часть канонизации Owner Decisions OD-MVP-1…4 (`Ayla MVP v2 —
+Owner Decisions`), после Product Essence v1.2, Product Vision v2.1, Product
+Thesis v0.6 и Product Principles v0.2 (все candidates). Amendment plans
+Essence/Thesis/Principles рекомендуют этот шаг как следующий в
+canonization sequence.
+
+- **OD-MVP-1 (Living Digital Twin):** LDT переведён из обязательной MVP
+  capability в опциональную/DEFERRED-по-умолчанию. §3 composite formula,
+  §4 Primary Journey (шаги 3–4), §5 User Outcomes (10–11), §6.1, §6.4, §10
+  NFR, §11 release evidence и §12 gates (LDT media pipeline feasibility,
+  Recognition quality bar) переведены в CONDITIONAL — применяются только
+  если LDT отдельно включён в релиз owner decision. LDT-требования
+  (Manifesto, Essence §18) не ослаблены для сценария, когда LDT включён.
+- **OD-MVP-2 (Food Intelligence):** введён как явная IN_SCOPE capability
+  §6.1 «Food Intelligence»; wellness inputs таблица (§6.1) обновлена: food
+  — IN_SCOPE вместо CONDITIONAL. §3, §4 (новый шаг 2a), §5 (новый outcome
+  2), §11 (новое release evidence) обновлены.
+- **OD-MVP-3 (Memory Foundation):** введена как явная IN_SCOPE capability
+  §6.1 «Memory Foundation» с progressive lifecycle (working context →
+  memory candidate → policy/consent gate → persistent memory). §10 NFR
+  дополнен Everyday Signal/Memory блоком.
+- **OD-MVP-4 (MVP hypothesis):** §3 composite formula заменена на
+  representation-neutral `Goal → Everyday Signal → Context →
+  Recommendation → Action → Memory → Progress`, согласованную с Thesis
+  v0.6 §4.3.
+- **§2** — обновлены версии parent-документов (Essence v1.2, Vision v2.1,
+  Thesis v0.6, Principles v0.2).
+- **§7** — добавлена явная DEFERRED-запись для LDT как обязательной MVP
+  capability.
+- **§15** — LDT-specific open questions переведены в CONDITIONAL; добавлен
+  вопрос о будущем re-admission LDT.
+- **MUST_UPDATE_NOW downstream finding (не выполняется этим документом):**
+  `Ayla MVP User Journey Specification v1.2` §6.3, §6.4-ссылки и Event
+  Usage Summary содержат MUST_HAVE-привязки к прежнему §6.4 этого
+  документа (Twin baseline/recognition как обязательные experience
+  points) и собственный набор owner decisions AYLA-DEC-0037…0054
+  (2026-08-04). Эти привязки требуют alignment pass с OD-MVP-1…4; pass
+  зарегистрирован как отдельный follow-up gate (см. итоговый отчёт
+  канонизации), а не выполнен в рамках этого amendment — редактирование
+  документа с собственным недавним owner decision session без отдельного
+  рассмотрения было признано избыточным риском для этой канонизации.
+- **Не изменено:** §6.2 (Provider-facing), §6.3 (AI/Orchestration —
+  memory-first framing уже был запрещён в v0.3), §6.5, §6.6, §8, §9, §13,
+  §14 сохранены без стилистической правки; монетизация, каналы (AYLA-DEC-
+  0027), geography/provider-профиль пилота не затронуты.
+- **Metadata:** version 0.3 → 0.4; updated 2026-08-02 → 2026-08-07.
+  `decision_status: proposed` и `canonical_status: candidate` сохранены
+  (документ не был CANONICAL и до этого amendment).
+- **Next gate:** Internal Consistency Review, Migration Readiness Review
+  (§14, дополненный User Journey alignment finding выше), Product Owner
+  Final Review.
 
 ### v0.3 (2026-08-02) — Wave 1 Simple Reschedule §6.1 alignment
 
