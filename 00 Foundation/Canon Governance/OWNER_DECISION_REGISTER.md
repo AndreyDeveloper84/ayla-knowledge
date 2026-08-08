@@ -19,7 +19,7 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-29
-updated: 2026-08-07
+updated: 2026-08-08
 review_cycle: monthly
 ---
 
@@ -903,3 +903,282 @@ OD-MVP-4; итоговый owner ruling зафиксирован дословн�
 > Execution Scope, MVP v0.3 Downstream Migration Plan) содержат
 > version-pinned ссылки на «MVP Scope v0.3» и также зарегистрированы как
 > follow-up. См. итоговый отчёт канонизации для полного списка.
+
+### AYLA-DEC-0067 — Memory entity/state model: Composition of AYLA-DEC-0024 and ADR-0012 (OD-MEM-1)
+
+```text
+ID:             AYLA-DEC-0067 (owner ruling ID: OD-MEM-1)
+Date:           2026-08-08
+Question:       Как Memory Model примиряет entity/state-модели
+                AYLA-DEC-0024 (MemoryProposal / MemoryEntry) и ADR-0012
+                (многомерная classification/lifecycle модель)?
+Options:        A — DEC-0024 only; B — ADR-0012 replaces DEC-0024;
+                C — Composition (выбрано)
+Decision:       Composition. MemoryProposal и MemoryEntry с базовым
+                lifecycle из AYLA-DEC-0024 остаются canonical entity
+                contract: MemoryProposal statuses —
+                pending_confirmation | accepted | rejected | expired;
+                MemoryEntry — persistent canonical fact без confidence;
+                коррекция только через supersession (old entry →
+                superseded, new entry → active). Многомерные признаки
+                ADR-0012 (knowledge_class, confidence-измерение,
+                lifetime, provenance, freshness/sensitivity semantics)
+                используются как classification, policy metadata и
+                proposal/audit dimensions — не как второй конкурирующий
+                lifecycle MemoryEntry.
+Rationale:      Не ломает действующий owner decision (AYLA-DEC-0024);
+                сохраняет простой persistent contract; позволяет
+                использовать многомерность ADR-0012; не создаёт две
+                конкурирующие state machines.
+Scope:          Memory Domain; entity и lifecycle semantics будущей
+                Memory Model. Explicit non-scope: DB schema, ORM model,
+                storage representation, exact TTL values, runtime
+                transition engine.
+Affected docs:  Memory Model v1.0 (Source of Truth, документ
+                планируется); AYLA-DEC-0024 (Ayla Decision Log) —
+                сохраняет силу; ADR-0012 — canonical в части
+                classification/policy layer, non-canonical в части
+                конкурирующего entity lifecycle.
+Status:         DECIDED
+```
+
+Источник: WINDOW-04 — Owner Decision Session (Memory Model
+Canonicalization), 2026-08-08; решение OD-MEM-1, статус ACCEPTED.
+
+### AYLA-DEC-0068 — Memory Domain: canonical name and ownership boundary (OD-MEM-2)
+
+```text
+ID:             AYLA-DEC-0068 (owner ruling ID: OD-MEM-2)
+Date:           2026-08-08
+Question:       Как называется canonical conceptual domain будущей
+                Memory Model и какова его ownership boundary?
+Options:        A — User Context Domain; B — Memory Domain (выбрано);
+                C — Memory & Identity Domain
+Decision:       Canonical conceptual domain — Memory Domain. Memory
+                Model владеет: MemoryProposal, MemoryEntry, memory
+                lifecycle semantics, memory epistemic/persistence
+                semantics. Memory Model НЕ владеет: Conversation
+                Context, Session Context, Consent, Intent,
+                Recommendation, Backend Facts, Transformation Goal.
+                Memory Service (W3) — runtime/component owner, а не
+                название conceptual domain.
+Rationale:      Исключает смешение Persistent Memory с Conversation /
+                Session Context (риск варианта User Context Domain) и
+                не добавляет Identity в scope Memory Model без
+                необходимости (риск варианта Memory & Identity Domain).
+Scope:          Memory Domain; naming и ownership boundary.
+Affected docs:  Memory Model v1.0 (Source of Truth, документ
+                планируется). Использования «Memory & Identity Domain»
+                и «User Context Domain» в AMD-020, Data Inventory
+                Matrix, Core Domain Model §12, MVP User Journey,
+                Consent Scope Registry §5.7, Domain Capability Registry
+                (CAP-001) подлежат выравниванию при будущих targeted
+                amendments — не в рамках этой регистрации.
+Status:         DECIDED
+```
+
+Источник: WINDOW-04 — Owner Decision Session (Memory Model
+Canonicalization), 2026-08-08; решение OD-MEM-2, статус ACCEPTED.
+
+### AYLA-DEC-0069 — Memory canonical terminology (OD-MEM-3)
+
+```text
+ID:             AYLA-DEC-0069 (owner ruling ID: OD-MEM-3)
+Date:           2026-08-08
+Question:       Какой словарь становится canonical в Memory Model при
+                наличии competing terms (Working Context, Memory
+                Candidate, Context Fact, User Fact и др.)?
+Options:        A — принять предложенный vocabulary mapping (выбрано);
+                B — Context Fact как равноправный canonical synonym
+                MemoryEntry; C — Memory Candidate как отдельная
+                canonical entity
+Decision:       Canonical vocabulary: Observation — входное
+                наблюдение/сигнал, ещё не persistent fact; Conversation
+                Context — внешний context, owned by Conversation Model;
+                MemoryProposal — canonical persistence candidate;
+                MemoryEntry — canonical persisted memory record/fact;
+                Authoritative Backend Fact — внешний authoritative
+                fact, не MemoryEntry по факту существования. Alias
+                mapping: Memory Candidate → alias / explanatory term
+                для MemoryProposal; Working Context → non-canonical
+                generic term (использовать термин владеющего context);
+                Session Context → термин Conversation Model, не entity
+                Memory Model; Context Fact → legacy/ambiguous alias,
+                canonical persistent term = MemoryEntry; Signal →
+                generic input/observation term, не Memory entity;
+                User Fact → epistemic classification, не persistence
+                entity. Отдельная canonical entity Memory Candidate
+                не создаётся.
+Rationale:      Фиксирует единый словарь на уже утверждённых entity
+                (AYLA-DEC-0024) без создания лишних сущностей и
+                параллельных терминов.
+Scope:          Memory Domain; терминология Memory Model и alias
+                mapping legacy/competing terms.
+Affected docs:  Memory Model v1.0 (Source of Truth, документ
+                планируется); Ayla Glossary (выравнивание memory-терминов
+                при будущем amendment).
+Status:         DECIDED
+```
+
+Источник: WINDOW-04 — Owner Decision Session (Memory Model
+Canonicalization), 2026-08-08; решение OD-MEM-3, статус ACCEPTED.
+
+### AYLA-DEC-0070 — Memory Eligibility is a decision concept, not an entity (OD-MEM-4)
+
+```text
+ID:             AYLA-DEC-0070 (owner ruling ID: OD-MEM-4)
+Date:           2026-08-08
+Question:       Нужна ли отдельная canonical entity/state Memory
+                Eligibility?
+Options:        A — отдельная сущность/aggregate MemoryEligibility;
+                B — decision concept, не persisted entity (выбрано)
+Decision:       Memory eligibility — canonical decision concept, но не
+                отдельная persisted entity. Это композиция проверок:
+                consent + allowed category / whitelist + purpose +
+                lifecycle state + freshness/validity +
+                sensitivity/safety restrictions. Результат — eligible /
+                not eligible для конкретной операции/purpose — не
+                становится самостоятельным Source of Truth.
+Rationale:      Предотвращает появление ещё одного владельца поверх
+                Consent / Memory / Policy; сохраняет eligibility как
+                проверку использования, а не как хранимое состояние.
+Scope:          Memory Domain; eligibility semantics. Explicit
+                non-scope: порядок и short-circuit семантика проверок,
+                runtime исполнитель gate. Dependencies (не решаются
+                этим решением): CSR-OD-5 (Consent Source of Truth),
+                CSR-OD-4 / OD-1 (diet/skin legal boundary).
+Affected docs:  Memory Model v1.0 (Source of Truth, документ
+                планируется); Consent Scope Registry — остаётся
+                владельцем consent-проверки.
+Status:         DECIDED
+```
+
+Источник: WINDOW-04 — Owner Decision Session (Memory Model
+Canonicalization), 2026-08-08; решение OD-MEM-4, статус ACCEPTED.
+
+### AYLA-DEC-0071 — Memory events: semantics in Memory Model, registration stays with DER (OD-MEM-5)
+
+```text
+ID:             AYLA-DEC-0071 (owner ruling ID: OD-MEM-5)
+Date:           2026-08-08
+Question:       Должен ли WINDOW-04 одновременно повышать memory events
+                до registration_status: registered?
+Options:        A — да, автоматически при approval Memory Model;
+                B — нет, registration остаётся DER governance (выбрано)
+Decision:       Memory Model канонизирует semantic lifecycle и смысл
+                memory events (memory.proposal_created,
+                memory.proposal_confirmed, memory.proposal_rejected,
+                memory.entry_created, memory.entry_superseded,
+                memory.entry_expired, memory.entry_revoked), но
+                registration status остаётся собственностью Domain
+                Event Registry governance. После стабилизации Memory
+                Model выполняется отдельный targeted DER reconciliation
+                (proposed → registered) только для событий, прошедших
+                DER acceptance criteria. memory.entry_deleted не
+                определяется в Memory Model — сохраняется dependency на
+                OQ-E4 / deletion contract. Legacy ContextFact* mappings
+                закрываются в том же DER reconciliation, а не внутри
+                conceptual Memory Model.
+Rationale:      Разделяет conceptual canon и event registry governance;
+                не смешивает approval модели с acceptance criteria
+                регистрации событий.
+Scope:          Memory Domain; семантика memory events. Explicit
+                non-scope: registration status, payload-схемы,
+                producer/consumer wiring. Dependencies (не решаются
+                этим решением): Domain Event Registry OQ-E3 / OQ-E4.
+Affected docs:  Memory Model v1.0 (Source of Truth, документ
+                планируется); Ayla Domain Event Registry — targeted
+                reconciliation отдельной задачей.
+Status:         DECIDED
+```
+
+Источник: WINDOW-04 — Owner Decision Session (Memory Model
+Canonicalization), 2026-08-08; решение OD-MEM-5, статус ACCEPTED.
+
+### AYLA-DEC-0072 — Cross-repo memory boundary: responsibility boundaries, not repo mapping (OD-MEM-6)
+
+```text
+ID:             AYLA-DEC-0072 (owner ruling ID: OD-MEM-6)
+Date:           2026-08-08
+Question:       Какой уровень cross-repo boundary канонизирует Memory
+                Model?
+Options:        A — жёстко закрепить конкретные repositories/components;
+                B — канонизировать responsibility boundaries, repo
+                mapping в RRM (выбрано)
+Decision:       Memory Model канонизирует responsibility boundaries:
+                Memory Domain → conceptual MemoryProposal / MemoryEntry
+                semantics; Persistent Memory Authority → durable
+                write/read state; Retrieval Layer → запросы
+                purpose-scoped eligible memory; Rendering Layer →
+                model-facing context из уже авторизованной retrieved
+                memory; Conversation/Orchestration → consumes memory
+                context, но не становится memory SoT. Конкретный
+                repo/component mapping (Memory Service W3,
+                ai-bot-platform, ayla-ai-core) фиксируется в Repository
+                Responsibility Matrix как current implementation
+                reference; identity домена не зависит от названия
+                репозитория.
+Rationale:      Позволяет менять deployment/repo layout без изменения
+                conceptual canon; не утверждает неподтверждённые
+                repository/component names как вечную архитектуру.
+Scope:          Memory Domain; responsibility boundaries. Explicit
+                non-scope: конкретные repo names как canon, deployment
+                topology, API contracts между компонентами.
+Affected docs:  Memory Model v1.0 (Source of Truth, документ
+                планируется); Ayla Repository Responsibility Matrix —
+                current implementation mapping при будущем обновлении.
+Status:         DECIDED
+```
+
+Источник: WINDOW-04 — Owner Decision Session (Memory Model
+Canonicalization), 2026-08-08; решение OD-MEM-6, статус ACCEPTED.
+
+### AYLA-DEC-0073 — Reconfirmation is a usage/freshness gate, not a lifecycle state (OD-MEM-7)
+
+```text
+ID:             AYLA-DEC-0073 (owner ruling ID: OD-MEM-7)
+Date:           2026-08-08
+Question:       Является ли confirmation_required новым lifecycle state
+                MemoryEntry?
+Options:        A — да, добавить в canonical MemoryEntry lifecycle;
+                B — нет, usage/freshness gate (выбрано); C — отдельная
+                canonical entity ReconfirmationRequest
+Decision:       confirmation_required / reconfirmation — usage/freshness
+                gate, а не persistent lifecycle state. MemoryEntry
+                сохраняет свой canonical lifecycle (AYLA-DEC-0024).
+                При использовании записи система может определить
+                «reconfirmation required before this use» из-за
+                freshness, expiry proximity, conflict, changeability,
+                sensitivity/safety relevance или policy; до
+                reconfirmation запись не используется для операции,
+                требующей подтверждения. Отдельная canonical entity
+                ReconfirmationRequest не создаётся.
+Rationale:      Не раздувает state machine MemoryEntry; reconfirmation
+                остаётся политикой использования, а не хранимым
+                состоянием.
+Scope:          Memory Domain; freshness/reconfirmation semantics.
+                Explicit non-scope: TTL-значения, триггеры и механика
+                reconfirmation-запроса, UX. Dependencies (не решаются
+                этим решением): ADR-0012 OD-2 (red TTL).
+Affected docs:  Memory Model v1.0 (Source of Truth, документ
+                планируется); ADR-0012 — classification/policy layer
+                (freshness semantics).
+Status:         DECIDED
+```
+
+Источник: WINDOW-04 — Owner Decision Session (Memory Model
+Canonicalization), 2026-08-08; решение OD-MEM-7, статус ACCEPTED.
+
+**Регистрационная note (2026-08-08):**
+
+> OD-MEM-1…7 зарегистрированы как AYLA-DEC-0067…0073 по итогам WINDOW-04 —
+> Owner Decision Session (Memory Model Canonicalization); все семь rulings
+> приняты Product Owner в рекомендованных вариантах. Следующие существующие
+> open dependencies сохранены как dependencies, а не как новые решения:
+> CSR-OD-5 (Consent Source of Truth); CSR-OD-4 / OD-1 (diet/skin legal
+> boundary); ADR-0012 OD-2 (red TTL); Domain Event Registry OQ-E3 / OQ-E4
+> (включая memory.entry_deleted tombstone / deletion contract); ADR-0012
+> OQ-1 / OQ-2 (verification registry, provenance history format). Эта
+> регистрация не изменяет ADR-0012, Domain Event Registry, CANON_INDEX и
+> не создаёт Memory Model — подготовка Memory Model v1.0 выполняется
+> отдельной командой Product Owner.
