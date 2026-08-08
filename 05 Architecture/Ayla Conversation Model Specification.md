@@ -753,3 +753,167 @@ Conversation Model и `Ayla Glossary` (`ADR-0007`) в рамках отдель�
 
 Wave 3 не создаёт runtime transition table, state machine diagram, API
 endpoints, database schema или TTL thresholds.
+
+## 25. Conversation Context Overview
+
+**Conversation Context** — концептуальный контекст, которым владеет
+Conversation для поддержания смысловой связности, continuity и продуктовой
+целостности разговора.
+
+Conversation Context:
+
+- принадлежит **Conversation** и не является самостоятельной сущностью
+  вне её;
+- не является persistent user memory;
+- не является user profile;
+- не является backend facts store;
+- не является recommendation store;
+- не является consent record.
+
+Conversation Context может включать информацию, накопленную в рамках
+Conversation, необходимую для сохранения identity и смысловой связности
+между Session, Interaction и Dialogue Turn. Форматы хранения, передачи и
+runtime-представление вынесены за пределы Conversation Model.
+
+## 26. Session Context
+
+**Session Context** — scoped часть / представление Conversation Context,
+относящееся к конкретной Session.
+
+Session Context:
+
+- существует только в границах Conversation Context;
+- не является самостоятельной канонической сущностью и не имеет
+  независимого owner;
+- может иметь channel-scoped или session-scoped relevance;
+- не становится persistent memory автоматически;
+- не становится Source of Truth для user facts.
+
+Session Context используется для сохранения continuity внутри операционного
+периода Session. Один Conversation Context может включать несколько Session
+Context (по одному на каждую Session), если это требуется для продуктовой
+семантики.
+
+## 27. Context Inputs
+
+Conversation может использовать контекст из смежных доменов, но **не**
+владеет этими контекстами. Ниже перечислены основные категории входов,
+которые могут участвовать в формировании или уточнении Conversation Context.
+
+| Категория входа | Owner | Семантика чтения / reference | Conversation не владеет |
+|---|---|---|---|
+| **Intent** | `Ayla Intent Model Specification` | Только чтение / reference; Intent не является частью иерархии Conversation. | Да |
+| **Transformation Goal reference** | Journey / canonical product concept | Только чтение / reference; Conversation может развиваться вокруг одной или нескольких связанных целей. | Да |
+| **Consent-permitted facts** | `Consent Scope Registry` | Чтение в рамках разрешённого scope; отсутствие consent не интерпретируется как согласие. | Да |
+| **Authoritative backend facts** | `Ayla Core Domain Model Specification` / owning services | Только через разрешённые projection / reference; Conversation не проверяет достоверность фактов. | Да |
+| **Recommendation-related references** | `Ayla MVP Recommendation Contract` | Чтение / reference результата рекомендации; Conversation не владеет Recommendation. | Да |
+| **Memory-derived permitted context** | Memory Model | Чтение / reference разрешённых Memory-derived данных в соответствии с Consent Scope Registry. | Да |
+
+Conversation Model не копирует чужие schemas и не переопределяет owned
+понятия смежных доменов.
+
+## 28. Context Projection
+
+**Context Projection** — контролируемое предоставление релевантного
+контекста из Conversation / Session Context смежному домену без передачи
+ownership.
+
+Projection может быть направлена, например, в:
+
+- Recommendation bounded context;
+- Runtime bounded context;
+- Memory Proposal flow;
+- другие явно разрешённые consumers.
+
+Projection не означает:
+
+- permanent copy by default;
+- ownership transfer;
+- consent bypass;
+- full raw context export;
+- persistence authorization.
+
+Conversation Model не определяет payload, API, transport format или
+projection protocol смежных доменов.
+
+## 29. Projection Rules
+
+Context Projection в рамках Conversation Model подчиняется следующим
+концептуальным правилам:
+
+- **purpose-bounded** — projection предоставляется только для конкретной,
+  разрешённой цели;
+- **minimum necessary** — передаётся минимум контекста, необходимый для
+  цели;
+- **consent/policy constrained** — projection не обходит Consent Scope
+  Registry и применимые policy;
+- **source provenance preserved where applicable** — источник контекста
+  сохраняется, если это имеет значение для потребителя;
+- **consumer does not become source owner** — получивший projection домен
+  не становится owner исходного контекста;
+- **projection may be narrower than source context** — потребителю может
+  быть предоставлено подмножество исходного контекста;
+- **inference must not silently become authoritative fact** — выводы внутри
+  Conversation Context не становятся авторитетными фактами смежного домена
+  без соответствующего процесса подтверждения;
+- **projection does not itself authorize persistence** — сам факт projection
+  не разрешает persistent storage в смежном домене.
+
+Если какое-либо правило не подтверждено canon или policy, в Wave 4 оно не
+вводится.
+
+## 30. Continuity Context
+
+**Continuity Context** — часть Conversation Context, которая помогает
+сохранять смысловую и продуктовую связность Conversation через смену
+Session, Interaction, Dialogue Turn, канала или устройства.
+
+Continuity Context не является техническим runtime-объектом и не описывает
+implementation fields. К conceptual continuity-информации могут относиться:
+
+- текущий conversational purpose;
+- установленная связь с Transformation Goal, если известна;
+- текущий незавершённый / активный conversational thread;
+- релевантные предыдущие решения и действия;
+- consent-permitted context references.
+
+**Continuity Context ≠ Memory.** Долгосрочная persistent continuity
+принадлежит Memory domain, где это применимо. Conversation Context может
+предоставлять Memory Proposal Context как projection, но сам не
+превращается в Persistent Memory.
+
+## 31. Context Ownership Matrix
+
+| Context / Data | Owner | Conversation may read | Conversation may project | Conversation may persist as own data |
+|---|---|---|---|---|
+| **Conversation Context** | Conversation | yes | yes | yes |
+| **Session Context** | Conversation (no independent owner) | yes | yes (as part of Conversation Context) | yes (within Conversation Context) |
+| **Intent** | Ayla Intent Model Specification | yes / reference | no | no |
+| **Transformation Goal** | Journey / canonical product concept | yes / reference | no | no |
+| **Consent State** | Consent Scope Registry | yes (boundary check) | no | no |
+| **Backend Facts** | Core Domain Model / owning services | yes / permitted reference | only as permitted reference within projection | no |
+| **Recommendation Context** | Ayla MVP Recommendation Contract | yes / reference | yes | no |
+| **Persistent Memory** | Memory Model | yes (consent-permitted) | yes (as permitted reference / Memory Proposal Context) | no |
+| **Memory Candidate / Proposal context** | Memory Model / Memory Proposal flow | yes (as source for proposal) | yes (to Memory Proposal flow) | no |
+
+Conversation не расширяет свою ownership за пределы Conversation Context и
+Session Context, являющегося её частью.
+
+## 32. Context / Projection Invariants
+
+Минимальные инварианты Conversation Model в области контекста и projection:
+
+- **Conversation owns only Conversation Context**;
+- **Session Context has no independent owner**;
+- **Projection ≠ ownership transfer**;
+- **Projection ≠ persistence authorization**;
+- **Backend Fact ≠ Conversation-owned fact**;
+- **Intent ≠ Conversation-owned fact**;
+- **AI inference ≠ authoritative fact**;
+- **Observation ≠ Persistent Memory Fact**;
+- **Conversation closure ≠ automatic context persistence / deletion**;
+- **Consent limits projection / use**.
+
+Wave 4 не описывает runtime enforcement implementation, middleware,
+authorization code, prompt assembly или storage schema для контекста и
+projection.
