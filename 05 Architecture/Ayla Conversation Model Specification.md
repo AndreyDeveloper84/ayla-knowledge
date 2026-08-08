@@ -74,10 +74,13 @@ related_documents:
 ## 1. Статус и готовность
 
 Этот документ — канонический черновик (`draft`, `proposed`) спецификации модели Conversation.
-Текущая версия содержит только Foundation (Wave 1): frontmatter, позиционирование, назначение,
-канонические принципы, scope, зависимости, терминологию и правила использования терминов.
-Нормативные разделы иерархии, идентичности, lifecycle, состояния, контекста, projection,
-границ и инвариантов будут добавлены в последующих волнах письма спецификации.
+Текущая версия содержит Foundation (Wave 1) и Wave 2 — Core Concepts.
+Foundation включает frontmatter, позиционирование, назначение, канонические принципы,
+scope, зависимости, терминологию и правила использования терминов.
+Wave 2 формализует ядро модели: Conversation, Session, Interaction, Dialogue Turn,
+каноническую иерархию, кардинальность и модель идентичности.
+Нормативные разделы lifecycle, состояния, контекста, projection, границ и дополнительных
+инвариантов будут добавлены в последующих волнах письма спецификации.
 
 ## 2. Каноническая позиция
 
@@ -263,3 +266,346 @@ Legacy-aliases допустимы только при обсуждении ис�
 версиями модели или обеспечения совместимости с внешними системами. В новых
 материалах, спецификациях, schema и runtime-контрактах используются только
 канонические термины.
+
+## 10. Core Model Overview
+
+Модель Conversation состоит из четырёх канонических сущностей, образующих
+продуктовую / доменную концептуальную иерархию:
+
+```text
+Conversation
+    └── Session
+            └── Interaction
+                    └── Dialogue Turn
+```
+
+- **Conversation** — корневая сущность непрерывного разговора пользователя с Ayla.
+- **Session** — самостоятельная операционная сессия общения внутри Conversation.
+- **Interaction** — логически связанный эпизод общения внутри Session.
+- **Dialogue Turn** — минимальная атомарная единица участия внутри Interaction.
+
+Эта иерархия описывает продуктовое / доменное отношение принадлежности
+(`belongs to`), а не физическое хранение, дерево БД или граф runtime-процессов.
+Каждый уровень добавляет собственную абстракцию: Conversation отвечает за
+непрерывность между сессиями и каналами, Session — за операционный период в
+рамках канала, Interaction — за смысловую связность эпизода, Dialogue Turn —
+за минимальную неделимую единицу обмена.
+
+## 11. Conversation
+
+### 11.1. Canonical definition
+
+**Conversation** — корневая продуктовая сущность, представляющая непрерывный
+разговор пользователя с Ayla вокруг одной или нескольких связанных целей.
+Conversation сохраняет идентичность независимо от смены Session, канала, устройства
+или временной паузы (AYLA-DEC-0055).
+
+### 11.2. Responsibility
+
+Conversation:
+
+- задаёт продуктовую рамку диалога;
+- обеспечивает непрерывность пользовательского опыта между Session, Interaction
+  и Dialogue Turn;
+- владеет только **Conversation Context** (AYLA-DEC-0060);
+- выступает отправной точкой для **Context Projection** в смежные домены без
+  передачи им ownership.
+
+### 11.3. What establishes Conversation identity
+
+Идентичность Conversation определяется смысловой непрерывностью
+пользовательского взаимодействия и контекста, а не техническими характеристиками
+соединения. Runtime-реализация реализует эти правила, но не определяет их
+(AYLA-DEC-0055, AYLA-DEC-0061).
+
+### 11.4. Relationship to Transformation Goal
+
+Conversation может развиваться вокруг одной или нескольких связанных
+Transformation Goal. Transformation Goal — канонический сквозной продуктовый
+концепт; Conversation не владеет им и не является его доменным агрегатом.
+
+Новая **независимая** Transformation Goal может инициировать новую Conversation,
+но связанная подцель, уточнение или углубление в рамках текущей цели сами по
+себе не обязаны создавать новую Conversation.
+
+### 11.5. Relationship to Intent
+
+Conversation может содержать и использовать intent-related context. Intent
+интерпретируется внутри Conversation, но **Intent не является дочерней сущностью**
+иерархии Conversation Model. Owner Intent — `Ayla Intent Model Specification`
+(AYLA-DEC-0062).
+
+### 11.6. Relationship to Session
+
+Conversation включает ноль или более Session. Каждый Session принадлежит
+ровно одной Conversation. Смена Session не разрывает Conversation; Conversation
+может охватывать несколько Session во времени и между каналами.
+
+### 11.7. What does NOT create a new Conversation
+
+Следующие события сами по себе **не создают** новую Conversation:
+
+- смена Session;
+- смена канала;
+- смена устройства;
+- временная пауза;
+- появление нового Interaction;
+- появление нового Dialogue Turn;
+- связанная подцель или уточнение в рамках текущей Transformation Goal.
+
+### 11.8. What MAY create a new Conversation
+
+В соответствии с AYLA-DEC-0055 новая Conversation может возникнуть, если:
+
+1. пользователь начинает новую независимую Transformation Goal;
+2. предыдущая Conversation завершена согласно Conversation Lifecycle;
+3. владелец системы или пользователь явно инициирует новую Conversation
+   согласно правилам Canon.
+
+### 11.9. Explicitly not defined
+
+В рамках Wave 2 не фиксируется runtime-алгоритм определения «тот же разговор».
+Не вводятся эвристики, timeout, FSM или storage-реализация.
+
+## 12. Session
+
+### 12.1. Canonical definition
+
+**Session** — самостоятельная каноническая продуктовая сущность,
+представляющая операционную сессию общения внутри Conversation. Session имеет
+собственный концептуальный lifecycle и не сводится только к runtime-соединению
+(AYLA-DEC-0057).
+
+### 12.2. Belongs to exactly one Conversation
+
+Каждый Session принадлежит ровно одной Conversation. Session не является
+глобальным владельцем Conversation и не может существовать вне Conversation.
+
+### 12.3. Product identity
+
+Session обладает собственной продуктовой идентичностью внутри Conversation.
+Эта идентичность не заменяет идентичность Conversation и не зависит от
+конкретного Dialogue Turn или Interaction.
+
+### 12.4. Conceptual purpose
+
+Session:
+
+- ограничивает операционный период активности пользователя;
+- несёт **Session Context** как часть **Conversation Context**, которым владеет
+  Conversation;
+- обеспечивает continuity внутри своего диапазона;
+- является контейнером для нуля или более Interaction.
+
+### 12.5. Channel-scoped nature
+
+Session является channel-scoped: переход между каналами не означает продолжение
+той же Session — в другом канале начинается новая Session. При этом Conversation
+может продолжаться между каналами через разрешённую context projection
+(AYLA-DEC-0055; Ayla MVP User Journey Specification v1.2 §Terminology).
+
+### 12.6. Relationship to continuity
+
+Смена Session не нарушает Conversation identity и не обрывает продуктовую
+непрерывность. Session — единица continuity внутри Conversation, а не её
+замена.
+
+### 12.7. Relationship to Interaction
+
+Session содержит ноль или более Interaction. Interaction не может
+существовать вне Session.
+
+### 12.8. Explicitly not defined
+
+В рамках Wave 2 не описываются session timeout, transport connection,
+token lifetime, storage implementation и прочие runtime-детали.
+
+## 13. Interaction
+
+### 13.1. Canonical definition
+
+**Interaction** — логически связанный эпизод общения внутри Session,
+состоящий из одного или нескольких Dialogue Turn. Interaction является
+каноническим термином для обозначения такого эпизода (AYLA-DEC-0058).
+
+### 13.2. Interaction = logically coherent episode
+
+Interaction объединяет Dialogue Turn, относящиеся к одному смысловому поводу,
+одному flow или одной задаче. Внутри Interaction допускаются уточнения,
+коррекции и ответвления, пока они остаются в рамках одного связного эпизода.
+
+### 13.3. Belongs to exactly one Session
+
+Каждый Interaction принадлежит ровно одному Session. Interaction не может
+переходить между Session и не может существовать вне Session.
+
+### 13.4. Consists of one or more Dialogue Turn
+
+Interaction состоит из одного или нескольких Dialogue Turn. Одиночный Dialogue
+Turn может образовывать Interaction, если он сам по себе представляет
+завершённый связный эпизод.
+
+### 13.5. Why Interaction is not equal to Session
+
+Session ограничивает операционный период / канал и может включать несколько
+разных или последовательных эпизодов. Interaction — это смысловой эпизод внутри
+этого периода. Один Session может содержать несколько Interaction; один
+Interaction не охватывает несколько Session.
+
+### 13.6. Why Interaction is not equal to Dialogue Turn
+
+Dialogue Turn — атомарная единица обмена репликами. Interaction — это
+совокупность Turn-ов, объединённых общей смысловой связностью. Interaction
+добавляет уровень эпизода, которого нет у отдельного Turn.
+
+### 13.7. Legacy alias
+
+`Interaction Episode` сохраняется только как legacy alias. В новых материалах
+используется канонический термин **Interaction**.
+
+## 14. Dialogue Turn
+
+### 14.1. Canonical definition
+
+**Dialogue Turn** — минимальная атомарная единица участия в Conversation
+внутри одного Interaction. Dialogue Turn является минимальной продуктовой
+единицей разговора.
+
+### 14.2. Minimum conversation unit
+
+Dialogue Turn фиксирует одну атомарную единицу участия внутри Interaction.
+Turn не обязан означать пару `сообщение пользователя + ответ Ayla`; он может
+представлять отдельное участие пользователя, Ayla / system или
+tool-mediated participation, если это является частью Interaction. Состав
+Turn рассматривается только на концептуальном уровне; Wave 2 не определяет
+message schema, API payload или prompt format.
+
+### 14.3. Belongs to exactly one Interaction
+
+Каждый Dialogue Turn принадлежит ровно одному Interaction. Turn не может
+переходить между Interaction и не может существовать вне Interaction.
+
+### 14.4. User / system / tool participation
+
+На концептуальном уровне Dialogue Turn может включать участие пользователя,
+Ayla и/или внешних инструментов. Conversation Model не фиксирует ролевую
+модель, формат сообщений или механизм вызова инструментов.
+
+### 14.5. Turn content ≠ authoritative fact
+
+Содержимое Dialogue Turn — это реплика, наблюдение или высказывание в контексте
+разговора. Оно не является автоматически авторитетным backend-фактом и не
+вводит достоверных доменных данных само по себе.
+
+### 14.6. Inference in a turn ≠ memory fact
+
+Выводы, сделанные в рамках Dialogue Turn (например, inferred context или
+hypothesis), не считаются persistent memory fact до тех пор, пока не пройдут
+соответствующую обработку и подтверждение в рамках Memory Model.
+
+### 14.7. Turn itself ≠ Intent
+
+Dialogue Turn может выражать Intent, но сам Turn не равен Intent. Intent —
+это структурированное представление, определяемое `Ayla Intent Model
+Specification`, а Dialogue Turn — единица истории разговора.
+
+### 14.8. Source of Truth for Dialogue Turn semantics
+
+Conversation Model Specification является Source of Truth для канонической
+семантики `Dialogue Turn` согласно AYLA-DEC-0062. Если другие canonical
+документы (например, `Ayla MVP User Journey Specification` v1.2) используют
+более узкое определение (например, Dialogue Turn как обязательную пару
+`сообщение пользователя + ответ Ayla`), это расхождение классифицируется как
+терминологический mismatch и требует отдельного cross-document amendment.
+
+`CROSS_DOCUMENT_FOLLOW_UP`: уточнить терминологию `Dialogue Turn` в
+`Ayla MVP User Journey Specification` v1.2 для alignment с Conversation Model.
+
+## 15. Canonical Hierarchy and Cardinality
+
+### 15.1. Normative hierarchy
+
+Каноническая иерархия и кардинальность зафиксированы следующим образом:
+
+```text
+Conversation
+1 Conversation → 0..* Session
+
+Session
+1 Session → 0..* Interaction
+
+Interaction
+1 Interaction → 1..* Dialogue Turn
+```
+
+### 15.2. Child-to-parent belonging
+
+- Session принадлежит ровно одной Conversation.
+- Interaction принадлежит ровно одной Session.
+- Dialogue Turn принадлежит ровно одному Interaction.
+
+### 15.3. Zero-child lifecycle states
+
+Запись `0..*` на стороне дочерней сущности допускает временные состояния, в
+которых родительская сущность существует до появления первого дочернего
+элемента (например, новосозданная Conversation до первого Session или
+новосозданная Session до первого Interaction). Эти состояния относятся к
+концептуальному lifecycle и не противоречат приведённой кардинальности.
+
+Interaction определяется как уже существующий logically coherent episode,
+поэтому кардинальность `1 Interaction → 1..* Dialogue Turn` не допускает
+Interaction без хотя бы одного Dialogue Turn.
+
+### 15.4. Not a database design
+
+Иерархия и кардинальность относятся к продуктовой / доменной модели. В данном
+разделе не проектируются foreign keys, storage schema или runtime-структуры
+данных.
+
+## 16. Identity Model
+
+### 16.1. Conversation Identity
+
+Conversation Identity основана на AYLA-DEC-0055. Conversation сохраняет
+идентичность через:
+
+- смену Session;
+- смену канала;
+- смену устройства;
+- временную паузу.
+
+Conversation Identity **не определяется**:
+
+- каналом;
+- устройством;
+- timeout;
+- одной конкретной Session;
+- конкретным Intent.
+
+### 16.2. Session Identity
+
+Session обладает самостоятельной идентичностью внутри Conversation. Session
+идентифицируется как операционная единица общения и не заменяет Conversation
+Identity. Session не является глобальным владельцем Conversation.
+
+### 16.3. Interaction Identity
+
+Interaction имеет идентичность как связный эпизод общения. Идентичность
+Interaction не смешивается с `intent_id`, `recommendation_id` или другими
+идентификаторами смежных доменов. Interaction идентифицируется по своей
+смысловой целостности внутри Session.
+
+### 16.4. Dialogue Turn Identity
+
+Dialogue Turn имеет собственную идентичность как атомарная единица истории
+разговора. Формат ID не определяется в рамках Conversation Model; идентификаторы
+и persistence mechanics принадлежат runtime / implementation contracts.
+
+### 16.5. Identity invariants
+
+- Идентичность дочерней сущности **не заменяет** идентичность родительской.
+- Смена дочерней сущности (новый Dialogue Turn, новый Interaction, новый
+  Session) **не создаёт автоматически** новую родительскую сущность.
+- Идентификаторы, форматы ID и persistence mechanics относятся к
+  runtime / implementation contracts и не являются частью продуктовой модели
+  идентичности.
