@@ -5,9 +5,9 @@ title: Ayla Conversation Model Specification
 title_ru: Спецификация модели Conversation Ayla
 
 type: domain-specification
-status: draft
-decision_status: proposed
-canonical_status: candidate
+status: approved
+decision_status: accepted
+canonical_status: approved
 version: "1.0"
 
 owner: Domain Architecture
@@ -42,7 +42,7 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 
-updated: 2026-08-06
+updated: 2026-08-08
 review_cycle: monthly
 
 depends_on:
@@ -73,18 +73,32 @@ related_documents:
 
 ## 1. Статус и готовность
 
-Этот документ — канонический черновик (`draft`, `proposed`) спецификации модели Conversation.
-Текущая версия содержит Foundation (Wave 1) и Wave 2 — Core Concepts.
+Этот документ — утверждённая каноническая спецификация (`approved`, `accepted`,
+`canonical`) модели Conversation `ayla.domain.conversation-model` версии `1.0`.
+Он является **Active Canon** в рамках Ayla Knowledge.
+
+Текущая версия содержит Foundation (Wave 1), Wave 1A — Foundation Alignment,
+Wave 2 — Core Concepts, Wave 3 — Lifecycle and Conceptual State,
+Wave 4 — Conversation Context and Context Projection, и
+Wave 5 — Canonical Completion.
 Foundation включает frontmatter, позиционирование, назначение, канонические принципы,
 scope, зависимости, терминологию и правила использования терминов.
 Wave 2 формализует ядро модели: Conversation, Session, Interaction, Dialogue Turn,
 каноническую иерархию, кардинальность и модель идентичности.
-Нормативные разделы lifecycle, состояния, контекста, projection, границ и дополнительных
-инвариантов будут добавлены в последующих волнах письма спецификации.
+Wave 3 формализует концептуальный lifecycle и границу conceptual Conversation State.
+Wave 4 формализует Conversation Context, Session Context и Context Projection.
+Wave 5 собирает глобальные инварианты, граничную сводку, traceability к решениям,
+governance-правила, открытые вопросы, follow-ups, Definition of Done и Change Log.
+
+Разделы §§1–32 зафиксированы в предыдущих волнах; Wave 5 не изменяет их
+архитектурное содержание.
 
 ## 2. Каноническая позиция
 
-Conversation Model Specification является Source of Truth для следующих понятий
+Ayla Conversation Model Specification v1.0 утверждена Product Owner и является
+**Active Canon** для домена Conversation (`ayla.domain.conversation-model`).
+
+Документ является Source of Truth для следующих понятий
 и областей в рамках продукта Ayla:
 
 - Conversation;
@@ -917,3 +931,238 @@ Session Context, являющегося её частью.
 Wave 4 не описывает runtime enforcement implementation, middleware,
 authorization code, prompt assembly или storage schema для контекста и
 projection.
+
+## 33. Global Conversation Model Invariants
+
+Ниже собраны утверждённые инварианты Conversation Model, выведенные из §§1–32.
+Новые инварианты не вводятся.
+
+### 33.1. Hierarchy and cardinality
+
+- **Conversation ≠ Session.**
+- **Conversation ≠ Memory.**
+- **Conversation ≠ Recommendation.**
+- **Conversation owns only Conversation Context.**
+- **Session belongs to exactly one Conversation.**
+- **Interaction belongs to exactly one Session.**
+- **Dialogue Turn belongs to exactly one Interaction.**
+- **1 Conversation → 0..* Session.**
+- **1 Session → 0..* Interaction.**
+- **1 Interaction → 1..* Dialogue Turn.**
+
+### 33.2. Identity and lifecycle
+
+- **Session change ≠ new Conversation.**
+- **Channel change ≠ new Conversation.**
+- **Device change ≠ new Conversation.**
+- **Pause ≠ Conversation closure.**
+- **New Intent ≠ automatically new Conversation.**
+- **Action completion ≠ Conversation closure.**
+- **Conversation closure ≠ automatic data deletion.**
+
+### 33.3. Context and projection
+
+- **Conversation Context ≠ Persistent Memory.**
+- **Conversation Context ≠ Backend Facts Source of Truth.**
+- **Conversation Context ≠ Consent State.**
+- **Conversation Context ≠ Recommendation ownership.**
+- **Conversation Context ≠ User Profile.**
+- **Session Context has no independent owner.**
+- **Context Projection ≠ ownership transfer.**
+- **Context Projection ≠ persistence authorization.**
+- **Context Projection ≠ unrestricted raw copy.**
+- **AI inference ≠ authoritative fact.**
+- **Observation ≠ Persistent Memory Fact.**
+
+### 33.4. State boundary
+
+- **Conceptual lifecycle ≠ runtime FSM.**
+- **Conceptual state ≠ runtime enum / storage state.**
+
+## 34. Boundary Summary
+
+| Domain / Concept | Conversation Model owns | May reference / read | May project | Must not redefine |
+|---|---:|---:|---:|---:|
+| **Conversation** | yes (SoT) | yes (own context) | yes (Conversation Context) | no |
+| **Session** | yes (SoT) | yes | yes (as part of Conversation Context) | no |
+| **Interaction** | yes (SoT) | yes | yes (as part of Conversation Context) | no |
+| **Dialogue Turn** | yes (SoT) | yes | yes (indirectly, as part of Conversation Context) | no |
+| **Conversation Context** | yes | yes | yes | no |
+| **Session Context** | yes (no independent owner) | yes | yes (as part of Conversation Context) | no |
+| **Intent** | no | yes / reference | no | yes |
+| **Transformation Goal** | no | yes / reference | no | yes |
+| **Recommendation** | no | yes / reference | yes (Recommendation Context) | yes |
+| **Memory** | no | yes (consent-permitted) | yes (Memory Proposal Context) | yes |
+| **Consent** | no | yes (boundary check) | no | yes |
+| **Backend Facts** | no | yes / permitted reference | only as permitted reference within projection | yes |
+| **Runtime FSM** | no | yes (as projection consumer) | yes (Runtime Context) | yes |
+
+## 35. Cross-document Relationships
+
+### 35.1. Ayla MVP User Journey Specification v1.2
+
+- **Consumes / references:** терминология Session, channel, device, continuity;
+  journey-уровневое описание пользовательского опыта.
+- **Does NOT own:** Conversation Model не владеет Journey, Transformation Goal
+  taxonomy или UX flow.
+- **Downstream synchronization:** alignment терминологии `Dialogue Turn`
+  (CROSS_DOCUMENT_FOLLOW_UP).
+
+### 35.2. Ayla Intent Model Specification v1.0
+
+- **Consumes / references:** Intent как структурированное понятие; Intent-related
+  context может использоваться в Conversation Context.
+- **Does NOT own:** Conversation Model не владеет Intent taxonomy, interpretation
+  rules или intent lifecycle.
+- **Downstream synchronization:** при изменении границ Intent необходимо проверять,
+  что Conversation Model не переопределяет owned понятия.
+
+### 35.3. Ayla MVP Recommendation Contract
+
+- **Consumes / references:** результат рекомендации может участвовать в истории
+  Conversation; Recommendation Context может формироваться как projection из
+  Conversation Context.
+- **Does NOT own:** Conversation Model не владеет Recommendation lifecycle,
+  criteria или ownership.
+- **Downstream synchronization:** projection contract должен сохранять ownership
+  Recommendation домена.
+
+### 35.4. Consent Scope Registry
+
+- **Consumes / references:** границы разрешённого использования данных при
+  формировании и projection Conversation Context.
+- **Does NOT own:** Conversation Model не владеет consent records, consent state
+  или policy decisions.
+- **Downstream synchronization:** изменения Consent Scope Registry могут влиять на
+  допустимые projection-контексты.
+
+### 35.5. Ayla Core Domain Model Specification
+
+- **Consumes / references:** authoritative backend facts только через разрешённые
+  reference / projection механизмы.
+- **Does NOT own:** Conversation Model не владеет domain entities, authoritative
+  facts или их lifecycle.
+- **Downstream synchronization:** Core Domain Model остаётся Source of Truth для
+  фактов; Conversation Model не проверяет их достоверность.
+
+### 35.6. Memory-related canon
+
+- **Consumes / references:** consent-permitted Memory-derived context; Memory
+  Proposal Context как projection.
+- **Does NOT own:** Conversation Model не владеет Persistent Memory, Memory Model
+  или Memory Candidate lifecycle.
+- **Downstream synchronization:** inference / observation в Conversation Context
+  не становится Persistent Memory Fact без обработки в Memory Model.
+
+### 35.7. Runtime Canon / ADR-0014 Conversation Context ID
+
+- **Consumes / references:** Conversation Model предоставляет Runtime Context
+  через projection; ADR-0014 определяет идентификатор контекста.
+- **Does NOT own:** Conversation Model не определяет runtime FSM, orchestration,
+  prompts, tool dispatch, storage schema.
+- **Downstream synchronization:** Runtime Canon реализует правила Conversation
+  Model, но не переопределяет их.
+
+## 36. Traceability to Owner Decisions
+
+| AYLA-DEC | Conversation Model area | Sections |
+|---|---|---|
+| **AYLA-DEC-0055** — Conversation Identity | Идентичность Conversation; иерархия; что не создаёт новую Conversation; resumption; continuity. | §§11.3, 11.6–11.8, 12.2, 16.1, 16.5, 18, 19, 21, 22, 33.2 |
+| **AYLA-DEC-0056** — Conversation is the Root Entity | Корневая роль Conversation; иерархия Conversation → Session → Interaction → Dialogue Turn. | §§10, 11.1–11.2, 15.1 |
+| **AYLA-DEC-0057** — Session is a Canonical Entity | Session как самостоятельная продуктовая сущность с собственным lifecycle. | §§12, 15, 16.2 |
+| **AYLA-DEC-0058** — Interaction is a Conversation Episode | Канонический термин Interaction; логически связный эпизод из Dialogue Turn. | §§9.1, 13, 15.1 |
+| **AYLA-DEC-0059** — Conversation State is Conceptual | Conceptual Conversation State; отсутствие runtime FSM / enum / storage state machine. | §§9.1, 23, 24, 33.4 |
+| **AYLA-DEC-0060** — Conversation Owns Only Conversation Context | Ownership Conversation Context; Session Context; Context Projection; границы данных. | §§11.2, 25–32, 33.3, 34 |
+| **AYLA-DEC-0061** — Runtime Boundary | Scope / OUT_OF_SCOPE; отсутствие runtime mechanics, prompts, API, DB schema. | §§5, 6, 11.9, 12.8, 13.7 (explicitly not defined), 17–24, 28, 32 |
+| **AYLA-DEC-0062** — Source of Truth Ownership | Source of Truth таблицы; Dialogue Turn semantics; границы authority. | §§2, 7, 9, 14.8, 15.2, 34, 35 |
+
+## 37. Governance and Change Rules
+
+Изменения в Conversation Model Specification требуют owner / governance review,
+если они затрагивают:
+
+- **Hierarchy** — отношения Conversation → Session → Interaction → Dialogue Turn;
+- **Identity semantics** — что определяет Conversation Identity и когда возникает
+  новая Conversation;
+- **Ownership** — что принадлежит Conversation Model, а что смежным доменам;
+- **Lifecycle semantics** — начало, пауза, resumption, closure;
+- **Canonical terminology** — Conversation, Session, Interaction, Dialogue Turn,
+  Conversation Context, Context Projection;
+- **Projection semantics** — правила предоставления контекста смежным доменам;
+- **Boundary with Intent / Memory / Consent / Recommendation / Runtime** — любое
+  изменение границ ответственности.
+
+Implementation details не должны неявно изменять conceptual canon. Полный
+governance process определяется существующими каноническими документами
+(см. `Canon Governance`, `OWNER_DECISION_REGISTER`, `Ayla Decision Log`).
+
+## 38. Open Questions and Downstream Follow-ups
+
+### 38.1. Open Questions
+
+Следующие вопросы остаются открытыми в рамках текущей версии:
+
+1. **Canonical Conversation State enum.** Exact vocabulary canonical enum
+   Conversation State в утверждённом canon отсутствует (`NOT_DEFINED`).
+   Дальнейшее определение требует Owner Decision и отдельного amendment.
+2. **Exact runtime criteria for Conversation start / closure.** Conversation Model
+   фиксирует продуктовые условия, но не утверждает runtime-алгоритмы. Если
+   продуктовым командам потребуется канонизировать точные критерии, это должно
+   быть оформлено как новый Owner Decision.
+
+### 38.2. Cross-document Follow-ups
+
+| Follow-up | Status | Owner / Source | Blocking |
+|---|---|---|---|
+| **Journey v1.2 — Dialogue Turn terminology alignment** | `CROSS_DOCUMENT_FOLLOW_UP` | `Ayla MVP User Journey Specification` v1.2 | NO |
+| **Glossary / ADR-0007 — Conversation State Enum inconsistency** | `CROSS_DOCUMENT_FOLLOW_UP` | `Ayla Glossary` / `ADR-0007 Conversation State Enum` | NO |
+| **Core Domain Model — Conversation State terminology alignment** | `CROSS_DOCUMENT_FOLLOW_UP` | `Ayla Core Domain Model Specification` | NO |
+
+Все follow-up не блокируют текущую версию Conversation Model и должны быть
+разрешены в рамках отдельных терминологических amendments.
+
+## 39. Definition of Done / Canon Readiness
+
+Checklist готовности канонической спецификации Conversation Model:
+
+- [x] canonical terminology defined
+- [x] hierarchy / cardinality defined
+- [x] identity defined
+- [x] conceptual lifecycle defined
+- [x] conceptual state boundary defined
+- [x] context ownership defined
+- [x] projection semantics defined
+- [x] foreign domain ownership preserved
+- [x] runtime boundary preserved
+- [x] owner decisions traced
+- [x] known follow-ups explicitly listed
+- [x] no unresolved P0 / P1 in document
+- [x] validators clean for target document — confirmed by final independent canon review
+- [x] final independent canon review completed
+
+Wave 5 подготовила checklist; финальная independent canon review подтвердила
+readiness, и документ переведён в статус canonical.
+
+## 40. Change Log
+
+### Version 1.0
+
+| Wave | Date | Focus | Key additions |
+|---|---|---|---|
+| Wave 1 — Foundation | 2026-08-06 | Frontmatter, positioning, scope, principles, dependencies, terminology | §§1–9 |
+| Wave 1A — Foundation Alignment | 2026-08-06 | Status section alignment | §1 factual status |
+| Wave 2 — Core Concepts | 2026-08-06 | Conversation, Session, Interaction, Dialogue Turn, hierarchy, cardinality, identity | §§10–16 |
+| Wave 3 — Lifecycle and Conceptual State | 2026-08-06 | Lifecycle overview, start, continuity, pause, resumption, closure, conceptual state, invariants | §§17–24 |
+| Wave 4 — Conversation Context and Context Projection | 2026-08-06 | Conversation Context, Session Context, inputs, projection rules, continuity context, ownership matrix, projection invariants | §§25–32 |
+| Wave 5 — Canonical Completion | 2026-08-08 | Global invariants, boundary summary, cross-document relationships, owner decision traceability, governance, open questions, Definition of Done, Change Log | §§33–40 |
+
+### 2026-08-08 — Owner Approval / Canonicalization
+
+- Final Independent Canon Review passed.
+- Final targeted fixes applied.
+- Product Owner approved Ayla Conversation Model Specification v1.0.
+- Document promoted to Active Canon.
+- WINDOW-03 canonicalization completed.
+
+Change Log фиксирует только meaningful document evolution; промежуточные
+prompt/review сообщения не включаются.
