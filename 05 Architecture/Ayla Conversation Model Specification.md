@@ -609,3 +609,147 @@ Dialogue Turn имеет собственную идентичность как 
 - Идентификаторы, форматы ID и persistence mechanics относятся к
   runtime / implementation contracts и не являются частью продуктовой модели
   идентичности.
+
+## 17. Conversation Lifecycle Overview
+
+Conversation имеет начало, может продолжаться через несколько Session, может
+переживать паузы, может возобновляться и может завершаться. Смена Session сама
+по себе не завершает Conversation.
+
+Эти положения описывают продуктовую семантику Conversation, а не технический
+process graph, runtime workflow или state machine.
+
+## 18. Conversation Start
+
+Новая Conversation может возникнуть при появлении нового независимого
+conversational purpose или новой независимой Transformation Goal, либо после
+завершённой Conversation при начале нового независимого контекста.
+
+Следующие события сами по себе **не порождают** новую Conversation:
+
+- новый Intent;
+- новая Session;
+- новый канал;
+- новое устройство;
+- timeout;
+- временная пауза.
+
+В рамках Wave 3 не утверждается runtime-алгоритм определения момента начала
+Conversation. Если точный критерий требует нового Owner Decision, это должно
+быть зафиксировано в `OWNER_DECISION_REGISTER`, а не выведено в спецификации.
+
+## 19. Active Continuity
+
+Conversation может сохранять continuity через:
+
+- несколько Interaction;
+- несколько Session;
+- допустимую смену канала;
+- допустимую смену устройства;
+- временные паузы.
+
+Continuity не означает автоматический перенос ownership между каналами или
+устройствами (AYLA-DEC-0055; `Ayla MVP User Journey Specification` v1.2
+§Terminology). Conversation Model не превращает условия continuity в
+runtime-алгоритм, heuristic или classification.
+
+### 19.1. Session lifecycle boundary
+
+Conversation может охватывать несколько Session; одна Session может начинаться
+и завершаться, пока Conversation остаётся непрерывной. Wave 3 не проектирует
+технический Session FSM (`SESSION_CREATED`, `SESSION_TIMEOUT` и т.п.).
+
+## 20. Pause / Inactive Period
+
+Пауза в Conversation:
+
+- не является closure;
+- не уничтожает Conversation Identity;
+- не обязана определяться timeout;
+- допускает resumption.
+
+Wave 3 не канонизирует термин `Dormant` / `Dormancy` как имя состояния
+Conversation при отсутствии соответствующего canon. Не задаются TTL, минуты,
+часы, дни или иные технические пороги.
+
+## 21. Resumption / Continuation
+
+Согласно AYLA-DEC-0055:
+
+- смена канала ≠ автоматически новая Conversation;
+- смена устройства ≠ автоматически новая Conversation;
+- смена Session ≠ автоматически новая Conversation;
+- временная пауза ≠ автоматически новая Conversation.
+
+Resumption / continuation сохраняют Conversation Identity, если сохраняется
+смысловая и контекстная связность. Conversation Model не вводит similarity
+scoring, heuristics, LLM classification, reconciliation algorithm или runtime
+detection mechanics.
+
+## 22. Conversation Completion / Closure
+
+Conversation различает:
+
+- **goal/action completion** — достижение результата или выполнение действия
+  внутри Conversation;
+- **Conversation closure** — завершение самой Conversation как продуктовой
+  единицы.
+
+Эти понятия не эквивалентны:
+
+- booking, recommendation acceptance, downstream action или другое действие не
+  означают автоматический конец Conversation;
+- Conversation может продолжаться для follow-up, clarification, feedback,
+  progress или связанного продолжения, пока сохраняется identity.
+
+Closure не равнозначен privacy deletion, retention expiry или удалению данных.
+Wave 3 не определяет retention / deletion mechanics.
+
+## 23. Conceptual Conversation State
+
+AYLA-DEC-0059 устанавливает, что Conversation State описывает смысловое
+состояние разговора; Conversation Model не определяет runtime FSM, enum,
+storage state machine или конкретную реализацию переходов.
+
+Проверка существующего canon:
+
+- **AYLA-DEC-0059** — conceptual state, без runtime FSM/enum;
+- **Ayla MVP User Journey Specification v1.2** — описывает базовый lifecycle
+  journey (`Conversation → Understanding → Recommendation → Execution →
+  Learning`), но не задаёт canonical enum состояний Conversation;
+- **Ayla Glossary** содержит определение `Conversation State`, ссылающееся на
+  `ADR-0007 Conversation State Enum`; ADR-0007 не разрешён в текущем
+  репозитории, что создаёт cross-document inconsistency;
+- **текущий Conversation Model** фиксирует только концептуальный характер
+  Conversation State.
+
+Поскольку exact vocabulary canonical enum Conversation State в утверждённом
+canon отсутствует, в Wave 3 не вводится canonical enum.
+
+```text
+Canonical Conversation State enum is NOT_DEFINED in this Wave.
+```
+
+Возможные смысловые измерения (initiated, active, paused/inactive,
+completed/closed) могут обсуждаться только как поясняющая терминология до
+принятия соответствующего Owner Decision.
+
+`CROSS_DOCUMENT_FOLLOW_UP`: разрешить inconsistency между AYLA-DEC-0059 /
+Conversation Model и `Ayla Glossary` (`ADR-0007`) в рамках отдельного
+терминологического amendment.
+
+## 24. State Invariants
+
+Минимальные lifecycle/state инварианты Conversation Model:
+
+- Session end ≠ Conversation end;
+- channel switch ≠ Conversation end;
+- device switch ≠ Conversation end;
+- pause ≠ Conversation end;
+- Action completion ≠ Conversation end;
+- new Intent ≠ automatically new Conversation;
+- Conversation closure ≠ data deletion;
+- conceptual state ≠ runtime FSM transition mechanics.
+
+Wave 3 не создаёт runtime transition table, state machine diagram, API
+endpoints, database schema или TTL thresholds.
