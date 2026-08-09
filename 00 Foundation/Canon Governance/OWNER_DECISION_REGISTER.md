@@ -1182,3 +1182,99 @@ Canonicalization), 2026-08-08; решение OD-MEM-7, статус ACCEPTED.
 > регистрация не изменяет ADR-0012, Domain Event Registry, CANON_INDEX и
 > не создаёт Memory Model — подготовка Memory Model v1.0 выполняется
 > отдельной командой Product Owner.
+
+### AYLA-DEC-0074 — Semantic Memory Identity (OD-MEM-ID-1)
+
+```text
+ID:             AYLA-DEC-0074
+Date:           2026-08-09
+Question:       What establishes the semantic identity of a MemoryEntry?
+Options:        A — textual similarity or record identity; B — semantic meaning and relevant context (selected).
+Decision:       A MemoryEntry represents one semantic piece of knowledge within a relevant context. Two records may refer to the same semantic memory only when both the semantic meaning and the relevant context align. Textual similarity alone is insufficient to establish semantic identity. Record identity ≠ semantic identity; text equality ≠ semantic identity; similarity score ≠ semantic identity.
+Rationale:      Preserves semantic meaning without conflating record, text, or similarity-based comparison with identity.
+Scope:          Memory Domain; semantic identity boundary. Explicit non-scope: embedding thresholds, LLM comparison, canonical keys, specific context dimensions, and deduplication algorithms.
+Affected docs:  Ayla Memory Model Specification; Ayla Core Domain Model Specification; Ayla Conversation Model Specification; Ayla MVP User Journey Specification; Ayla Intent Model Specification; Ayla MVP Recommendation Contract.
+Status:         DECIDED
+```
+
+Source: WINDOW-04 — Memory Identity Owner Decision Session, 2026-08-09 (owner ruling).
+
+### AYLA-DEC-0075 — Memory Granularity (OD-MEM-ID-2)
+
+```text
+ID:             AYLA-DEC-0075
+Date:           2026-08-09
+Question:       What determines the granularity of a MemoryEntry?
+Options:        A — sentence, message, or source-event count; B — meaning and relevant context (selected).
+Decision:       Memory granularity is determined by meaning and relevant context, not by the number of sentences, messages, or source events. One source message may produce one or multiple MemoryEntry records; multiple source expressions may also relate to one semantic memory when the applicable semantic/context rules say so.
+Rationale:      Ensures memory boundaries reflect knowledge meaning rather than input formatting or transport boundaries.
+Scope:          Memory Domain; granularity semantics. Explicit non-scope: automatic splitting algorithms, atomic field schemas, subject/predicate/value schemas, and LLM extraction rules.
+Affected docs:  Ayla Memory Model Specification; Ayla Core Domain Model Specification; Ayla Conversation Model Specification; Ayla MVP User Journey Specification; Ayla Intent Model Specification; Ayla MVP Recommendation Contract.
+Status:         DECIDED
+```
+
+Source: WINDOW-04 — Memory Identity Owner Decision Session, 2026-08-09 (owner ruling).
+
+### AYLA-DEC-0076 — Multiple Provenance Sources (OD-MEM-ID-3)
+
+```text
+ID:             AYLA-DEC-0076
+Date:           2026-08-09
+Question:       Does different provenance require a separate MemoryEntry for the same semantic memory?
+Options:        A — create a new entry for each provenance source; B — permit multiple independent sources for one semantic memory (selected).
+Decision:       One semantic memory may have multiple independent provenance/evidence sources. Different provenance alone does not require creation of a new MemoryEntry. Each source's origin/history must remain traceable; provenance diversity must not be silently erased.
+Rationale:      Retains auditable evidence without making source diversity itself a semantic-identity boundary.
+Scope:          Memory Domain; provenance multiplicity and traceability semantics. Explicit non-scope: provenance[] fields, Evidence entities, evidence graphs, relation tables, and storage schema.
+Affected docs:  Ayla Memory Model Specification; Ayla Core Domain Model Specification; Ayla Conversation Model Specification; Ayla MVP User Journey Specification; Ayla Intent Model Specification; Ayla MVP Recommendation Contract; Domain Event Registry / runtime docs as downstream references where relevant.
+Status:         DECIDED
+```
+
+Source: WINDOW-04 — Memory Identity Owner Decision Session, 2026-08-09 (owner ruling).
+
+### AYLA-DEC-0077 — Semantic Equivalence vs Duplicate (OD-MEM-ID-4)
+
+```text
+ID:             AYLA-DEC-0077
+Date:           2026-08-09
+Question:       Does semantic equivalence automatically make two MemoryEntry records duplicates?
+Options:        A — semantic equivalence automatically authorizes duplicate treatment; B — semantic equivalence is distinct from duplicate semantics (selected).
+Decision:       Semantic equivalence does not automatically mean that two MemoryEntry records are duplicates. Semantic similarity ≠ semantic equivalence; semantic equivalence ≠ duplicate; duplicate ≠ merge; merge ≠ deletion. No destructive consolidation may be authorized solely by semantic similarity or equivalence.
+Rationale:      Prevents loss of traceability or knowledge through unjustified destructive consolidation.
+Scope:          Memory Domain; duplicate and consolidation boundary. Explicit non-scope: duplicate detection algorithms, merge implementation, deletion policy, and similarity thresholds.
+Affected docs:  Ayla Memory Model Specification; Ayla Core Domain Model Specification; Ayla Conversation Model Specification; Ayla MVP User Journey Specification; Ayla Intent Model Specification; Ayla MVP Recommendation Contract; Domain Event Registry / runtime docs as downstream references where relevant.
+Status:         DECIDED
+```
+
+Source: WINDOW-04 — Memory Identity Owner Decision Session, 2026-08-09 (owner ruling).
+
+### AYLA-DEC-0078 — Relevant Context in Semantic Identity (OD-MEM-ID-5)
+
+```text
+ID:             AYLA-DEC-0078
+Date:           2026-08-09
+Question:       Is relevant context part of the semantic identity of a MemoryEntry?
+Options:        A — context is external to semantic identity; B — relevant context participates in semantic identity (selected).
+Decision:       Relevant context is part of the semantic identity of a MemoryEntry. The decision establishes only that the same meaning in different relevant contexts may represent different semantic memories.
+Rationale:      Avoids treating all occurrences of the same wording or meaning as one memory when their applicable context differs.
+Scope:          Memory Domain; context participation in semantic identity. Explicit non-scope: the complete set of context dimensions; service, Transformation Goal, scenario, tenant, locale, channel, and time are not mandatory identity dimensions unless separately established by canon.
+Affected docs:  Ayla Memory Model Specification; Ayla Core Domain Model Specification; Ayla Conversation Model Specification; Ayla MVP User Journey Specification; Ayla Intent Model Specification; Ayla MVP Recommendation Contract.
+Status:         DECIDED
+```
+
+Source: WINDOW-04 — Memory Identity Owner Decision Session, 2026-08-09 (owner ruling).
+
+### AYLA-DEC-0079 — Source Precedence Boundary (OD-MEM-ID-6)
+
+```text
+ID:             AYLA-DEC-0079
+Date:           2026-08-09
+Question:       Does the Memory Model define a universal/global precedence order between knowledge sources?
+Options:        A — define a global source ranking; B — preserve source precedence as a future domain/policy concern (selected).
+Decision:       Memory Model does not define a universal/global precedence order between knowledge sources. Memory Model owns provenance semantics, relationship semantics, and contradiction visibility. It does not globally define backend > user, user > backend, confirmed inference > other sources, or AI > user. Source precedence may depend on knowledge type, policy, purpose/use case, context, consent/safety rules, and future domain decisions.
+Rationale:      Preserves the Memory Model boundary and prevents a context-dependent policy choice from becoming an ungoverned global algorithm.
+Scope:          Memory Domain; source-precedence boundary. Explicit non-scope: source ranking algorithms and universal priority ordering.
+Affected docs:  Ayla Memory Model Specification; Ayla Core Domain Model Specification; Ayla Conversation Model Specification; Ayla MVP User Journey Specification; Ayla Intent Model Specification; Ayla MVP Recommendation Contract; Domain Event Registry / runtime docs as downstream references where relevant.
+Status:         DECIDED
+```
+
+Source: WINDOW-04 — Memory Identity Owner Decision Session, 2026-08-09 (owner ruling).
