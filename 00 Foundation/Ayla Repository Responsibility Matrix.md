@@ -4,7 +4,7 @@ title: Ayla Repository Responsibility Matrix
 type: architecture-specification
 status: draft
 decision_status: proposed
-version: "0.1"
+version: "1.0-draft"
 owner: Platform Architecture
 owners:
   - Product Owner
@@ -20,1010 +20,413 @@ data_sensitivity: none
 security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
-updated: 2026-07-25
+updated: 2026-08-14
 review_cycle: quarterly
 depends_on:
   - "[[Ayla Constitution]]"
-  - "[[Ayla]]"
-  - "[[Ayla Knowledge Architecture Specification]]"
-supersedes: []
+  - "[[Ayla Domain Capability Registry]]"
+  - "[[Ayla Glossary]]"
+  - "[[Ayla Decision Log]]"
+  - "[[Ayla MVP Scope and Release Contract]]"
+  - "[[Consent Scope Registry]]"
+  - "[[Data Inventory Matrix]]"
+supersedes:
+  - "Ayla Repository Responsibility Matrix v0.1"
 superseded_by: []
 ---
 
 # Ayla Repository Responsibility Matrix
 
-## 1. Статус документа
+## 1. Purpose
 
-**Статус документа:** Draft  
-**Статус решения:** Proposed — требует утверждения владельцем продукта и архитектурными владельцами репозиториев.
+Этот документ задаёт единый контракт ответственности между доменами, репозиториями, приложениями и runtime-компонентами Ayla.
 
-Документ становится каноническим после:
+Он предотвращает:
 
-- утверждения владельцем продукта;
-- проверки фактических границ всех пяти репозиториев;
-- устранения открытых вопросов, перечисленных в разделе 16;
-- внесения ссылок на локальные архитектурные документы;
-- прохождения проверки метаданных `ayla-knowledge`.
+- появление нескольких источников истины для одного бизнес-состояния;
+- ошибочное отождествление домена с репозиторием или Django-приложением;
+- запись бизнес-фактов из AI runtime, каналов, provider applications или knowledge vault;
+- прямой доступ к чужим ORM-моделям и общей базе данных;
+- публикацию событий потребителем вместо владельца факта;
+- смешение канонической политики, implementation contract и runtime projection.
 
-После утверждения документ используется как обязательная основа для:
+Документ находится в `00 Foundation` и является архитектурным основанием для:
 
-- создания новых модулей;
-- выбора репозитория для нового кода;
-- размещения документации;
-- определения источника истины;
-- создания cross-repository contracts;
-- согласования breaking changes;
-- миграции legacy-компонентов;
-- настройки mirrors в `ayla-knowledge`.
+1. `Ayla MVP Appointment Contract`;
+2. `Ayla Domain Event Registry`;
+3. `Salon Operations MVP - Product - Interaction Contract`;
+4. `Screen Data Contracts`.
 
----
+Документ фиксирует архитектурные границы. Он не утверждает неподтверждённые product decisions: такие места имеют статус `Proposed`, `Pending owner decision` или `Open question`.
 
-## 2. Назначение документа
+## 2. Architectural Principles
 
-Экосистема Ayla разделена между пятью репозиториями:
+### 2.1. Single Source of Truth
 
-```text
-ayla-knowledge
-beautygo_backend
-ai-bot-platform
-ayla-ai-core
-formula_tela
-```
+Для каждого authoritative business state существует один владелец домена и один назначенный System of Record. Репозиторий может реализовывать состояние, но сам факт существования кода не доказывает domain ownership.
 
-Без формального распределения ответственности возникают следующие риски:
+Если ownership не подтверждён источниками, в этом документе не создаётся второй владелец: состояние маркируется `Proposed` или `Open question`.
 
-- один бизнес-процесс реализуется сразу в нескольких репозиториях;
-- разные репозитории считают себя System of Record;
-- API и event contracts меняются несинхронно;
-- prompts и safety rules расходятся между consumers;
-- одна и та же AI-логика копируется в разные приложения;
-- legacy-код продолжает развиваться параллельно новой платформе;
-- документация противоречит фактическому коду;
-- невозможно определить владельца ошибки или архитектурного решения.
+### 2.2. Consumer Cannot Become Owner
 
-Документ устанавливает:
+Чтение данных, использование DTO, проекции, кэша, зеркала, event consumer или AI context envelope не создаёт ownership. Consumer может хранить техническую копию для своего runtime, но не может изменять её как каноническое бизнес-состояние.
 
-1. роль каждого репозитория;
-2. области исключительного владения;
-3. области совместного владения;
-4. допустимые зависимости;
-5. место хранения канонических документов;
-6. порядок разрешения конфликтов;
-7. правила переноса функциональности между репозиториями.
+### 2.3. AI Is Not Source of Truth
 
----
+AI может:
 
-## 3. Основные термины
+- понимать пользовательский запрос;
+- формировать предложение или recommendation;
+- создать command request;
+- вызвать approved tool;
+- использовать approved, purpose-limited context.
 
-### 3.1. Repository owner
+AI не может владеть `Appointment`, `Availability`, `Payment`, `Consent`, provider state или иным transactional business fact. AI output не становится фактом без принятия команды владельцем домена.
 
-Репозиторий, отвечающий за реализацию, тестирование, выпуск и поддержку конкретного компонента или контракта.
+### 2.4. Conversation Is Not Domain State
 
-### 3.2. System of Record — SoR
+Conversation, message history, session state и delivery state — runtime-состояния канала/оркестрации. Они не являются автоматически:
 
-Система, в которой находится каноническое текущее состояние бизнес-сущности.
+- `Appointment`;
+- `Consent`;
+- acceptance recommendation;
+- business fact;
+- semantic memory.
 
-Пример:
+Факт из разговора может быть создан только отдельным domain command и соответствующим policy/consent gate.
 
-```text
-Appointment хранится в beautygo_backend.
-```
+### 2.5. Domain, Repository, Physical Implementation, Runtime Storage
 
-Следовательно, бот не должен поддерживать независимую каноническую копию записи.
+Эти четыре уровня разделяются:
 
-### 3.3. Normative canon
+| Уровень | Вопрос |
+|---|---|
+| Domain ownership | Кто отвечает за смысл, lifecycle и invariants состояния? |
+| Repository ownership | Где поддерживается implementation contract и release? |
+| Physical implementation | В каком приложении, модуле, сервисе или provider adapter это реализовано? |
+| Runtime storage | Где конкретный deployment временно хранит state, cache или projection? |
 
-Утверждённое описание того:
+`beautygo_backend` может быть реализацией transactional state, но это утверждение должно быть отдельно от утверждения, что весь booking domain совпадает с одним Django app или репозиторием.
 
-- что означает сущность;
-- какие правила она обязана соблюдать;
-- какие ограничения действуют во всей системе;
-- какое решение имеет приоритет при конфликте.
+## 3. Repository Inventory
 
-Normative canon хранится преимущественно в `ayla-knowledge`.
+### 3.1. `ayla-knowledge`
 
-### 3.4. Implementation contract
+- **Purpose:** нормативный knowledge hub и canonical documentation repository.
+- **Responsibility:** product/domain semantics, cross-system architecture, policy, consent and safety rules, terminology, ownership contracts and decision traceability.
+- **Owned state:** normative documents and their governance metadata.
+- **Consumed data:** approved decisions, domain evidence, implementation findings and repository contracts.
+- **Forbidden ownership:** production transactional state, appointments, availability, payments, provider state, user PII, conversation runtime and AI-generated business facts.
 
-Точный технический контракт конкретной реализации:
+### 3.2. `beautygo_backend`
 
-- Python API;
-- HTTP API;
-- event payload;
-- модель базы данных;
-- tool schema;
-- deployment procedure;
-- migration;
-- feature flag.
+- **Purpose:** transactional backend and current candidate implementation boundary for Ayla business state.
+- **Responsibility:** backend API, transactional invariants, provider integrations, booking/appointment operations and enforcement at the data boundary where this is confirmed by contracts.
+- **Owned state:** `Proposed` as operational transactional SoR for user/profile, provider/specialist, availability, appointment and payment state; see OD-RRM-1.
+- **Consumed data:** provider integration data, authorized commands, policy and consent decisions, channel-originated requests.
+- **Forbidden ownership:** conversation runtime, channel transport, prompt registry, shared AI mechanics, normative canon and global product semantics.
 
-Implementation contract хранится в репозитории, который владеет реализацией.
+### 3.3. `ai-bot-platform`
 
-### 3.5. Mirror
+- **Purpose:** conversation, channel and AI application runtime.
+- **Responsibility:** webhook/channel adapters, conversation and session orchestration, retrieval boundary, tool invocation, event consumption, delivery and runtime observability.
+- **Owned state:** runtime conversation/session/delivery state is the documented implementation mapping; domain ownership of these runtime concerns is `Proposed` under OD-RRM-2.
+- **Consumed data:** backend APIs, approved projections, event contracts, consent decisions at retrieval boundary, AI-core APIs and channel inputs.
+- **Forbidden ownership:** Appointment, Availability, Payment, Consent records, provider state, durable semantic memory and canonical PII.
 
-Автоматически синхронизируемая read-only копия документа из owning repository в `ayla-knowledge`.
+### 3.4. `ayla-ai-core`
 
-Mirror не становится новым источником истины.
-
-### 3.6. Consumer
-
-Репозиторий или приложение, использующее API, библиотеку, событие или данные другого репозитория.
-
-### 3.7. Legacy source
-
-Существующая реализация, используемая как источник поведения, данных или миграционного знания, но не получающая новую общеплатформенную ответственность.
-
----
-
-## 4. Архитектурный принцип разделения
-
-Высокоуровневая модель экосистемы:
-
-```text
-ayla-knowledge
-определяет смысл, продуктовые правила и общесистемные ограничения
-
-beautygo_backend
-хранит бизнес-факты и выполняет транзакции
-
-ai-bot-platform
-управляет каналами, разговорами и AI-сценариями
-
-ayla-ai-core
-предоставляет общий исполняемый AI-механизм
-
-formula_tela
-обслуживает сайт салона и сохраняет legacy-наработки
-```
-
-В сокращённом виде:
-
-```text
-Knowledge → Meaning and policy
-Backend   → Facts and transactions
-Platform  → Runtime and channels
-Core      → Shared AI mechanics
-Formula   → Local product and legacy
-```
-
----
-
-## 5. Реестр репозиториев
-
-### 5.1. `ayla-knowledge`
-
-#### Роль
-
-Центральный нормативный и навигационный knowledge hub Ayla.
-
-#### Владеет
-
-- Конституцией Ayla;
-- Product Thesis;
-- общесистемной терминологией;
-- Product Strategy;
-- User Journeys;
-- общими domain definitions;
-- cross-system architecture;
-- repository responsibility;
-- data ownership;
-- safety policy;
-- privacy policy;
-- consent policy;
-- business rules;
-- общими metrics;
-- Decision Log;
-- ADR Index;
-- governance;
-- documentation coverage;
-- knowledge lifecycle;
-- mirrors implementation-документов.
-
-#### Не владеет
-
-- production-кодом;
-- точными Django models;
-- HTTP handlers;
-- runtime prompts конкретного deployment;
-- Python signatures библиотеки;
-- инфраструктурой приложений;
-- database migrations;
-- локальными runbooks конкретного сервиса.
-
-#### Критерий размещения
-
-Документ относится в `ayla-knowledge`, когда он отвечает на вопрос:
-
-> Что должно быть истинно и обязательно для всей системы Ayla?
-
----
-
-### 5.2. `beautygo_backend`
-
-#### Роль
-
-Главный transactional backend и System of Record для бизнес-данных Ayla.
-
-#### Владеет
-
-- пользователями;
-- PII;
-- профилями;
-- specialists/providers;
-- tenant relationships;
-- каталогом услуг;
-- Service Templates;
-- Salon Services;
-- Specialist Services;
-- расписанием;
-- availability;
-- external busy intervals;
-- appointments;
-- состояниями appointments;
-- payments;
-- refunds;
-- reviews;
-- durable personal context;
-- provenance пользовательских фактов;
-- consent enforcement на стороне данных;
-- внутренними REST API;
-- публичными REST API;
-- OpenAPI backend-контрактом;
-- transactional outbox;
-- producer-стороной domain events;
-- YClients intake;
-- YClients calendar integration;
-- YooKassa integration;
-- backend safety enforcement;
-- backend operational runbooks.
-
-#### Не владеет
-
-- диалоговым состоянием AI-каналов;
-- MAX/Telegram transport;
-- prompt registry;
-- AI skill routing;
-- общим AI orchestration kernel;
-- общей продуктовой стратегией;
-- нормативной терминологией;
-- legacy-сайтом салона.
-
-#### Критерий размещения
-
-Функциональность относится в `beautygo_backend`, когда она:
-
-- изменяет бизнес-состояние;
-- требует транзакционной целостности;
-- хранит долгоживущие факты;
-- требует database constraints;
-- определяет availability;
-- управляет деньгами;
-- является каноническим состоянием пользователя, исполнителя или appointment.
-
----
-
-### 5.3. `ai-bot-platform`
-
-#### Роль
-
-Conversation, channel and AI application runtime платформы Ayla.
-
-#### Владеет
-
-- webhook ingress каналов;
-- MAX adapter;
-- Telegram adapter;
-- Web Chat transport;
-- conversation state;
-- session state;
-- channel identity mapping;
-- skills;
-- scenario routing;
-- runtime orchestration shell;
-- tool implementations, обращающимися к внешним системам;
-- интеграционными clients к `beautygo_backend`;
-- retrieval пользовательского контекста;
-- prompt registry;
-- выбором runtime prompt version;
-- model routing;
-- AI provider runtime configuration;
-- event consumers;
-- deduplication входящих событий;
-- replay infrastructure;
-- experiments;
-- shadow mode;
-- canary mode;
-- human handoff;
-- runtime observability;
-- bot analytics;
-- delivery ответов пользователю.
-
-#### Не владеет
-
-- каноническими appointments;
-- payments;
-- каталогом как бизнес-источником;
-- PII как System of Record;
-- долгоживущими personal facts;
-- общими AI primitives, нужными нескольким consumers;
-- продуктовым определением Intent;
-- нормативными safety rules;
-- сайтом салона.
-
-#### Критерий размещения
-
-Функциональность относится в `ai-bot-platform`, когда она отвечает на вопрос:
-
-> Как принять запрос из канала, собрать контекст, выполнить AI-сценарий и доставить результат?
-
----
-
-### 5.4. `ayla-ai-core`
-
-#### Роль
-
-Общая исполняемая Python-библиотека AI-оркестрации для нескольких consumers.
-
-#### Владеет
-
-- `AIConcierge`;
-- циклом model/tool orchestration;
-- построением model messages;
-- общими prompt composition primitives;
-- `BrandVoiceConfig`;
-- candidate context abstractions;
-- `CandidateContext`;
-- `SpecialistContext`;
-- общими tool schemas;
-- tool dispatch protocol;
-- Dependency Injection interface для consumer tool dispatcher;
-- provider adapter protocol;
-- OpenAI adapter;
-- Anthropic adapter;
-- token budgeting;
-- history truncation;
-- tenant propagation внутри AI-вызова;
-- tenant-aware library observability;
-- deterministic replay helpers;
-- memory block rendering;
-- anti-injection guards;
-- grounding guards;
-- стабильным публичным Python API;
-- package versioning;
-- compatibility policy;
-- release policy.
-
-#### Не владеет
-
-- HTTP;
-- Django views;
-- Django models;
-- PostgreSQL;
-- channel webhooks;
-- session persistence;
-- user identity resolution;
-- tenant authorization через базу данных;
-- booking transactions;
-- payment processing;
-- consent persistence;
-- YClients;
-- YooKassa;
-- конкретными channel responses;
-- deployment конкретного consumer.
-
-#### Критерий размещения
-
-Функциональность относится в `ayla-ai-core`, если одновременно выполняются условия:
-
-1. она нужна более чем одному consumer;
-2. она не зависит от конкретного transport;
-3. она не зависит от конкретной базы данных;
-4. она может быть выражена через Python abstractions;
-5. она не определяет бизнес-состояние;
-6. она может тестироваться как библиотека.
-
----
-
-### 5.5. `formula_tela`
-
-#### Роль
-
-Продуктовый репозиторий салона «Формула тела», сайт и источник legacy AI-реализации.
-
-#### Владеет
-
-- публичным сайтом салона;
-- SEO;
-- маркетинговыми страницами;
-- локальным каталогом отображения сайта;
-- salon-specific content;
-- формами и локальными заявками;
-- локальными интеграциями сайта;
-- салонными operational workflows;
-- legacy MAX bot до завершения cutover;
-- legacy MCP;
-- миграционными исходниками;
-- historical implementation evidence.
-
-#### Не владеет
-
-- общеплатформенным AI runtime;
-- shared AI orchestration;
-- канонической моделью marketplace;
-- booking SoR Ayla;
-- общими product definitions;
-- новой cross-product функциональностью;
-- общими tool schemas после их переноса;
-- новым persistent memory pipeline.
-
-#### Критерий размещения
-
-Функциональность остаётся в `formula_tela`, если она:
-
-- относится только к сайту или бизнесу салона;
-- не нужна платформе Ayla;
-- является legacy-компонентом до миграции;
-- служит источником поведения для extraction;
-- должна быть выведена из эксплуатации после cutover.
-
----
-
-## 6. Матрица владения верхнего уровня
-
-Условные обозначения:
-
-- **O** — Owner;
-- **C** — Consumer;
-- **N** — Normative canon;
-- **M** — Mirror;
-- **L** — Legacy source;
-- **—** — не участвует.
-
-| Область | `ayla-knowledge` | `beautygo_backend` | `ai-bot-platform` | `ayla-ai-core` | `formula_tela` |
-|---|---:|---:|---:|---:|---:|
-| Product mission | N/O | C | C | C | C |
-| Product strategy | N/O | C | C | C | C |
-| Repository governance | N/O | C | C | C | C |
-| Identity | N | O | C | — | L |
-| PII | N | O | C через API | — | локально |
-| Tenant relationships | N | O | C | tenant context only | L |
-| Provider profiles | N | O | C | context abstraction | L |
-| Canonical Service Catalog | N | O | C/M | context abstraction | L |
-| Availability | N | O | C | — | L |
-| Appointments | N | O | C | — | L |
-| Payments | N | O | C | — | локально |
-| Reviews | N | O | C | — | локально |
-| Durable personal context | N | O | C/retrieval | rendering | L |
-| Conversation state | N | — | O | stateless processing | L |
-| Channel adapters | N | — | O | — | L |
-| Skills | N | — | O | shared primitives only | L |
-| AI orchestration | N | C | O application shell | O kernel | L |
-| Prompt policy | N/O | C | runtime owner | composition owner | L |
-| Prompt registry | N | — | O | C | — |
-| Brand voice | N | config consumer | config consumer | abstraction owner | legacy config |
-| Tool schemas | N | business endpoints | runtime selection | shared protocol | legacy |
-| Tool implementation | N | business operations | O для AI tools | dispatcher interface | legacy |
-| Model adapters | N | — | runtime config | O | L |
-| Model routing | N | — | O | adapter support | — |
-| Event producer | N | O | C | — | — |
-| Event consumer | N | producer client | O | — | — |
-| Runtime replay | N | event/outbox evidence | O | deterministic helpers | — |
-| Safety policy | N/O | enforcement | enforcement | guards | legacy |
-| Consent policy | N/O | durable enforcement | runtime enforcement | context constraints | legacy |
-| Website/SEO | N | — | — | — | O |
-| Legacy MAX bot | N | — | target runtime | extracted kernel | L/O до cutover |
-| Knowledge mirrors | O | source | source | source | source |
-
----
-
-## 7. Детальная матрица систем истины
-
-### 7.1. Бизнес-данные
-
-| Сущность | System of Record | Разрешённые копии |
+- **Purpose:** reusable AI mechanics and public Python/API boundary for multiple consumers.
+- **Responsibility:** model/provider adaptation, prompt/context rendering mechanics, tool-loop primitives and safety-oriented rendering guards where contractually assigned.
+- **Owned state:** reusable library code and provider adapter protocol; no direct domain storage ownership under OD-RRM-3 (`Proposed`).
+- **Consumed data:** filtered context envelopes and approved tool contracts.
+- **Forbidden ownership:** domain storage, Appointment, Availability, Payment, Consent persistence, provider state, raw PII and business transaction lifecycle.
+
+### 3.5. `formula_tela`
+
+- **Purpose:** pilot provider application and legacy/local salon runtime.
+- **Responsibility:** provider-specific operations and legacy MAX/site functionality until an explicit cutover.
+- **Owned state:** provider-local state and legacy implementation state only; global Ayla operational SoR status is not assigned.
+- **Consumed data:** provider-local inputs and approved Ayla integration contracts.
+- **Forbidden ownership:** global Ayla Appointment, global Availability, cross-provider memory, global Consent, global Recommendation or global business transactions.
+
+### 3.6. Mobile App
+
+- **Purpose:** primary product channel in the MVP release model where confirmed by the MVP scope decision.
+- **Responsibility:** user-facing presentation, navigation, local interaction state and calls through public contracts.
+- **Owned state:** channel-local UI/session state only; exact repository and persistent storage are `Open question`.
+- **Consumed data:** screen DTOs, public API responses, approved events and command outcomes.
+- **Forbidden ownership:** domain lifecycle, backend transactional state, consent records, provider state and AI canonical memory.
+
+### 3.7. MAX Mini App
+
+- **Purpose:** companion product surface.
+- **Responsibility:** presentation and user interaction through approved API/tool contracts.
+- **Owned state:** screen/session state only; physical implementation boundary is `Open question`.
+- **Consumed data:** screen DTOs, availability/appointment projections and command outcomes.
+- **Forbidden ownership:** Appointment, Availability, Payment, Consent, provider state or independent booking truth.
+
+### 3.8. MAX Bot
+
+- **Purpose:** companion conversational channel.
+- **Responsibility:** channel interaction through the target conversation runtime; current legacy implementation may remain in `formula_tela` until cutover.
+- **Owned state:** conversation/session/delivery state only in the target runtime; exact cutover and physical owner are `Open question`.
+- **Consumed data:** channel events, approved context, domain API responses and command outcomes.
+- **Forbidden ownership:** domain business facts, independent appointment state, consent records and provider state.
+
+## 4. Responsibility Matrix
+
+The matrix distinguishes confirmed/documented mapping from proposed target ownership. `O` = owner of the stated responsibility; `C` = consumer/implementer; `P` = projection or runtime copy; `—` = must not own.
+
+| System | Owns | May Write | Consumes | Must Not Own |
+|---|---|---|---|---|
+| `ayla-knowledge` | Normative canon, shared semantics, policy and responsibility contract | Canonical documents and governance metadata | Decisions, evidence, implementation contracts | Transactional state, PII, AI/runtime state |
+| `beautygo_backend` | **Proposed:** operational transactional SoR for Appointment, Availability, Provider/Specialist and Payment | Domain commands accepted by owning backend contracts | Authorized requests, provider data, policy/consent inputs | Conversation, prompts, channel transport, global canon |
+| `ai-bot-platform` | **Proposed:** conversation/orchestration runtime; documented current mapping for channel and delivery runtime | Conversation/session/delivery state; tool requests and runtime metadata | Backend APIs, projections, events, filtered context, channel input | Appointment, Availability, Payment, Consent, provider state |
+| `ayla-ai-core` | Reusable AI mechanics and provider adapter protocol | Library/runtime-local artifacts only | Approved context envelopes and tool contracts | Direct domain storage and business facts |
+| `formula_tela` | Provider-local/legacy implementation only | Provider-local state within its contract | Provider inputs and approved integration contracts | Global Ayla operational SoR |
+| Mobile App | **Proposed:** presentation/client runtime only | Local UI/session state through platform rules | Public APIs, DTOs, command outcomes | Domain state and independent cache-as-truth |
+| MAX Mini App | **Proposed:** presentation/client runtime only | Local UI/session state through platform rules | Public APIs, DTOs, command outcomes | Domain state and independent booking truth |
+| MAX Bot | **Proposed:** channel runtime only | Channel/session state through platform owner | Events, APIs, context and command outcomes | Domain state, Consent and provider state |
+
+### 4.1. State ownership baseline
+
+| Business state | Domain owner | Current/target SoR | Write authority | Status |
+|---|---|---|---|---|
+| Appointment lifecycle | Appointment Domain | `beautygo_backend` | Appointment domain command handler | `Proposed` under OD-RRM-1; domain capability is documented |
+| Availability and slots | Availability Domain | `beautygo_backend` | Availability domain owner | `Proposed` implementation mapping |
+| Provider/specialist profile and status | Provider and Specialist Domain | `beautygo_backend` | Provider domain owner | `Proposed` implementation mapping |
+| Payment state | Payment/Billing Domain | `beautygo_backend` | Payment domain/integration owner | `Proposed` implementation mapping |
+| Consent records and scope | Consent Domain | Consent Service/domain boundary | Consent owner only | Service/repository placement `Pending owner decision`; ownership is normative |
+| Semantic memory | Memory/User Context Domain | Memory service/domain boundary | Approved memory flow only | Physical placement not assigned by this matrix |
+| Conversation state | Conversation/Runtime Domain | `ai-bot-platform` target runtime | Conversation runtime | `Proposed` under OD-RRM-2 |
+| Channel delivery state | Notification/Channel Runtime | `ai-bot-platform` target runtime | Channel runtime | Current mapping documented; final ownership `Proposed` |
+| Provider-local state | Provider Integration/Provider application | `formula_tela` for pilot-local state | Provider application contract | Provider-specific, not global Ayla SoR |
+
+## 5. Write Authority Model
+
+Every cross-system operation is classified as one of four levels:
+
+| Level | Meaning | Can change authoritative business state? |
 |---|---|---|
-| User | `beautygo_backend` | channel identity mapping |
-| User PII | `beautygo_backend` | минимизированный runtime context |
-| Tenant | `beautygo_backend` | bot runtime mirror |
-| TenantUserRelationship | `beautygo_backend` | derived access cache |
-| SpecialistProfile | `beautygo_backend` | discovery/runtime mirror |
-| ServiceTemplate | `beautygo_backend` | search/recommendation mirror |
-| SalonService | `beautygo_backend` | bot catalog mirror |
-| SpecialistService | `beautygo_backend` | bot booking mirror |
-| Availability | `beautygo_backend` | short-lived cache |
-| ExternalBusyInterval | `beautygo_backend` | без независимого SoR |
-| Appointment | `beautygo_backend` | bot projection |
-| Payment | `beautygo_backend` | read-only status projection |
-| Review | `beautygo_backend` | search projection |
-| Durable memory fact | `beautygo_backend` | runtime retrieval cache |
-| Conversation | `ai-bot-platform` | analytics projection |
-| Channel message delivery state | `ai-bot-platform` | provider-side delivery ID |
-| Prompt version assignment | `ai-bot-platform` | experiment logs |
-| AI library version | package/release в `ayla-ai-core` | pins в consumers |
+| `READ` | Retrieve an approved fact or projection | No |
+| `PROPOSE` | Produce a candidate, recommendation or suggested change | No |
+| `COMMAND` | Request a business operation with validated intent and parameters | No by itself |
+| `WRITE` | Validate invariants and commit the authoritative state transition | Yes, owner only |
 
-### 7.2. Документы
+Example: user says «перенеси запись».
 
-| Тип документа | Каноническое место |
-|---|---|
-| Product policy | `ayla-knowledge` |
-| Cross-product domain semantics | `ayla-knowledge` |
-| Cross-system architecture | `ayla-knowledge` |
-| HTTP API contract | owning service |
-| Python API contract | `ayla-ai-core` |
-| Event payload producer contract | `beautygo_backend` |
-| Event consumption mapping | `ai-bot-platform` |
-| Shared event semantics | `ayla-knowledge` |
-| Database model invariants | `beautygo_backend` |
-| Prompt composition API | `ayla-ai-core` |
-| Prompt deployment registry | `ai-bot-platform` |
-| Channel protocol | `ai-bot-platform` |
-| Site/SEO implementation | `formula_tela` |
-| Migration plan | target owning repository |
-| Operational runbook | репозиторий, где выполняется операция |
-| Legacy evidence | `formula_tela` или `90 Sources` |
+1. AI/runtime understands intent (`PROPOSE`/interpretation).
+2. AI/runtime creates `reschedule_appointment` command request (`COMMAND`).
+3. Appointment domain validates ownership, status, slot and policy.
+4. Appointment owner writes Appointment (`WRITE`).
+5. Appointment owner publishes `appointment.rescheduled` after committed state.
+6. AI/channel renders the result; rendering does not create the fact.
 
----
+AI tool invocation is never equivalent to `WRITE`. A successful tool transport response is not proof that the business transaction committed.
 
-## 8. Разрешённые направления зависимостей
+## 6. Public Contract Ownership
 
-### 8.1. Основной dependency graph
+Cross-repository communication MUST use explicit public contracts:
 
-```text
-ayla-knowledge
-не является runtime dependency
+- API contracts;
+- domain event contracts;
+- tool contracts;
+- SDK/library contracts;
+- versioned DTO and screen data contracts.
 
-formula_tela ───────────────┐
-                            ▼
-                      ayla-ai-core
-                            ▲
-                            │
-beautygo_backend ───────────┼──────── ai-bot-platform
-       ▲                    │                │
-       └──── REST/events ───┴────────────────┘
-```
+The following are prohibited:
 
-Более точно:
+- direct access to another repository's ORM models;
+- imports of internal Django models across repository boundaries;
+- shared database ownership;
+- writes to another system's tables;
+- undocumented reliance on provider-specific storage;
+- treating a mirror or cache as canonical.
+
+A mirror may be read-only and must identify its source, version and freshness. Implementation repositories own their implementation contracts; `ayla-knowledge` owns shared semantics and normative cross-system meaning, unless an approved decision says otherwise.
+
+## 7. API Ownership
+
+A business operation belongs to the domain owner, not to the channel, AI tool or UI.
+
+Example: `Reschedule Appointment` belongs to Appointment Domain. `reschedule_appointment()` in `ai-bot-platform` is an adapter that:
+
+- validates input shape at the boundary;
+- carries identity, tenant and consent context;
+- calls the Appointment public contract;
+- returns a typed outcome;
+- does not implement or redefine Appointment invariants.
+
+The backend/domain owner owns the transactional API contract and status semantics. The tool owner owns the adapter schema and runtime ergonomics. The shared meaning of the operation is documented in the domain contract.
+
+## 8. Tool Ownership
+
+Tool responsibility has three layers:
+
+| Layer | Owner | Responsibility |
+|---|---|---|
+| Domain Command | Domain owner | Meaning, invariants, authorization, state transition and outcome |
+| Backend Contract | Transactional implementation owner | API/wire contract, validation boundary, idempotency and persistence |
+| AI Tool Schema | AI/channel runtime owner | Model-facing schema, argument extraction, retries and presentation mapping |
+
+The AI tool schema is not a source of business rules. It cannot grant permissions, confirm a booking, infer consent or publish a domain event.
+
+## 9. Event Ownership
+
+- An event is created only by the owner of the fact it describes.
+- A consumer does not become a producer by observing or reacting to an event.
+- Tool invocation is not an event.
+- A delivery receipt is not a business success.
+- Event payload contracts must identify producer, version, event identity, occurred time, entity identity and causation/correlation identifiers.
+
+Correct flow:
 
 ```text
 beautygo_backend
-  imports ayla-ai-core только для локального AI consumer, пока он существует
+  validates and commits Appointment
+  publishes appointment.created
 
 ai-bot-platform
-  imports ayla-ai-core
-  calls beautygo_backend via internal API
-  consumes beautygo_backend events
-
-formula_tela
-  imports ayla-ai-core для legacy runtime до cutover
-
-ayla-ai-core
-  не импортирует consumer repositories
-
-ayla-knowledge
-  не импортируется production-кодом как runtime package
+  consumes appointment.created
+  updates runtime/projection state
+  informs the user through the channel
 ```
 
-### 8.2. Запрещённые зависимости
-
-Запрещаются следующие направления:
+Incorrect flow:
 
 ```text
-ayla-ai-core → beautygo_backend
-ayla-ai-core → ai-bot-platform
-ayla-ai-core → formula_tela
+ai-bot-platform
+  calls a tool
+  publishes appointment.created
 ```
 
-Также запрещается:
+The latter can only publish a technical command/result signal, never an authoritative domain event.
 
-- импортировать Django models в `ayla-ai-core`;
-- обращаться к базе данных из `ayla-ai-core`;
-- выполнять HTTP-запросы к Ayla backend из общего AI core;
-- хранить booking state в `ai-bot-platform`;
-- дублировать payment state machine в боте;
-- помещать channel adapter в `ayla-ai-core`;
-- переносить общеплатформенную AI-логику обратно в `formula_tela`;
-- использовать `ayla-knowledge` как runtime configuration database без отдельного утверждённого механизма экспорта.
+## 10. Projection and Cache Rules
 
----
+A projection is a read model, DTO, cache, screen model or AI context envelope. It is not domain state.
 
-## 9. Правила совместного владения
+Every projection MUST declare:
 
-Некоторые области нельзя назначить только одному репозиторию. Для них ответственность разделяется по слоям.
-
-### 9.1. Prompts
-
-| Слой | Владелец |
+| Field | Requirement |
 |---|---|
-| Product principles | `ayla-knowledge` |
-| Safety requirements | `ayla-knowledge` |
-| Shared prompt composition | `ayla-ai-core` |
-| Brand voice abstraction | `ayla-ai-core` |
-| Brand voice values | consumer |
-| Runtime prompt version | `ai-bot-platform` |
-| Experiment assignment | `ai-bot-platform` |
-| Channel-specific instructions | consumer |
-| Business data injected into prompt | owning data service через consumer |
+| `source_system` | System that owns the source fact |
+| `source_entity` | Entity or contract being projected |
+| `source_version` | Version/event/API revision used |
+| `freshness` | TTL or freshness expectation |
+| `purpose` | Why this consumer receives it |
+| `consent_scope` | Applicable privacy/consent basis where relevant |
+| `failure_behavior` | What happens if freshness or source availability fails |
 
-### 9.2. Tools
+Projections are read-only from the consumer's domain perspective. A cache miss, stale projection or unavailable source must not be silently interpreted as a new business fact.
 
-| Слой | Владелец |
+## 11. Failure Semantics
+
+Integration success and business success are different outcomes.
+
+| Integration outcome | Business interpretation |
 |---|---|
-| Product meaning of tool | `ayla-knowledge` |
-| Shared tool-call protocol | `ayla-ai-core` |
-| Runtime tool registration | `ai-bot-platform` |
-| Tool implementation | consumer |
-| Business transaction | `beautygo_backend` |
-| Authorization | owning service |
-| Tool execution audit | `ai-bot-platform` и backend |
-| Legacy tool | `formula_tela` до миграции |
+| Timeout while creating appointment | Appointment status `unknown` until authoritative read/reconciliation; never `confirmed` |
+| Provider API timeout | Provider result unknown; do not create a second independent Appointment truth |
+| HTTP `201` returned but confirmation screen absent | Backend fact must be checked; UI silence is not failure or success by itself |
+| Consent lookup unavailable | Fail closed; do not interpret absence as consent granted |
+| Event delivery delayed | Domain fact remains in source SoR; consumer state is stale/pending |
+| Tool call succeeded | Only command transport succeeded; authoritative write still requires domain outcome |
 
-### 9.3. Memory
+No integration failure may be reported as a successful business operation. Recovery requires idempotency, authoritative reread, reconciliation or an explicit `unknown/pending` outcome.
 
-| Слой | Владелец |
-|---|---|
-| Memory semantics | `ayla-knowledge` |
-| Consent policy | `ayla-knowledge` |
-| Durable facts | `beautygo_backend` |
-| Fact provenance | `beautygo_backend` |
-| Runtime retrieval | `ai-bot-platform` |
-| Session memory | `ai-bot-platform` |
-| Rendering into prompt | `ayla-ai-core` |
-| Confidence-aware wording | `ayla-ai-core` |
-| Data access enforcement | backend + platform |
-| Final safety filtering | core + consumer |
+## 12. Provider Boundary
 
-### 9.4. Safety
+`formula_tela` is a **pilot provider application / provider integration boundary**. It is not the global Ayla operational System of Record.
 
-| Слой | Владелец |
-|---|---|
-| Normative safety boundary | `ayla-knowledge` |
-| Data validation | `beautygo_backend` |
-| Runtime scenario gate | `ai-bot-platform` |
-| Prompt/injection guards | `ayla-ai-core` |
-| Channel presentation | `ai-bot-platform` |
-| Legacy enforcement | `formula_tela` до cutover |
+The architecture MUST NOT create two independent truths such as:
 
----
+```text
+Formula Tela Appointment
+Ayla Appointment
+```
 
-## 10. Изменения и breaking changes
+For the pilot, provider-specific state may remain in the provider application, but the Ayla-facing Appointment/Availability/Provider contracts must identify which system is authoritative for each fact. If a provider system remains authoritative for a provider-owned fact, Ayla stores an integration reference or normalized projection rather than inventing a competing lifecycle.
 
-### 10.1. Локальное изменение
+The mapping of provider-local appointment state to the Ayla Appointment Contract is `Open question` where the sources do not settle the direction of authority.
 
-Изменение считается локальным, если оно:
+## 13. Data Privacy Boundary
 
-- не меняет публичный контракт;
-- не влияет на другой репозиторий;
-- не меняет продуктовый инвариант;
-- не требует синхронного consumer update.
+A provider or master receives only a purpose-limited operational projection required for the current operational task.
 
-Такое изменение утверждается владельцем owning repository.
+Provider/master access MUST NOT include:
 
-### 10.2. Cross-repository change
+- semantic memory;
+- AI hypotheses or inferred signals;
+- data belonging to other providers;
+- hidden recommendation reasons or internal ranking factors;
+- complete memory or conversation context;
+- unnecessary PII;
+- consent records beyond the minimum authorization result required for the operation.
 
-Изменение считается cross-repository, если оно затрагивает:
+Purpose-limited projections inherit the source domain's privacy and retention rules. They do not become provider-owned memory, a new source of truth or a permission to write the source state.
 
-- internal REST API;
-- event schema;
-- публичный API `ayla-ai-core`;
-- tool schema;
-- prompt contract;
-- memory contract;
-- tenant propagation;
-- identifier semantics;
-- status taxonomy;
-- authentication;
-- authorization;
-- shared configuration.
+## 14. Owner Decisions
 
-Такое изменение требует:
+| ID | Decision | Status |
+|---|---|---|
+| OD-RRM-1 | `beautygo_backend` is the operational transactional SoR for the Ayla business states covered by Appointment, Availability, Provider/Specialist and Payment contracts. This does not mean the repository owns every related domain or every provider-local fact. | `Proposed` |
+| OD-RRM-2 | `ai-bot-platform` owns conversation runtime and orchestration runtime, but not Appointment, Availability, Payment, Consent or Provider state. | `Proposed` |
+| OD-RRM-3 | `ayla-ai-core` has no direct access to domain storage; it receives approved context and uses public contracts/tools. | `Proposed` |
+| OD-RRM-4 | `formula_tela` is a provider integration/pilot application and is not the Ayla operational SoR. | `Proposed` |
+| OD-RRM-5 | Mobile App, MAX Mini App and MAX Bot are product/channel surfaces and do not own Ayla business state. | `Proposed` |
+| OD-RRM-6 | Consent ownership is a domain responsibility separate from channel/runtime ownership; physical Consent Service placement remains pending. | `Proposed` |
+| OD-RRM-7 | A domain event is published only by the owner of the committed fact; semantic event meaning is governed canonically, while producer wire details remain with the producer contract owner. | `Proposed` |
 
-1. owner proposal;
+## 15. Open Questions
+
+1. Кто является named owner и физическим SoR для Consent Records: отдельный Consent Service, `beautygo_backend` или иной компонент?
+2. Какой точный provider boundary действует в Controlled Pilot: provider system как authoritative scheduler или `beautygo_backend` как normalized transactional SoR?
+3. Где физически реализованы Mobile App, MAX Mini App и MAX Bot, и какой runtime является целевым после MAX legacy cutover?
+4. Как соотносятся `Booking`, `Appointment` и provider-local visit state в следующем Appointment Contract?
+5. Кто является named owner для Availability Domain и Payment/Billing Domain?
+6. Какой event registry является wire-contract owner для producer payload: producer repository, `ayla-knowledge` или двухслойная модель semantic canon + producer schema?
+7. Какой exact API/tool contract используется для command outcome `unknown`, reconciliation и idempotency?
+8. Какие provider/master operational projections разрешены для каждого pilot operation и с какой freshness?
+9. Какова окончательная retention/deletion orchestration для runtime conversation/delivery state?
+10. Какой cutover criterion переводит MAX Bot из `formula_tela` legacy runtime в `ai-bot-platform`?
+
+## 16. Source and Evidence Notes
+
+Подтвержденные основания для этого документа:
+
+- `Ayla Constitution` — normative product, privacy, safety, autonomy and provenance boundaries.
+- `Ayla Domain Capability Registry` — distinction between capability, context and repository; repository boundary does not equal domain boundary.
+- `Ayla Glossary` — canonical terminology.
+- `Ayla Decision Log` — approved and pending cross-system/product decisions.
+- `Ayla MVP Scope and Release Contract` — MVP channel and scope constraints.
+- `Ayla Single-Provider Technical Pilot Execution Scope` — pilot/provider integration constraints.
+- `Ayla Multi-Provider Product Validation Execution Scope` — multi-provider normalization and adapter boundary.
+- `Ayla Domain Context Map` — context/SoR identification rules and implementation mapping discipline.
+- `Ayla Core Domain Model Specification` — domain entities and invariants.
+- `Ayla MVP Appointment Contract` — appointment lifecycle authority and contract dependency.
+- `Ayla Domain Event Registry` — event ownership/registration boundary.
+- `Consent Scope Registry` — purpose-limited access, fail-closed behavior and consent enforcement boundaries.
+- `Data Inventory Matrix` — source-of-truth, physical custodian, permitted consumers, write authority and projection rules.
+
+The existence of a module, table, API route or legacy implementation is evidence of physical implementation only. It is not by itself evidence of domain ownership.
+
+## 17. Change Control
+
+Изменение этого документа, которое затрагивает SoR, domain ownership, public contract, event ownership, privacy boundary или write authority, является cross-repository architectural change и требует:
+
+1. owner decision или ADR;
 2. impact analysis;
-3. списка affected consumers;
-4. migration strategy;
-5. compatibility window;
-6. conformance tests;
-7. синхронного или поэтапного обновления consumers;
-8. записи в Decision Log или ADR;
-9. обновления mirrors после слияния.
+3. списка затронутых consumers;
+4. migration/compatibility plan;
+5. обновления зависимых контрактов;
+6. conformance/validation evidence.
 
-### 10.3. Изменение `ayla-ai-core`
+Мелкие редакторские исправления не должны менять смысл ownership или write authority.
 
-Breaking change библиотеки не может выпускаться только по решению разработчика библиотеки.
+## Change Log
 
-Требуются:
-
-- проверка всех активных consumers;
-- Consumer Matrix;
-- Migration Guide;
-- обновление pins;
-- consumer compatibility checks в CI;
-- Release Notes;
-- rollback target.
-
----
-
-## 11. Правило размещения новой функциональности
-
-Перед созданием новой функции необходимо пройти следующий выбор.
-
-### Шаг 1. Функция меняет каноническое бизнес-состояние?
-
-Да → `beautygo_backend`.
-
-Примеры:
-
-- создать appointment;
-- отменить appointment;
-- изменить payment;
-- сохранить факт пользователя;
-- изменить availability специалиста.
-
-### Шаг 2. Функция относится к каналу, сессии или сценарию?
-
-Да → `ai-bot-platform`.
-
-Примеры:
-
-- принять MAX webhook;
-- сохранить conversation state;
-- выбрать skill;
-- повторить tool call;
-- переключить human handoff.
-
-### Шаг 3. Функция является общей AI-механикой для нескольких consumers?
-
-Да → `ayla-ai-core`.
-
-Примеры:
-
-- собрать messages;
-- сократить history;
-- адаптировать provider response;
-- отрендерить memory block;
-- выполнить общий tool loop.
-
-### Шаг 4. Функция относится только к сайту салона?
-
-Да → `formula_tela`.
-
-### Шаг 5. Это правило, определение или решение всей экосистемы?
-
-Да → `ayla-knowledge`.
-
----
-
-## 12. Правила документации
-
-Каждый implementation repository должен иметь локальный MOC или Documentation Index.
-
-Минимальный набор:
-
-```text
-README.md
-docs/README.md или DOCUMENTATION_INDEX.md
-docs/architecture/
-docs/contracts/
-docs/runbooks/
-docs/adr/ при наличии локальных ADR
-```
-
-Каждый значимый документ должен указывать:
-
-- authority;
-- owner;
-- lifecycle;
-- статус реализации;
-- связанные contracts;
-- `supersedes`;
-- `superseded_by`;
-- canonical source;
-- affected repositories.
-
-В `ayla-knowledge` импортируются только allowlisted документы.
-
-Запрещается:
-
-- зеркалировать весь `docs/**` без классификации;
-- вручную редактировать generated mirrors;
-- считать mirror новым canon;
-- переносить PR description без нормализации;
-- канонизировать исторический план как действующую архитектуру.
-
----
-
-## 13. Правила legacy и миграции
-
-`formula_tela/mysite/maxbot` остаётся legacy source до завершения cutover.
-
-Для каждого legacy-компонента должен быть определён один статус:
-
-```text
-active-legacy
-frozen
-shadowed
-migration-source
-deprecated
-decommissioned
-archived
-```
-
-Новая общеплатформенная функциональность не создаётся в legacy runtime.
-
-Допустимые изменения legacy-кода:
-
-- критическое исправление production;
-- security fix;
-- migration instrumentation;
-- compatibility adapter;
-- cutover support;
-- data export;
-- observability, необходимая для сравнения.
-
-После успешного cutover:
-
-- channel runtime переходит в `ai-bot-platform`;
-- shared AI logic находится в `ayla-ai-core`;
-- business transactions остаются в `beautygo_backend`;
-- legacy implementation архивируется;
-- historical evidence сохраняется.
-
----
-
-## 14. Разрешение конфликтов
-
-При конфликте решений применяется следующий приоритет:
-
-1. Ayla Constitution;
-2. утверждённый Decision Log;
-3. утверждённая cross-system policy;
-4. принятый ADR;
-5. утверждённая domain specification;
-6. implementation contract owning repository;
-7. код и conformance tests;
-8. рабочие планы и PR descriptions;
-9. legacy implementation;
-10. historical sources.
-
-Если код противоречит утверждённому нормативному документу:
-
-- код не становится автоматически новым canon;
-- создаётся discrepancy;
-- определяется, ошибочен код или устарел документ;
-- решение фиксируется явно;
-- изменения выполняются синхронно.
-
----
-
-## 15. Владение конфликтами
-
-| Тип конфликта | Финальный владелец решения |
-|---|---|
-| Product meaning | Product Owner |
-| Repository boundary | Platform Architecture |
-| Data ownership | Backend Architecture + Privacy |
-| AI Core boundary | AI Architecture |
-| Safety rule | Safety/Privacy + Product Owner |
-| Payment behavior | Backend/Payments Owner |
-| Booking invariant | Booking Domain Owner |
-| Prompt behavior | AI Architecture при соблюдении canon |
-| Tool schema | AI Architecture + owning transaction service |
-| Channel UX | Conversation Product Owner |
-| Legacy migration | Migration Owner + target owner |
-| Legal compliance | Legal/Privacy ruling |
-
----
-
-## 16. Открытые решения владельца
-
-Для утверждения версии `1.0` необходимо закрыть следующие вопросы.
-
-### OD-R1. Веточная модель `beautygo_backend`
-
-Необходимо зафиксировать фактическую модель:
-
-```text
-dev = integration branch
-master = production/default branch
-```
-
-или утвердить другую модель.
-
-Также необходимо решить, какую ветку использует mirror pipeline.
-
-**Рекомендация:** рабочие mirrors — с `dev`; утверждённые release mirrors — с immutable tag или commit SHA.
-
-### OD-R2. Статус AI внутри `beautygo_backend`
-
-Необходимо определить:
-
-- остаётся ли backend долгосрочным consumer `ayla-ai-core`;
-- переезжает ли весь conversational AI в `ai-bot-platform`;
-- сохраняет ли backend только ограниченные внутренние AI-функции.
-
-**Рекомендация:** conversational runtime переносится в `ai-bot-platform`; backend использует core только для backend-owned offline/internal AI use cases.
-
-### OD-R3. Tool schemas
-
-Необходимо определить, кто утверждает shared tool schema при различиях между consumers.
-
-**Рекомендация:**
-
-- общий protocol — `ayla-ai-core`;
-- business meaning — `ayla-knowledge`;
-- concrete runtime schemas — `ai-bot-platform`;
-- transaction contract — `beautygo_backend`.
-
-### OD-R4. Prompt canon
-
-Необходимо определить, какие prompt-тексты являются:
-
-- нормативными;
-- библиотечными;
-- runtime;
-- experimental;
-- channel-specific.
-
-**Рекомендация:** использовать четырёхслойную модель из раздела 9.1.
-
-### OD-R5. `formula_tela` после cutover
-
-Необходимо утвердить, остаются ли в репозитории:
-
-- только сайт и SEO;
-- salon-local integrations;
-- MCP;
-- какие-либо AI-функции.
-
-**Рекомендация:** AI runtime удаляется или архивируется; сайт и локальный бизнес остаются.
-
-### OD-R6. Владелец `ayla-ai-core`
-
-Необходимо назначить:
-
-- Code Owner;
-- Release Owner;
-- API Compatibility Owner;
-- Security Reviewer;
-- Consumer Representatives.
-
-### OD-R7. Canonical event contract
-
-Необходимо выбрать модель владения event contract:
-
-- единый contract в `ayla-knowledge`;
-- единый contract в implementation repository;
-- разделение semantic canon и wire contract.
-
-**Рекомендация:**
-
-- event semantics — `ayla-knowledge`;
-- точный producer wire contract — `beautygo_backend`;
-- consumer mapping — `ai-bot-platform`.
-
----
-
-## 17. Критерии утверждения
-
-Документ может получить статус `approved`, когда:
-
-- утверждены роли всех пяти репозиториев;
-- закрыты OD-R1–OD-R7;
-- назначены owners;
-- создана Data Ownership Matrix;
-- создана AI Component Ownership Matrix;
-- добавлены ссылки на локальные MOC;
-- проверены реальные зависимости;
-- установлен процесс cross-repository breaking changes;
-- обновлён `sources-manifest.yaml`;
-- документ проходит knowledge validation.
-
----
-
-## 18. Предлагаемое решение
-
-Предлагается утвердить следующую базовую формулировку:
-
-> `ayla-knowledge` владеет нормативным знанием и общесистемными правилами.  
-> `beautygo_backend` владеет каноническими бизнес-данными и транзакциями.  
-> `ai-bot-platform` владеет каналами, разговорами и исполнением AI-сценариев.  
-> `ayla-ai-core` владеет общей переиспользуемой AI-механикой и публичным Python API.  
-> `formula_tela` владеет сайтом салона и остаётся legacy/migration source для вынесенных компонентов.
+| Version | Date | Change |
+|---|---|---|
+| 1.0-draft | 2026-08-14 | Replaced previous mixed draft with explicit domain/repository/implementation/runtime responsibility model; added channel inventory, write authority, contract, event, projection, failure, provider and privacy boundaries. |

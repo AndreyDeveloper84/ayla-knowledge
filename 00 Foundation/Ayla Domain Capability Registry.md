@@ -27,7 +27,7 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-27
-updated: 2026-07-27
+updated: 2026-08-17
 review_cycle: before-major-change
 implements:
   - "[[Ayla Constitution]]"
@@ -1309,7 +1309,7 @@ downstream_capabilities:
   - CAP-018
 candidate_contexts:
   - Identity and Access
-mvp_scope: undetermined
+mvp_scope: MVP-active — ограниченный срез (Master MVP auth/session/tenant + authority/permission policy)  # AYLA-DEC-0016; AYLA-DEC-0017 п. 11; контракт [[Ayla Master MVP Auth and Authority Contract]]
 introduced_by: undetermined  # происхождение не установлено: evidence v1.0 не верифицировано (см. §11)
 evidence:
   - source: "[[Ayla Product Vision]]"
@@ -1896,7 +1896,7 @@ MVP scope фиксируется только там, где исходный д
 | CAP-016 | undetermined | — | — | — |
 | CAP-017 | undetermined | — | — | — |
 | CAP-018 | undetermined | — | — | — |
-| CAP-019 | undetermined | — | — | — |
+| CAP-019 | in (ограниченный срез) | — | active | AYLA-DEC-0016; AYLA-DEC-0017 п. 11; Master MVP auth/session/tenant + authority policy, контракт [[Ayla Master MVP Auth and Authority Contract]] |
 | CAP-020 | undetermined | — | — | — |
 | CAP-021 | undetermined | — | — | — |
 | CAP-022 | undetermined | — | — | — |
