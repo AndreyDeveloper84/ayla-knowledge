@@ -26,12 +26,18 @@ review_cycle: quarterly
 
 # Ayla Foundation Changelog
 
-## 2026-08-18 — Master MVP Canon Freeze (AYLA-DEC-0026)
+## 2026-08-19 — KB-001 repair: разрешение коллизии AYLA-DEC-0026
+
+- Collision of `AYLA-DEC-0026` (Living Digital Twin ruling, 2026-07-29 ‖ Master MVP Canon Freeze, 2026-08-18) resolved: the ID stays with the Living Digital Twin decision; the freeze record was renumbered to `AYLA-DEC-0080` in Ayla Decision Log v1.11. Content unchanged; references updated across Master MVP contracts, Domain Event Registry, and review reports.
+- Governance rule added to both decision ledgers: one AYLA-DEC-ID = one decision.
+- Impact report: `docs/audits/2026-08-19-KB-001-DEC-0026-collision-repair.md`.
+
+## 2026-08-18 — Master MVP Canon Freeze (AYLA-DEC-0080)
 
 - `Ayla Master MVP Auth and Authority Contract` and `Ayla MVP Customer Resolution Contract` became the first Technical Canon specifications to complete the Ayla governance lifecycle (Canon Review per Ayla Canon Review Standard v1.0: READY FOR CANON after one Writer pass).
 - `appointment.completed` was registered in the Ayla Domain Event Registry (v0.5) under the early-registration precedent of AYLA-DEC-0022 п. 9; normal completion semantics are normatively defined by Ayla MVP Appointment Contract §5A/§5B.
 - The Master MVP canonical set moved from `CANON CLOSURE` to `FROZEN FOR ENGINEERING / CONTROLLED PILOT`; further changes to frozen documents require Change Control (an accepted decision or amendment).
-- Governance record: AYLA-DEC-0026; review report: `docs/REPLY_MASTER_MVP_CANON_GOVERNANCE_FINAL_FREEZE.md`.
+- Governance record: AYLA-DEC-0080 (при регистрации — AYLA-DEC-0026; перенумерован 2026-08-19 из-за коллизии KB-001 с решением Living Digital Twin, которое сохраняет AYLA-DEC-0026); review report: `docs/REPLY_MASTER_MVP_CANON_GOVERNANCE_FINAL_FREEZE.md`.
 
 ## 2026-08-13 — Ayla Conversation Design Principles canonicalization
 
