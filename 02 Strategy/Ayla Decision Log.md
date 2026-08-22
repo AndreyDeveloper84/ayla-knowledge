@@ -4,7 +4,7 @@ title: Ayla Decision Log
 type: decision-log
 status: review
 activation_status: pending-infrastructure
-version: "1.10"
+version: "1.12"
 owner: Founder / Product Architecture
 priority: P0
 knowledge_area:
@@ -17,7 +17,7 @@ system_owner:
   - shared
 source_repository: ayla-knowledge
 created: 2026-07-18
-updated: 2026-08-18
+updated: 2026-08-20
 source_kind: canonical
 classification: internal
 data_sensitivity: none
@@ -51,6 +51,12 @@ review_cycle: event-driven
 
 - Одна запись = одно решение; изменения — батчем `agent/decision-log-*`,
   один логический batch = один commit.
+- Один идентификатор `AYLA-DEC-NNNN` = одно решение на всю Knowledge Base.
+  Один ID не может обозначать решения разных уровней (стратегическое,
+  MVP boundary, техническое) или разных предметных областей; перед
+  присвоением номер проверяется по обоим реестрам (этот журнал и
+  `00 Foundation/Canon Governance/OWNER_DECISION_REGISTER.md`).
+  Переиспользование и повторная выдача занятого номера запрещены.
 - Реализационные ADR, меняющиеся вместе с кодом, остаются каноническими в
   owning repository (см. [[Ayla Knowledge Architecture Specification]] §2.1)
   и подключаются сюда ссылкой; mirror — по `sources-manifest.yaml`.
@@ -1476,9 +1482,18 @@ KM-IM-1 от 2026-07-27, зарегистрирован 2026-07-28)
   AYLA-DEC-0008 (split per-master), AYLA-DEC-0009 (capture-стратегия),
   AYLA-DEC-0010 (запрет двойного взыскания).
 
-### AYLA-DEC-0026 — Master MVP Canon Freeze: Auth/Authority и Customer Resolution Contracts, регистрация appointment.completed
+### AYLA-DEC-0080 — Master MVP Canon Freeze: Auth/Authority и Customer Resolution Contracts, регистрация appointment.completed
 
 **Дата:** 2026-08-18 · **Статус:** accepted (действует)
+
+> Примечание о нумерации: изначально зарегистрировано как AYLA-DEC-0026
+> (2026-08-18). Полный аудит KB 2026-08-19 (KB-001) выявил коллизию: тот же
+> ID уже был занят решением «Living Digital Twin as Ayla's Primary Visual
+> Interface» (2026-07-29, `00 Foundation/Canon Governance/
+> OWNER_DECISION_REGISTER.md`), которое сохраняет AYLA-DEC-0026. Во
+> избежание коллизии ID эта запись переномерована в AYLA-DEC-0080;
+> содержание не изменено. Impact report:
+> `docs/audits/2026-08-19-KB-001-DEC-0026-collision-repair.md`.
 
 - **Решение:**
   1. `Ayla Master MVP Auth and Authority Contract` и `Ayla MVP Customer
@@ -1523,6 +1538,13 @@ KM-IM-1 от 2026-07-27, зарегистрирован 2026-07-28)
      canon/engineering dependency CAP-010), OD-RRM-1 (физический SoR —
      Proposed). Эти вопросы решаются в implementation track без
      изменения frozen canon.
+  5. Граница freeze: решение фиксирует только Master MVP canonical set
+     (frozen capabilities и release boundary Controlled Pilot) и режим
+     Change Control. Направления, вынесенные из MVP (Living Digital Twin
+     как обязательная часть MVP — AYLA-DEC-0063 / OD-MVP-1), этим
+     решением не изменяются и не возвращаются в MVP; AYLA-DEC-0026
+     (Living Digital Twin как стратегическое направление продукта)
+     остаётся в силе как отдельное решение.
 - **Основание:** closure
   `docs/MASTER_MVP_P0_AUTHORITY_RUNTIME_CLOSURE(1).md` установил
   `P0 AUTHORITY/RUNTIME CONTRACTS CLOSED` и
@@ -1541,11 +1563,88 @@ KM-IM-1 от 2026-07-27, зарегистрирован 2026-07-28)
   AYLA-DEC-0022, AYLA-DEC-0025. Review report:
   `docs/REPLY_MASTER_MVP_CANON_GOVERNANCE_FINAL_FREEZE.md`.
 
+### AYLA-DEC-0081 — Canonization Memory Domain package и memory/consent rulings (OR-MEM-1…6, OD-MEM-1…4, CSR-OD-5)
+
+**Дата:** 2026-08-20 · **Статус:** accepted (действует)
+
+- **Решение:**
+  1. Канонизированы (status: approved / decision_status: accepted /
+     canonical_status: approved, version 1.0 — по прецеденту
+     AYLA-DEC-0080): `Ayla Memory Domain Contract`,
+     `Ayla Context Resolution Contract`,
+     `Ayla Memory and Context Migration Plan`.
+  2. `Consent Scope Registry` v1.4 (включая amendments v1.3/v1.4)
+     подтверждён действующим canonical Consent Scope Registry.
+  3. Подтверждены owner rulings OR-MEM-1…6: `MemoryEntry` — canonical
+     source of truth persistent memory; `UserPersonalContext` — read
+     model/materialized projection; declared и inferred — один Memory
+     Domain, различимость через `provenance`/`evidence_refs`/
+     `derivation_method` (числовой `confidence` в `MemoryEntry`
+     отсутствует); key-aware conflict/supersession lifecycle
+     обязателен; `resolve_context(..., purpose)` — единый целевой
+     retrieval boundary, прямое чтение consumers запрещается после
+     завершения migration; yellow/red persistent memory остаётся
+     fail-closed до полного activation gate.
+  4. Закрыты OD-MEM-1…4 / CSR-OD-5: `confidence` — только
+     MemoryProposal/audit; `NutritionProfile` — source of truth
+     Nutrition Domain (не переносится в MemoryEntry; sensitive-поля —
+     отдельный Privacy/Legal perimeter, до его утверждения запрещены
+     как persistent AI context); canonical owner Consent Records —
+     Consent Domain, MVP physical custodian — `ai-bot-platform`,
+     отдельный consent microservice не создаётся, второй Consent SoT в
+     `beautygo_backend` запрещён; `memory_green` — legacy/deprecated,
+     `personal_data` — не purpose authorization persistent memory;
+     целевая модель: persistent preference write → `preference_memory`,
+     persistent read/use → соответствующий purpose scope,
+     sensitivity — независимая ось; `MemoryEntry.consent_scope`
+     фиксирует scope, авторизовавший persistence/write, read purpose
+     передаётся только через `resolve_context(..., purpose)`.
+  5. Yellow/red activation этим решением НЕ разрешается. Follow-up вне
+     пакета (не блокируют): UX/Legal тексты `preference_memory`;
+     age lookup (#597); NutritionProfile Privacy/Legal perimeter;
+     остальные открытые CSR-OD по blocked scopes.
+- **Основание:** CANONIZATION RULING — Memory Domain package
+  (2026-08-20); аудит памяти 2026-08-19 (перепроверен по коду);
+  AYLA-DEC-0023/0024; `Ayla Memory Model Specification` v1.0;
+  reconciliation и pre-flight 2026-08-19/20 без остаточных
+  несоответствий.
+- **Затрагивает:** `05 Architecture/Ayla Memory Domain Contract.md`,
+  `05 Architecture/Ayla Context Resolution Contract.md`,
+  `05 Architecture/Ayla Memory and Context Migration Plan.md`,
+  `06 Safety and Governance/Consent Scope Registry.md`,
+  `00 Foundation/Canon Governance/CANON_INDEX.md`; downstream:
+  `ai-bot-platform` (memory services, retrieval boundary),
+  `beautygo_backend` (UserPersonalContext → read model),
+  `ayla-ai-core` (только ContextEnvelope/model_transfer).
+
 ## Change Log
+
+### v1.12 — 2026-08-20
+
+- Добавлена AYLA-DEC-0081: канонизация Memory Domain package (Memory
+  Domain Contract, Context Resolution Contract, Memory and Context
+  Migration Plan — approved/accepted/canonical, v1.0), подтверждение
+  Consent Scope Registry v1.4 как действующего canonical CSR,
+  подтверждение OR-MEM-1…6 и закрытие OD-MEM-1…4 / CSR-OD-5. Источник:
+  CANONIZATION RULING — Memory Domain package (2026-08-20).
+
+### v1.11 — 2026-08-19
+
+- AYLA-DEC-0026 (Master MVP Canon Freeze) переномерована в AYLA-DEC-0080:
+  полный аудит KB 2026-08-19 (KB-001) подтвердил коллизию ID с решением
+  «Living Digital Twin as Ayla's Primary Visual Interface»
+  (`OWNER_DECISION_REGISTER`, 2026-07-29), которое сохраняет AYLA-DEC-0026.
+  Содержание записи не изменено; добавлен пункт 5 (граница freeze и
+  разграничение с LDT). Ссылки в `00 Foundation/CHANGELOG.md`, Master MVP
+  контрактах, Domain Event Registry и review reports обновлены на
+  AYLA-DEC-0080. В правила ведения добавлено: один AYLA-DEC-ID = одно
+  решение. Impact report:
+  `docs/audits/2026-08-19-KB-001-DEC-0026-collision-repair.md`.
 
 ### v1.10 — 2026-08-18
 
-- новая запись AYLA-DEC-0026 (Master MVP Canon Freeze): канонизация
+- новая запись AYLA-DEC-0080 (Master MVP Canon Freeze; при регистрации —
+  AYLA-DEC-0026, переномерована 2026-08-19, см. v1.11): канонизация
   `Ayla Master MVP Auth and Authority Contract` и `Ayla MVP Customer
   Resolution Contract` (Canon Review: READY FOR CANON); регистрация
   `appointment.completed` в Domain Event Registry по прецеденту

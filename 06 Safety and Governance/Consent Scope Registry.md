@@ -3,7 +3,8 @@ node_id: ayla.governance.consent-scope-registry
 title: Consent Scope Registry
 type: specification
 status: approved
-version: "1.2"
+canonical_status: approved
+version: "1.4"
 owner: User Context Domain Owner / Privacy Owner
 priority: P0
 knowledge_area:
@@ -18,7 +19,7 @@ concerns:
   - governance
   - audit
 created: 2026-07-27
-updated: 2026-07-29
+updated: 2026-08-20
 source_kind: canonical
 source_repository: ayla-knowledge
 classification: internal
@@ -38,6 +39,8 @@ related:
   - "[[Killer PRD]]"
   - "[[AMD-020 Pilot Scope Registry]]"
   - "[[Data Inventory Matrix]]"
+  - "[[Ayla Memory Domain Contract]]"
+  - "[[Ayla Context Resolution Contract]]"
 target_milestone: MVP vertical slice and Killer PRD canonization
 blocking_reason: >
   Persistent user context and cross-session personalization must remain
@@ -73,7 +76,13 @@ Registry отвечает на вопрос **«разрешено ли испо
 
 Он не определяет физическое владение данными, место хранения или source of
 truth. Эти вопросы регулируются [[AMD-020 Pilot Scope Registry]],
-[[Data Inventory Matrix]] и профильными domain contracts.
+[[Data Inventory Matrix]] и профильными domain contracts — для
+persistent memory это [[Ayla Memory Domain Contract]] (что хранится,
+provenance, lifecycle, conflict/supersession) и
+[[Ayla Context Resolution Contract]] (единый retrieval boundary
+`resolve_context(..., purpose)`; source-of-truth правила памяти в этом
+Registry не дублируются — Registry отвечает только за authorization
+purpose).
 
 ## 2. Нормативные правила
 
@@ -138,6 +147,15 @@ consent — пользователь, отправивший сообщение,
 | `recommendation_feedback` | Принятие, отказ и указанная причина отказа | medium | Разрешается по scope | Recommendation Owner (по аналогии с scope owner §5.6) |
 | `session_signal` | Сигнал, применимый только к текущей сессии | low–medium | По умолчанию не сохраняется | Conversation / User Context Domain — persistence и ownership разные измерения: даже session-only данные требуют владельца семантики, допустимых источников и правил очистки |
 | `inferred_signal` | Выведенное системой предположение, не сообщённое пользователем явно | high | Запрещено по умолчанию | Memory & Identity Domain (AMD-020: Semantic Memory) |
+
+**Разделение `data_category` / `provenance` / `confidence`.**
+`inferred_signal` — это *категория данных* для authorization, а не
+маркер происхождения записи. Provenance (`user_stated` /
+`user_confirmed_inference` / `model_inference`) и `confidence` —
+атрибуты Memory Domain и определяются в [[Ayla Memory Domain Contract]]
+(§3–§4): `confidence` живёт на уровне MemoryProposal/audit, provenance
+записи — в самой записи. Этот Registry оперирует только
+`data_category` и не дублирует provenance/confidence-модель.
 | `health_related_signal` | Сведения или выводы о здоровье, диагнозах, симптомах и противопоказаниях | special/high | Вне MVP; запрещено | Wellness Domain (AMD-020: Raw Wellness History) |
 | `religious_or_diet_signal` | Религиозные убеждения или чувствительные диетические признаки | special/high | Заблокировано до Legal ruling | User Context Domain, под OD-1 — не окончательно |
 | `recommendation_booking_linkage` | Связь `recommendation_id` с `booking_id`, attribution type и техническими идентификаторами результата | medium | Разрешается по scope | Analytics Domain / Booking Domain — открытый вопрос по разграничению |
@@ -456,12 +474,12 @@ scope, а storage enforcement layer (см. §6 Enforcement ownership).
 
 | Поле | Значение |
 |---|---|
-| Persistent context | Это единственный scope, создающий persistent context для предпочтений |
+| Persistent context | Это единственный **предусмотренный в MVP** scope для persistent **preference write**. Это НЕ норма «единственный persistent scope системы навсегда»: новые persistent scopes (другие категории, другие purposes) добавляются только через change control этого Registry с owner approval; lifecycle записей при этом всегда принадлежит [[Ayla Memory Domain Contract]] |
 | Prohibited | `inferred_signal`; `health_related_signal`; `religious_or_diet_signal` — запись только явно подтверждённых, не выведенных фактов; `write`/`delete` от `ayla-ai-core` |
 | Authorization basis | `explicit_consent` — обязателен для любой `write`-операции |
 | Consent requirement | Отдельное явное согласие; без него — данные не сохраняются, только session-only обработка через §5.1/§5.2 |
 | Validity | До отзыва или MAJOR-изменения scope (§7) |
-| Revocation effect | Прекратить использование сохранённых предпочтений в `provider_selection`/`intent_understanding`; данные помечаются `revoked`, не обязательно удаляются немедленно (retention policy) |
+| Revocation effect | Отзыв — состояние ConsentRecord (не MemoryEntry): немедленно запрещает дальнейший read/use сохранённых предпочтений в `provider_selection`/`intent_understanding`; дальнейший lifecycle затронутых MemoryEntry (`deletion_pending` → удаление по retention) определяется [[Ayla Memory Domain Contract]] §10 — новый MemoryEntry status здесь не вводится |
 | Audit events | `consent_record_checked`, `memory_fact_written`, `memory_fact_used`, `memory_fact_deleted` |
 | Scope owner | User Context Domain Owner + Privacy Owner |
 | MVP status | `proposed` |
@@ -498,7 +516,7 @@ scope, §5) — разные оси; запрос ссылается на `scope
 ```yaml
 scope_id: provider_selection
 scope_version: "1.0"              # версия scope (§5.2), не registry_version документа
-registry_version: "1.0"           # версия этого документа на момент запроса, информативно
+registry_version: "1.4"           # версия этого документа на момент запроса, информативно
 context_mode: session | persistent   # session — без обращения к сохранённым фактам; persistent — требует зависимый scope, см. ниже
 subject_id: "<user-id>"
 tenant_id: "<tenant-id>"
@@ -602,7 +620,7 @@ reason:
 evaluated_scopes: []                # список scope, участвовавших в decision, с индивидуальным result (см. пример выше)
 failed_scope_id: null                # заполняется при deny с reason=required_scope_not_authorized
 scope_version: "1.0"               # версия scope, на который получен ответ
-registry_version: "1.0"            # версия документа на момент decision, для аудита эволюции контракта
+registry_version: "1.4"            # версия документа на момент decision, для аудита эволюции контракта
 allowed_data_categories: []        # при decision=allow — полный список запрошенных категорий; при deny — всегда []
 decision_id: "<audit-id>"
 decision_schema_version: "1.0"     # версия схемы самого authorization response — эволюционирует отдельно от registry_version документа
@@ -616,7 +634,7 @@ decision_schema_version: "1.0"     # версия схемы самого author
 
 | Ответственность | Owner |
 |---|---|
-| Source of consent facts | **Pending `CSR-OD-5`** — не назначается здесь как решённый факт. Кандидаты: «Consent Domain» (по AMD-020 Ownership Summary (status: review/proposed)) или «User Context / consent service» (по текущему runtime-дизайну) — это два разных ответа из двух документов, решение не принято |
+| Source of consent facts | **Consent Domain** (канонический owner, по AMD-020 Ownership Summary) — решение по `CSR-OD-5` принято 2026-08-19. Physical custodian в MVP: `ai-bot-platform` (текущее расположение `ConsentRecord`); отдельный consent microservice не создаётся; второй Consent SoT в `beautygo_backend` запрещён — при будущей необходимости backend получает read-only projection/cache через approved contract |
 | Runtime consent check | `ai-bot-platform` на retrieval boundary |
 | Повторная защита при rendering | `ayla-ai-core` |
 | Source data access control | Owning backend/domain service |
@@ -1018,12 +1036,13 @@ Audit event не должен содержать полный текст чув�
 `subject_id`, `scope_id`, `scope_version`, `consumer`, `decision`, `reason`,
 `data_categories`, `tenant_id`, `conversation_id`.
 
-**Хранение — не решено, зависит от KM-CSR-1.** AMD-020 Pilot Scope Registry
-(approved) уже называет «Consent Domain» нормативным владельцем и source of
-truth для Consent Records, отдельно от User Context Domain. Пока это
-расхождение (KM-CSR-1) не разрешено, конкретная система
-и таблица хранения audit log здесь **не фиксируются** — это предвосхитило
-бы решение, которое ещё не принято.
+**Хранение audit events — не решено; отдельный audit/retention
+вопрос.** Consent Records ownership resolved (CSR-OD-5, 2026-08-19):
+канонический owner — Consent Domain, physical custodian в MVP —
+`ai-bot-platform`. Это решение НЕ определяет физическое хранилище
+audit events: конкретная система и таблица хранения audit log здесь
+**не фиксируются** и остаются pending отдельного audit/retention
+решения, не связанного с CSR-OD-5.
 
 **Retention period — design candidates, не финальные решения:**
 - Consent lifecycle events (`consent.granted`, `consent.revoked`) —
@@ -1048,8 +1067,8 @@ Product Owner — доступ к обезличенной aggregate analytics; 
 **Два независимых gate, не один.** Session-only обработка и persistent
 personalization имеют разные условия готовности: session-only не требует
 никаких persistent-scope approvals, а persistent personalization требует
-дополнительно `preference_memory` — единственный scope, создающий
-persistent write.
+дополнительно `preference_memory` — единственный предусмотренный в MVP
+scope для persistent preference write (§5.7).
 
 ### 10.1 MVP Phase 1 — Session-only vertical slice
 
@@ -1068,7 +1087,9 @@ persistent write.
 Отдельно, требуется дополнительно к 10.1:
 
 - `preference_memory` имеет статус `approved`;
-- `CSR-OD-5` (канонический source of truth для consent records) закрыт;
+- канонический source of truth для consent records определён: Consent
+  Domain (physical custodian в MVP — `ai-bot-platform`; `CSR-OD-5`
+  закрыт 2026-08-19);
 - Privacy Owner подтвердил формулировки согласия;
 - runtime authorization contract реализован;
 - consent lifecycle хранится в утверждённом source of truth;
@@ -1267,7 +1288,6 @@ ADR-0011, не фиксируется здесь как решение.
 | CSR-OD-2 | Допустимость proactive personalization и формулировка отдельного consent | `proactive_recommendation` |
 | CSR-OD-3 | Cross-domain consent model | `cross_domain_personalization` |
 | CSR-OD-4 | Решение по diet/religion/skin-sensitivity signals | Соответствующие data categories |
-| CSR-OD-5 | Канонический source of truth для consent records | Persistent personalization |
 | CSR-OD-6 | Совместимость consent между MINOR-версиями scope | Scope version migration |
 | CSR-OD-7 | Разделить Registry на нормативное ядро (правила, scopes, authorization basis, lifecycle) + отдельный Consent Runtime Authorization Contract (request/response, errors, tenant isolation, versioning) — интеграционные разделы (§6 integration, §11) остаются informative до решения | Структура документа, не блокирует MVP-контент |
 | CSR-OD-8 | Identity/tenancy контракт для global user scope (`tenant_id=null`) | Любое использование глобальной (не tenant-scoped) памяти — сейчас `blocked` |
@@ -1305,7 +1325,7 @@ Legal ruling). Это один открытый вопрос под тремя �
 | Утверждение scope purposes | Product Owner |
 | Privacy review | Privacy Owner |
 | Legal basis и тексты согласия | Legal |
-| Consent storage и API | User Context Domain (delivery; нормативное владение — pending CSR-OD-5) |
+| Consent storage и API | User Context Domain (delivery); нормативное владение — Consent Domain, physical custodian в MVP `ai-bot-platform` (CSR-OD-5, решено 2026-08-19) |
 | Retrieval enforcement | `ai-bot-platform` |
 | Rendering/grounding enforcement | `ayla-ai-core` |
 | Source data enforcement | Owning backend domains |
@@ -1318,6 +1338,48 @@ Legal ruling). Это один открытый вопрос под тремя �
 > нормативной частью спецификации, включая формулировки, описывающие
 > процесс ревью. Нормативно только текущее состояние §1–§10 (см. пометку
 > Normative/Informative в начале документа).
+
+### v1.4 — 2026-08-19 — Amendment: закрытие CSR-OD-5 (owner ruling)
+
+- `CSR-OD-5` закрыт owner ruling 2026-08-19: канонический owner Consent
+  Records — логический **Consent Domain**; MVP physical custodian —
+  `ai-bot-platform`; отдельный consent microservice не создаётся;
+  второй Consent SoT в `beautygo_backend` запрещён; при будущей
+  необходимости backend получает read-only projection/cache через
+  approved contract. Обновлены §6 (Enforcement ownership), §10.2
+  (gate-пункт закрыт решением), §12 (строка удалена), §13 (Delivery
+  ownership).
+- §10: формулировка про `preference_memory` выровнена с v1.3
+  («единственный предусмотренный в MVP scope для persistent preference
+  write»).
+- Связанные документы: [[Ayla Memory Domain Contract]],
+  [[Ayla Context Resolution Contract]],
+  [[Ayla Memory and Context Migration Plan]] (candidates v0.2,
+  reconciliation по owner rulings OD-MEM-1…4).
+- Статус документа не изменён (approved).
+- Amendments v1.3 и v1.4 подтверждены CANONIZATION RULING — Memory
+  Domain package (2026-08-20, AYLA-DEC-0081); документ является
+  действующим canonical Consent Scope Registry.
+
+### v1.3 — 2026-08-19 — Amendment: синхронизация с Memory Domain (OR-MEM-1…6)
+
+- §5.7 `preference_memory`: формулировка «единственный scope, создающий
+  persistent context» уточнена — единственный предусмотренный **в MVP**
+  scope для persistent preference write, а не вечный универсальный
+  единственный persistent scope системы; новые persistent scopes —
+  только через change control (owner rulings OR-MEM-1…6).
+- §4: добавлена норма разделения `data_category` (этот Registry) /
+  `provenance` и `confidence` ([[Ayla Memory Domain Contract]]) —
+  `inferred_signal` не подменяет provenance записи.
+- §1: явная traceability на [[Ayla Memory Domain Contract]] и
+  [[Ayla Context Resolution Contract]] как профильные domain contracts
+  persistent memory; source-of-truth правила памяти в Registry не
+  переносятся.
+- Основание: owner rulings OR-MEM-1…6 (2026-08-19); аудит памяти
+  2026-08-19 (перепроверен по коду). Согласование data categories с
+  MemoryCategoryPolicy остаётся отдельной задачей (см. v1.1).
+- Статус документа не изменён (approved); amendment подлежит
+  подтверждению на ближайшем owner review.
 
 ### v1.2 — 2026-07-29 — Amendment §9.1: канонические имена событий `consent.*` (AYLA-DEC-0025, owner ruling P1-1)
 

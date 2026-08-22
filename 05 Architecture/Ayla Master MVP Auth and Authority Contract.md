@@ -55,7 +55,7 @@ related:
 # Ayla Master MVP Auth and Authority Contract
 
 > Статус: **Canonical** — принят в canon 2026-08-18 (Canon Review: READY FOR
-> CANON; governance ruling AYLA-DEC-0026). Master MVP canonical set:
+> CANON; governance ruling AYLA-DEC-0080). Master MVP canonical set:
 > FROZEN FOR ENGINEERING / CONTROLLED PILOT.
 >
 > Этот документ закрывает P0-B1 (Master authentication / session / identity /
