@@ -4,7 +4,7 @@ title: Ayla Decision Log
 type: decision-log
 status: review
 activation_status: pending-infrastructure
-version: "1.9"
+version: "1.10"
 owner: Founder / Product Architecture
 priority: P0
 knowledge_area:
@@ -17,7 +17,7 @@ system_owner:
   - shared
 source_repository: ayla-knowledge
 created: 2026-07-18
-updated: 2026-08-02
+updated: 2026-08-18
 source_kind: canonical
 classification: internal
 data_sensitivity: none
@@ -1476,7 +1476,81 @@ KM-IM-1 от 2026-07-27, зарегистрирован 2026-07-28)
   AYLA-DEC-0008 (split per-master), AYLA-DEC-0009 (capture-стратегия),
   AYLA-DEC-0010 (запрет двойного взыскания).
 
+### AYLA-DEC-0026 — Master MVP Canon Freeze: Auth/Authority и Customer Resolution Contracts, регистрация appointment.completed
+
+**Дата:** 2026-08-18 · **Статус:** accepted (действует)
+
+- **Решение:**
+  1. `Ayla Master MVP Auth and Authority Contract` и `Ayla MVP Customer
+     Resolution Contract` приняты в canon (status: approved /
+     decision_status: accepted / canonical_status: approved, version 1.0)
+     после независимого Canon Review по `Ayla Canon Review Standard v1.0`:
+     вердикт READY FOR CANON после одного writer pass (точечные
+     коррекции цитирования; ни одно Product/domain решение не
+     переоткрыто). Оба контракта собраны из ранее accepted решений
+     AYLA-DEC-0016, AYLA-DEC-0017, AYLA-DEC-0020, AYLA-DEC-0021 и не
+     вводят новых сущностей, статусов, событий, команд или permission
+     engine.
+  2. Событие `appointment.completed` регистрируется в
+     `Ayla Domain Event Registry` (`registration_status: registered`,
+     `semantic_status: defined`) по прецеденту досрочной регистрации
+     AYLA-DEC-0022 п. 9: семантика normal completion нормативно
+     определена `Ayla MVP Appointment Contract` §5A/§5B (zero-action
+     happy path; authoritative backend completion mechanism;
+     `scheduled_end + 3 hours`; commit-time exception check;
+     идемпотентность; UNKNOWN → readback/reconciliation). Exception-path
+     evidence/correction authority остаётся pending (OQ-AC-3/OQ-AC-7) и
+     не блокирует регистрацию normal path.
+  3. Master MVP canonical set переводится из `CANON CLOSURE` в
+     **FROZEN FOR ENGINEERING / CONTROLLED PILOT**. Freeze означает:
+     изменения canonical документов Master MVP scope — только через
+     Change Control (новая accepted decision или amendment), не через
+     silent edits. Замороженный набор: `Ayla MVP Appointment Contract`,
+     `Ayla Master MVP Auth and Authority Contract`, `Ayla MVP Customer
+     Resolution Contract`, `Ayla Salon Operations MVP Contract`, UX
+     Master MVP contracts (`Ayla Master App Information Architecture`,
+     `Ayla Master Schedule UX Contract`, `Ayla Master Appointment Flow
+     MVP`, `Ayla Master Operations Screen Contract`,
+     `Ayla Appointment Detail Screen Contract`,
+     `Ayla Master System and Recovery UX Contract`). Реестры
+     (Domain Event Registry, Domain Capability Registry, Domain Context
+     Map) остаются живыми реестрами под тем же Change Control.
+  4. Подтверждено как неблокирующее для Engineering handoff: OQ-AC-7
+     (completion/no-show authority по ролям), OQ-SO-4 (owner customer
+     profile/projection), privacy-mapping Q4 (CSR scopes
+     `booking_execution`), OQ-AC-17 (customer-side «Визит не состоялся»
+     — Deferred), SCH-OQ-02 (availability command/event names —
+     canon/engineering dependency CAP-010), OD-RRM-1 (физический SoR —
+     Proposed). Эти вопросы решаются в implementation track без
+     изменения frozen canon.
+- **Основание:** closure
+  `docs/MASTER_MVP_P0_AUTHORITY_RUNTIME_CLOSURE(1).md` установил
+  `P0 AUTHORITY/RUNTIME CONTRACTS CLOSED` и
+  `SAFE TO STOP DESIGNING MASTER MVP: YES`. Governance-проход
+  2026-08-18 подтвердил соответствие обоих контрактов owner decisions и
+  governance rules (Canon Readiness Matrix: PASS по всем категориям для
+  обоих документов), dependency/ownership integrity (0 циклов
+  `depends_on`, 0 новых unresolved links) и возврат валидатора к
+  baseline после documentation hygiene.
+- **Затрагивает:** `05 Architecture/Ayla Master MVP Auth and Authority
+  Contract.md`; `05 Architecture/Ayla MVP Customer Resolution
+  Contract.md` (canonicalization); `05 Architecture/Ayla Domain Event
+  Registry.md` (v0.5: регистрация `appointment.completed`, OQ-E3
+  частично закрыт); `00 Foundation/CHANGELOG.md`. Зависит от
+  AYLA-DEC-0016, AYLA-DEC-0017, AYLA-DEC-0020, AYLA-DEC-0021,
+  AYLA-DEC-0022, AYLA-DEC-0025. Review report:
+  `docs/REPLY_MASTER_MVP_CANON_GOVERNANCE_FINAL_FREEZE.md`.
+
 ## Change Log
+
+### v1.10 — 2026-08-18
+
+- новая запись AYLA-DEC-0026 (Master MVP Canon Freeze): канонизация
+  `Ayla Master MVP Auth and Authority Contract` и `Ayla MVP Customer
+  Resolution Contract` (Canon Review: READY FOR CANON); регистрация
+  `appointment.completed` в Domain Event Registry по прецеденту
+  AYLA-DEC-0022 п. 9; Master MVP canonical set переведён в
+  FROZEN FOR ENGINEERING / CONTROLLED PILOT.
 
 ### v1.9 — 2026-08-02
 

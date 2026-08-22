@@ -25,7 +25,7 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-27
-updated: 2026-08-07
+updated: 2026-08-17
 review_cycle: monthly
 depends_on:
   - "[[Ayla Product Essence]]"
@@ -438,6 +438,9 @@ Living Digital Twin **не входит в обязательный состав
 - AI Orchestration and Tool Execution (proposal CAP-018,
   `user_visible_capability: false`, `mvp_scope: required`);
 - Audit and Observability (proposal CAP-026, `mandatory-cross-cutting`);
+- Identity and Access — ограниченный срез Master MVP (auth/session/tenant
+  + authority/permission policy; CAP-019 MVP-active; AYLA-DEC-0016;
+  AYLA-DEC-0017 п. 11; [[Ayla Master MVP Auth and Authority Contract]]);
 - минимальный provider monetary integration (CAP-022 MVP-active только в
   части §7 monetary boundary);
 - backend как SoR для каталога, провайдеров, availability, записей,

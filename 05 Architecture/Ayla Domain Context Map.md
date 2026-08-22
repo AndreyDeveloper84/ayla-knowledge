@@ -64,7 +64,7 @@ related_documents:
 supersedes: []
 superseded_by: []
 
-updated: 2026-07-26
+updated: 2026-08-17
 review_cycle: quarterly
 ---
 
@@ -2650,11 +2650,26 @@ Trial
 
 Generic Domain с возможными Ayla-specific Supporting extensions.
 
+#### Related Contracts
+
+- [[Ayla Master MVP Auth and Authority Contract]] — контракт Master MVP
+  session / access-decision среза CAP-019.
+
+#### Resolved by Canon
+
+- Где хранится tenant membership? — resolved: business truth Tenant
+  Membership — CAP-009 Provider Management; CAP-019 владеет enforcement и
+  хранит только авторизационную проекцию (AYLA-DEC-0017 п. 11).
+- Кто владеет business roles? — resolved: business truth ролей и Role
+  Assignment — CAP-009 Provider Management; CAP-019 — enforcement
+  (AYLA-DEC-0017 п. 11).
+- Является ли account status частью Identity или Provider Management? —
+  resolved: Account (включая account status) — CAP-019 Identity and
+  Access; Membership/roles business truth — CAP-009 (AYLA-DEC-0016 п. 10;
+  AYLA-DEC-0017 п. 11).
+
 #### Open Questions
 
-- Где хранится tenant membership?
-- Кто владеет business roles?
-- Является ли account status частью Identity или Provider Management?
 - Какие части можно делегировать внешнему identity provider?
 
 ---
