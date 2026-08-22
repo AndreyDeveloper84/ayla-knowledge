@@ -86,7 +86,7 @@ registry считается устаревшим, CI завершается ош
 | `source_repository` | `beautygo_backend`<br>`ai-bot-platform`<br>`ayla-knowledge`<br>`ayla-ai-core`<br>`external` |
 | `term_maturity` | `planned`<br>`proposed`<br>`accepted`<br>`implemented`<br>`deprecated` |
 | `domain` | `cross-domain`<br>`identity`<br>`consent`<br>`user-context`<br>`conversation`<br>`intent`<br>`recommendation`<br>`catalog`<br>`provider`<br>`booking`<br>`payment`<br>`nutrition`<br>`wellness`<br>`notification`<br>`analytics`<br>`marketing`<br>`loyalty` |
-| `concerns` | `knowledge-management`<br>`governance`<br>`privacy`<br>`security`<br>`safety`<br>`observability`<br>`audit`<br>`compliance`<br>`explainability`<br>`localization`<br>`accessibility` |
+| `concerns` | `knowledge-management`<br>`governance`<br>`privacy`<br>`security`<br>`safety`<br>`observability`<br>`audit`<br>`compliance`<br>`explainability`<br>`localization`<br>`accessibility`<br>`engineering-process` |
 | `classification` | `public`<br>`internal`<br>`confidential`<br>`restricted` |
 | `data_sensitivity` | `none`<br>`low`<br>`medium`<br>`high`<br>`critical` |
 | `data_categories` | `none`<br>`synthetic`<br>`pii`<br>`health`<br>`financial`<br>`credentials`<br>`raw-user-content`<br>`production-data` |
@@ -121,6 +121,9 @@ schema и review migration impact.
 
 | Type | Normative | Required sections or metadata |
 |---|---:|---|
+| `standard` | yes | — |
+| `map` | no | — |
+| `research` | no | — |
 | `knowledge-architecture-specification` | yes | `Назначение и нормативность`<br>`Модель источников истины`<br>`Модель версионности`<br>`Ревью и управление изменениями`<br>`Валидация`<br>`Миграция из backend`<br>`Definition of Done`<br>`Change Log` |
 | `constitution` | yes | `Преамбула`<br>`Термины`<br>`Статья I. Миссия и предметная область Ayla`<br>`Статья IV. Экономическая нейтральность`<br>`Статья XII. Границы компетенции, безопасность и соразмерность`<br>`Статья XIV. Автономия, согласия и приватность`<br>`Управление Конституцией`<br>`Заключительное положение` |
 | `foundation` | yes | — |

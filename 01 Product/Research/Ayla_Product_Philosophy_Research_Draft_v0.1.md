@@ -1,3 +1,32 @@
+---
+node_id: ayla.product.research.product-philosophy-draft
+title: Ayla Product Philosophy Research Draft
+type: research
+status: draft
+canonical_status: draft
+version: "0.1"
+owner: Product Owner
+knowledge_area:
+  - research
+system_owner:
+  - ayla-knowledge
+source_repository: ayla-knowledge
+source_kind: canonical
+classification: internal
+data_sensitivity: none
+data_categories:
+  - none
+security_sensitivity: low
+ai_indexing: allowed
+export_policy: full
+created: 2026-08-13
+updated: 2026-08-13
+review_cycle: before-major-change
+related:
+  - "[[Ayla Product Principles]]"
+  - "[[Ayla Product Vision]]"
+---
+
 # Ayla Product Philosophy — Research Draft
 
 **Status:** RESEARCH DRAFT  
