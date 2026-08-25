@@ -4,7 +4,7 @@ title: Ayla MVP Recommendation Contract
 type: specification
 status: draft
 decision_status: proposed
-version: "0.3"
+version: "0.4"
 owner: Product Architecture
 priority: P0
 knowledge_area:
@@ -28,7 +28,7 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-28
-updated: 2026-07-29
+updated: 2026-08-19
 review_cycle: monthly
 depends_on:
   - "[[Ayla Constitution]]"
@@ -42,21 +42,46 @@ related:
   - "[[Ayla Intent Model Specification]]"
   - "[[Ayla Core Domain Model Specification]]"
   - "[[Ayla Domain Capability Registry]]"
+  - "[[Ayla Glossary]]"
+  - "[[Ayla Memory Model Specification]]"
+  - "[[BOT-003 Discovery and Recommendation Conversation Specification]]"
+  - "[[Recommendation UX Addendum]]"
 ---
 
 # Ayla MVP Recommendation Contract
 
-> **Статус:** Draft v0.3 — proposed. Это не канонизация: документ определяет
+> **Статус:** Draft v0.4 — proposed. Это не канонизация: документ определяет
 > доменный контракт Recommendation для MVP и подлежит финальному review
 > перед регистрацией событий.
 > Основания: AYLA-DEC-0002 (memory-first тезис), AYLA-DEC-0018 (Product
 > Thesis Validation), AYLA-DEC-0023 (whitelist), AYLA-DEC-0024 (Memory
-> Contract), AYLA-DEC-0025 (event rules),
+> Contract), AYLA-DEC-0025 (event rules), AYLA-DEC-0045 / OD-9 (LLM не
+> ranking authority; `no_action` — валидный результат),
 > [[Ayla MVP User Journey Specification]] v0.3,
 > [[Ayla Domain Event Registry]] v0.2,
 > [[Ayla Intent Model Specification]],
 > [[Ayla Core Domain Model Specification]], [[Consent Scope Registry]],
-> [[Ayla MVP Scope and Release Contract]], [[Killer PRD]].
+> [[Ayla MVP Scope and Release Contract]], [[Killer PRD]],
+> [[Ayla Glossary]] (Goal, Outcome, Next Best Action).
+>
+> В v0.4 зафиксирован пакет решений **R-NBA-1…R-NBA-8**: Recommendation =
+> Canonical Next Best Action («что сделать»), отделённое от Execution
+> Mapping («как») и Provider Ranking («кто»); Recommendation Suitability ≠
+> Execution Feasibility (экономическая нейтральность выбора NBA);
+> композиционная таксономия NBA (`family + target + action_type`, семейства
+> — кандидаты, OQ-R11); Safety — gate, не семейство; контролируемая
+> Recommendation Decision Policy; адаптивная clarification (C03) от
+> недостающих фактов; нормативная граница C04 (WHAT + WHY) / C05 (HOW).
+> Канонический порядок gates Killer PRD §5.1 (consent/privacy → safety →
+> …) сохранён; правила eligibility/availability/relevance/preference/
+> economic-neutrality **перенесены без удаления** на уровень
+> Execution Mapping / Provider Ranking (§5, §8, §34); приведение
+> Killer PRD §5 в соответствие — отдельная правка (OQ-R12). В §13 перенесено
+> правило owner 2026-07-29 «нет displayable объяснения → не показываем»
+> (из [[Recommendation UX Addendum]] §2).
+> Новые разделы продуктово-семантического слоя (§27–§34) размещены после
+> §26, чтобы сохранить действующие ссылки на разделы v0.3 из
+> Recommendation UX Addendum и других документов.
 >
 > Документ **не** изменяет Domain Event Registry, **не** мигрирует Journey
 > Stage Specifications и **не** закрывает OQ №11 (Journey) и OQ-E1
@@ -78,9 +103,14 @@ related:
 Документ отвечает на вопросы:
 
 - Что в Ayla считается рекомендацией?
+- Что такое Canonical Next Best Action и чем Recommendation («что
+  сделать») отличается от Execution Mapping («как») и Provider Ranking
+  («кто»)? (v0.4)
+- Откуда появляются Goal и Outcomes и когда контекст достаточен для
+  решения? (v0.4)
 - Когда рекомендация появляется как доменный объект и кто её authoritative
   owner?
-- Как intent, context, memory и candidate data влияют на результат?
+- Как intent, goal, outcomes, context и memory влияют на решение? (v0.4)
 - Чем primary recommendation отличается от альтернатив?
 - Как рекомендация объясняется пользователю?
 - Как связать рекомендацию с действием и результатом (attribution)?
@@ -91,24 +121,50 @@ related:
 ## 2. Граница Recommendation
 
 Recommendation — это **версионированное доменное решение**, связывающее
-Intent Resolution, допустимый Context, допустимую Memory, Candidate Set,
-Ranking Decision, Evidence, Explanation и применённые Safety/Consent Gates
-с конкретным предлагаемым действием пользователя.
+Intent Resolution, Goal, Outcomes, допустимый Context, допустимую Memory,
+Context Sufficiency, применённые Safety/Consent Gates и Recommendation
+Decision Policy с конкретным **Canonical Next Best Action (NBA)** —
+действием, с которого разумно начать пользователю сейчас (термин —
+[[Ayla Glossary]]: «наиболее полезное, безопасное и реалистичное действие
+в текущем контексте»; не означает коммерчески наиболее выгодное действие).
 
 Базовая формулировка: Recommendation — зафиксированное решение Ayla
-предложить пользователю один основной вариант и, при необходимости,
-допустимые альтернативы на основании разрешённого контекста, evidence и
-применённых policy gates.
+предложить пользователю один основной Next Best Action и, при
+необходимости, допустимые альтернативы на основании разрешённого
+контекста, evidence и применённых policy gates.
+
+Три разных вопроса (нормативное разделение, v0.4, R-NBA-8):
+
+- **Recommendation Engine — что пользователю следует сделать?** Выбор NBA;
+  предмет этого контракта.
+- **Execution Mapping — как это можно сделать?** Варианты реализации NBA
+  (услуги Ayla, self-care, наблюдение и т. п.) — downstream, §34.
+- **Provider Ranking — кто должен реализовать выбранный вариант
+  исполнения?** Ранжирование provider/service кандидатов — downstream,
+  §8, §34.
+
+Семантика provider ranking **не является** Recommendation Decision Policy
+и не влияет на выбор NBA (§31).
 
 Recommendation **не является**:
 
+- Goal (целью пользователя) или Outcome (наблюдаемым результатом) (v0.4);
+- услугой (service), provider или слотом (v0.4);
+- каталожной выдачей или результатом поиска;
 - сырым ответом LLM;
-- списком кандидатов;
-- результатом поиска;
 - текстовым сообщением;
 - записью (appointment);
 - рекламным размещением;
 - аналитическим событием.
+
+Recommendation имеет **контролируемое каноническое ядро** (v0.4, R-NBA-1):
+AI может интерпретировать его и естественно формулировать представление
+(§13, §34), но **не является decision authority** (факт — AYLA-DEC-0045 /
+OD-9: LLM не является ranking authority).
+
+Продуктово-семантический слой решения (Goal → Outcomes → Adaptive
+Context → Context Sufficiency → Safety → Decision Policy → NBA) определён
+в §27–§33; граница с исполнением (C04 = WHAT + WHY, C05 = HOW) — в §34.
 
 ## 3. Recommendation Record и RecommendationSet
 
@@ -121,9 +177,10 @@ Recommendation **не является**:
   (одного решения «что предложить сейчас»);
 - **Каждый предложенный вариант — отдельная immutable Recommendation
   record** со своим `recommendation_id` (primary и каждая alternative);
-- изменение candidate, ranking, evidence, consent evaluation, safety
-  evaluation или decision semantics создаёт **новый
-  `recommendation_id`**;
+- изменение decision subject (NBA), policy evaluation, evidence, consent
+  evaluation, safety evaluation или decision semantics создаёт **новый
+  `recommendation_id`** (v0.4: заменяет формулировку v0.3 «изменение
+  candidate, ranking…» — candidate/ranking перенесены downstream, §8, §34);
 - presentation-only изменение не создаёт новую Recommendation и
   отражается через `presentation_version`;
 - lifecycle `active | superseded | expired | invalidated` — вычисляемая
@@ -147,22 +204,35 @@ Recommendation:            # immutable decision record
   recommendation_role: primary | alternative
   parent_recommendation_id:   # для alternative — primary, из которой выполнен rerank
   rerank_reason:              # для alternative; null у primary
-  candidate_id:
-  rank:
+  decision_subject:           # Canonical Next Best Action (v0.4, §33)
+    family:                   # ADDRESS | SUPPORT | RECOVER | OBSERVE (candidate, §33)
+    target:                   # целевой объект действия в терминах домена
+    action_type:              # тип действия внутри family
+    target_outcomes: []       # коды Outcomes, на которые направлен NBA (§28)
+  result_status:              # RecommendationResult (v0.4, §32)
   reason_codes: []
   evidence_refs: []
-  candidate_set_ref:
   context_snapshot_ref:       # immutable snapshot (§7)
   memory_snapshot_ref:        # immutable snapshot (§7)
-  ranking_policy_version:
+  decision_policy_version:    # версия Recommendation Decision Policy (v0.4, §31)
+  taxonomy_version:           # версия Goal/Outcome/NBA taxonomy (v0.4, §28, §33)
+  presentation_policy_version:  # версия правил представления C04 (v0.4, §34)
   explanation:
   safety_evaluation:
   consent_evaluation:
   created_at:
   expires_at:
-  record_schema_version:      # версия схемы записи (v0.2; заменяет recommendation_version)
+  record_schema_version:      # версия схемы записи (v0.4; заменяет recommendation_version)
   presentation_version:       # версия представления; переформатирование без нового id
 ```
+
+Предмет решения (v0.4, R-NBA-2): `decision_subject` — Canonical NBA, а
+не service/provider candidate. Поля v0.3 `candidate_id`, `rank`,
+`candidate_set_ref`, `ranking_policy_version` **удалены из decision
+record**: кандидаты, ранжирование и связь с выбранным execution option
+(service, provider, slot) фиксируются downstream — в Execution Mapping /
+Provider Ranking и Booking (§8, §34) — и не являются частью NBA-решения.
+Attribution-связь сохраняется через `recommendation_id` (§18–§20).
 
 Ограничения (нормативные):
 
@@ -210,7 +280,7 @@ Recommendation:            # immutable decision record
 
 - незначительное техническое переформатирование — тот же
   `recommendation_id`, увеличивается `presentation_version`;
-- изменение primary option, ranking или evidence — **новый
+- изменение primary NBA, decision policy evaluation или evidence — **новый
   `recommendation_id`**; новая запись содержит
   `supersedes_recommendation_id` (§21). Отдельного `decision_revision`
   в immutable-модели не существует (v0.2).
@@ -219,32 +289,53 @@ Recommendation:            # immutable decision record
 
 ## 5. Recommendation Pipeline
 
-Нормативный pipeline — в **точном соответствии каноническому порядку
-gates [[Killer PRD]] §5.1** (consent/privacy → safety →
-eligibility/availability → relevance → preference → economic-neutrality →
-primary output). v0.2: исправлен порядок — safety filtering предшествует
-eligibility; ranking разделён на relevance и preference стадии. Если
-техническая реализация потребует eligibility до safety, это — отдельное
-архитектурное решение с изменением Killer PRD, а не редакционная правка
-этого документа.
+v0.4 (R-NBA-2/3/8): pipeline разделён **границей исполнения** на два
+сегмента. Порядок начальных gates сохранён в точном соответствии
+каноническому порядку [[Killer PRD]] §5.1: consent/privacy gate и safety
+gate предшествуют любому выбору и не могут быть переопределены. Этапы
+eligibility/availability, relevance, preference и economic-neutrality
+Killer PRD §5.1 **перенесены без удаления** в execution segment
+(Provider Ranking, §34): в v0.3 они применялись к service/provider
+кандидатам внутри recommendation decision, что противоречит R-NBA-2/3 —
+теперь те же правила действуют над execution options **после** выбора
+NBA. Приведение текста Killer PRD §5 в соответствие с этим разделением —
+отдельная правка Killer PRD (OQ-R12, §26); до неё этот контракт фиксирует
+место применения правил.
+
+**Сегмент решения (Recommendation Engine — «что сделать»; C01–C04):**
 
 | # | Этап | Вход | Выход |
 |---|---|---|---|
-| 1 | Intent Resolution | пользовательское сообщение + session context | `resolution_ref` (Intent Model output) |
+| 1 | Intent Resolution (C02) | пользовательское сообщение + session context | `resolution_ref` (Intent Model output) |
 | 2 | Authorization and Consent Gate | resolution + consent state | допуск/отказ (fail-closed, CSR §2) |
-| 3 | Context Retrieval | допуск + purpose | `context_snapshot_ref` (immutable) |
-| 4 | Memory Retrieval | purpose-limited request (AYLA-DEC-0024 п. 3) | `memory_snapshot_ref` (immutable) |
-| 5 | Candidate Generation | intent + context + catalog/provider/availability | Candidate Set (§8) |
-| 6 | Safety Filtering | Candidate Set | безопасное подмножество (forbidden candidate не проходит дальше) |
-| 7 | Eligibility and Availability Filtering | безопасное подмножество | Eligible Candidates |
-| 8 | Relevance Scoring | Eligible Candidates | релевантность к intent/контексту |
-| 9 | Preference Ranking | relevance scores + разрешённые предпочтения (§6) | Ranked Candidates |
-| 10 | Economic-Neutrality Check | ranking (§11) | подтверждение/блокировка |
-| 11 | Recommendation Assembly | ranked set | RecommendationSet: primary + допустимые alternatives |
-| 12 | Explanation Assembly | ranking decision + evidence | Explanation (§13) |
+| 3 | Goal Resolution (C01) | resolution + разрешённый journey context | goal + `source` + `confirmed` (§27) |
+| 4 | Outcome Resolution | goal + user expression | outcomes[1..N] с `source`/`confirmed` (§28) |
+| 5 | Context Retrieval | допуск + purpose | `context_snapshot_ref` (immutable) |
+| 6 | Memory Retrieval | purpose-limited request (AYLA-DEC-0024 п. 3) | `memory_snapshot_ref` (immutable) |
+| 7 | Adaptive Clarification (C03) | missing/needs-confirmation факты, требуемые политикой | уточнённые context facts (§30) |
+| 8 | Context Sufficiency Evaluation | RecommendationContext (§29) | sufficiency result (§30) |
+| 9 | Safety Gate | goal, outcomes, context, safety_input | допуск / `SAFETY_BOUNDARY` (§23, §32) |
+| 10 | Recommendation Decision Policy | всё выше | ranked suitable NBAs + reason codes (§31) |
+| 11 | Recommendation Assembly | policy output | RecommendationSet: primary NBA + допустимые alternatives |
+| 12 | Explanation Assembly (WHY) | decision + реально использованные facts/evidence | Explanation (§13) |
 | 13 | Persistence | assembled records | сохранённые Recommendation records |
-| 14 | Presentation | persisted records | доставка каналу (§16) |
-| 15 | Attribution | действие пользователя / результат | qualified action / outcome link (§18–20; владелец — Attribution context, §15) |
+| 14 | Presentation (C04 = WHAT + WHY) | persisted records | доставка каналу (§16, §34) |
+
+**--- граница исполнения (execution boundary) ---**
+
+**Сегмент исполнения (downstream — «как» и «кто»; C05):**
+
+| # | Этап | Вход | Выход |
+|---|---|---|---|
+| 15 | Execution Mapping (C05 = HOW) | принятый NBA (§17) | execution options (§34) |
+| 16 | Service / Availability / Eligibility | execution option | доступные варианты исполнения |
+| 17 | Provider Ranking | eligible providers | ranked providers (правила Killer PRD §5.1 gates 3–6; §8, §34) |
+| 18 | Booking | выбранный provider/slot | booking flow; ownership — Booking context (§22) |
+| 19 | Attribution | действие пользователя / результат | qualified action / outcome link (§18–20; владелец — Attribution context, §15) |
+
+Если техническая реализация потребует изменить порядок consent/safety
+gates, это — отдельное архитектурное решение с изменением Killer PRD, а
+не редакционная правка этого документа (правило v0.2 сохранено).
 
 ## 6. Влияние Memory на Recommendation
 
@@ -264,7 +355,9 @@ eligibility; ranking разделён на relevance и preference стадии.
    оставшегося** admissible set.
 5. Historical inferred signals — non-authoritative, пока не подтверждены.
 
-Приоритет источников внутри admissible set:
+Приоритет источников внутри admissible set (зафиксирован для purpose
+«recommendation»; глобального порядка источников Memory не существует —
+приоритет определяется per-purpose policy, AYLA-DEC-0079):
 
 ```text
 Current explicit user request
@@ -275,9 +368,10 @@ Current explicit user request
 
 **Memory может влиять только на:**
 
-- candidate eligibility (учёт подтверждённых ограничений);
-- ranking (preference weighting по типам фактов — Memory taxonomy,
-  Journey v0.3);
+- context fit внутри Decision Policy (учёт подтверждённых ограничений и
+  предпочтений; v0.4 — заменяет «candidate eligibility» v0.3);
+- priority среди suitable NBA (preference weighting по типам фактов —
+  Memory taxonomy, Journey v0.3; v0.4 — заменяет «ranking» v0.3);
 - explanation (выбор раскрываемых причин);
 - альтернативы (формирование и порядок);
 - timing;
@@ -291,13 +385,15 @@ Current explicit user request
 - обходить consent;
 - превращать inferred proposal в факт (pipeline AYLA-DEC-0023 п. 2);
 - необоснованно сужать выбор (anti-lock-in, Journey v0.3);
-- скрыто увеличивать коммерческую выгоду платформы (§11).
+- скрыто увеличивать коммерческую выгоду платформы (§11);
+- создавать или переопределять eligibility/exclusion-правила Decision
+  Policy, families или targets (v0.4, §31, §33).
 
-Historical inferred signals не участвуют в ranking как факт, пока не
+Historical inferred signals не участвуют в decision как факт, пока не
 прошли Memory Learning Loop (confirmation → whitelist check → persist,
 AYLA-DEC-0023 п. 2).
 
-## 7. Immutable Snapshots (context, memory, candidates)
+## 7. Immutable Snapshots (context, memory)
 
 Для каждой recommendation decision фиксируются **immutable, версионированные
 snapshot references** (v0.2, ревью P0-5). Ссылка на mutable source entity
@@ -339,13 +435,21 @@ memory_snapshot:
   replay дольше, чем хранятся необходимые immutable snapshots и версии
   политик; согласование сроков — с retention policy (OQ-E5 реестра).
 
-## 8. Candidate Model
+## 8. Candidate Model (execution domain — downstream of Recommendation)
+
+v0.4 (R-NBA-2/8): модель кандидатов **перенесена на уровень исполнения**.
+Candidate — это кандидат на **исполнение уже выбранного NBA** (service/
+provider), а не предмет recommendation decision. Candidate Generation,
+Relevance Scoring и Preference Ranking выполняются в Execution Mapping /
+Provider Ranking (§34), после acceptance NBA, и не могут изменить primary
+NBA (§11). Правила этого раздела сохранены из v0.3 без удаления и
+действуют на execution-уровне.
 
 Различаются: **Candidate → Eligible Candidate → Ranked Candidate →
-Recommended Option → Alternative**.
+Selected Execution Option**.
 
 ```yaml
-Candidate:
+Candidate:                  # execution-level, не часть Recommendation record
   candidate_id:
   candidate_type:
   provider_ref:
@@ -358,20 +462,23 @@ Candidate:
   ranking_features:
 ```
 
-Кандидат, отфильтрованный safety или eligibility gate, **не попадает** ни
-в primary recommendation, ни в alternatives (факт — Killer PRD §5.1:
-исключённый на любом этапе не возвращается последующими).
+Кандидат, отфильтрованный safety или eligibility gate, **не попадает** в
+предлагаемые execution options (факт — Killer PRD §5.1: исключённый на
+любом этапе не возвращается последующими; Fake Rescue запрещён). Если
+подходящий NBA не имеет допустимых execution options, это — execution
+feasibility outcome с честным раскрытием пользователю (§11, §34), а не
+основание подменить NBA менее подходящим.
 
 ## 9. Primary Recommendation
 
 Primary recommendation — не единственный допустимый вариант, а **лучший
-вариант по действующей ranking policy** (факт — Killer PRD §5.1: primary
-одна). Одновременно доступна не более одной primary (Killer PRD §5.1).
+NBA по действующей Recommendation Decision Policy** (§31; факт — Killer
+PRD §5.1: primary одна). Одновременно доступна не более одной primary
+(Killer PRD §5.1).
 
 ```yaml
 primary_option:            # Recommendation record с recommendation_role: primary
-  candidate_id:
-  rank:
+  decision_subject:        # Canonical NBA (§33)
   reason_codes: []
   evidence_refs: []
   explanation:
@@ -388,18 +495,20 @@ evidence; freshness; числа удовлетворённых preference criter
 
 ## 10. Alternatives
 
-Альтернативы появляются только при условии (факт — Killer PRD §5.1: не
-более двух; после отклонения primary фиксируется `rerank_reason`, Composer
-повторно проходит с уточнённым constraint):
+Альтернативы (alternative NBA) появляются только при условии (факт —
+Killer PRD §5.1: не более двух; после отклонения primary фиксируется
+`rerank_reason`, решение пересчитывается с уточнённым constraint):
 
 - прямой запрос пользователя;
 - отказ от primary;
-- недоступность primary;
-- несовпадение цены;
-- несовпадение времени;
-- несовпадение мастера;
 - недостаточная evidence для одного сильного выбора;
 - требование policy показать выбор.
+
+Условия v0.3 «недоступность primary; несовпадение цены; несовпадение
+времени; несовпадение мастера» **перенесены на execution-уровень** (v0.4,
+R-NBA-3): недоступность или несовпадение по цене/времени/мастеру
+порождают alternative **execution options** в C05 (§34), а не новые NBA
+— сами по себе они не меняют того, что пользователю разумно сделать.
 
 Каждая alternative — **отдельная Recommendation record** (§3):
 
@@ -409,8 +518,7 @@ alternative:               # Recommendation record с recommendation_role: alter
   recommendation_set_id:   # общий с primary
   parent_recommendation_id:
   rerank_reason:
-  candidate_id:
-  rank:
+  decision_subject:        # альтернативный Canonical NBA (§33)
   alternative_reason:
   differs_from_primary_by: []
   evidence_refs: []
@@ -421,9 +529,20 @@ alternative:               # Recommendation record с recommendation_role: alter
 
 ## 11. Economic Neutrality
 
+**Recommendation Suitability ≠ Execution Feasibility (v0.4, R-NBA-3).**
+Пригодность NBA определяется **независимо от коммерческой и фактической
+доступности исполнения**: цена, доступность provider, комиссия, маржа,
+платный статус, свободные слоты и т. п. **не могут** сделать менее
+подходящий NBA primary. Проверка и раскрытие execution availability
+выполняются **после** recommendation decision — на этапах Execution
+Mapping / Provider Ranking (§34). Если у подходящего NBA нет доступных
+вариантов исполнения, это фиксируется как execution feasibility outcome с
+честным раскрытием пользователю (§8, §34), а не как замена NBA.
+
 Факт — Killer PRD §5.3 и Конституция: комиссия, маржа, расходы на
 рекламу, тариф или коммерческий статус provider **не влияют** на organic
-ranking, порядок кандидатов и выбор primary.
+ranking, порядок кандидатов и выбор primary (на execution-уровне —
+§34 — и тем более на выбор NBA).
 
 Проверяемое правило (нормативное): commercial benefit to Ayla cannot be
 a positive ranking feature unless the placement is explicitly disclosed
@@ -437,9 +556,12 @@ handling contract (Killer PRD §5.3), здесь не пересматривае
 
 ## 12. Evidence и Grounding
 
-Каждая рекомендация имеет evidence. Минимальные виды: user-stated
-evidence; confirmed memory; provider data; service data; availability
-data; price snapshot; policy result; safety constraint; journey context.
+Каждая рекомендация имеет evidence. Виды evidence **decision-уровня**:
+user-stated evidence; confirmed memory; policy result; safety constraint;
+journey context. Виды evidence **execution-уровня** (provider data;
+service data; availability data; price snapshot) относятся к execution
+options и Provider Ranking (§34) и не являются основанием выбора NBA
+(v0.4, R-NBA-3).
 
 ```yaml
 evidence_ref:
@@ -460,7 +582,7 @@ snapshot без маркировки `stale_marked`.
 
 ## 13. Explanation Contract
 
-Explanation — **производная от реального ranking decision**, а не
+Explanation — **производная от реального recommendation decision**, а не
 постфактум придуманный текст LLM. Отвечает: почему вариант подходит;
 какие данные использованы; какие ограничения учтены; почему предложена
 альтернатива; какие данные могли устареть.
@@ -473,6 +595,26 @@ explanation:
   memory_used: true | false
   memory_disclosure_mode:   # per-scope disclosure согласно CSR
 ```
+
+**WHY (v0.4):** объяснение использует **только** факты и reason codes,
+реально повлиявшие на решение. `Context Fact ≠ Reason Code`: context
+fact — вход политики; reason code — зафиксированная причина из Decision
+Policy (§31); связывание факта с причиной допустимо, только если политика
+действительно использовала этот факт. AI может **формулировать** WHY
+естественным языком, но **не может изобретать причинные основания**,
+которых не было в решении (факт — AYLA-DEC-0045 / OD-9).
+
+**Displayable-правило (owner ruling 2026-07-29; перенесено из
+[[Recommendation UX Addendum]] §2):** каждое объяснение классифицируется
+как **displayable** (разрешено показать пользователю) или
+**internal-only** (внутренние сигналы, персональные данные, раскрытие
+ranking/policy internals — показ запрещён). Explanation может существовать
+в системе, но быть internal-only. **«Нет displayable объяснения → не
+показываем»**: если Recommendation не имеет displayable-объяснения
+(включая redacted-вариант только по разрешённым фактам), рекомендация не
+предъявляется пользователю, а сценарий переводится в состояние
+no-recommendation. Владелец классификации displayable / internal-only —
+открытый вопрос OQ-REC-6 (Recommendation UX Addendum §7).
 
 Запрещено (факты — Capability Registry §6.5, CAP-005 invariants;
 Killer PRD §8): заявлять причины, которых не было в ranking; заявлять
@@ -610,16 +752,19 @@ internal technical event и отдельно не регистрируется.
 ## 17. Acceptance и Decline
 
 - `recommendation.accepted` — **пользователь явно выбрал конкретный
-  recommendation option как следующий вариант действия** (строгое
+  recommendation option (NBA) как следующий вариант действия** (строгое
   определение, v0.2). Конкретное действие фиксируется отдельно:
 
 ```yaml
 acceptance_action: select | proceed_to_booking | request_booking
 ```
 
-  Открытие booking flow и подтверждение записи — **разные** уровни
-  намерения и не считаются одинаковым acceptance. Acceptance **не
-  означает** завершённую запись (appointment completion).
+  Acceptance NBA открывает execution segment (C05, §34): выбор execution
+  option (услуга, мастер, слот) фиксируется downstream событиями booking
+  progression (§18), а не изменением Recommendation record. Открытие
+  booking flow и подтверждение записи — **разные** уровни намерения и не
+  считаются одинаковым acceptance. Acceptance **не означает** завершённую
+  запись (appointment completion).
 - `recommendation.declined` — **только явный отказ**. Бездействие не
   равно decline.
 - При выборе alternative фиксируется связь (v0.2 — по модели §3,
@@ -757,9 +902,14 @@ attribution facts** (v0.2, ревью: это measurement policy, а не дом
 ссылкой `supersedes_recommendation_id` (§4). Старая рекомендация
 **остаётся в истории и не переписывается**.
 
-Причины supersession: `user_context_changed`, `availability_changed`,
-`price_changed`, `user_declined`, `safety_constraint_changed`,
+Причины supersession: `user_context_changed`, `goal_changed`,
+`outcomes_changed`, `user_declined`, `safety_constraint_changed`,
 `consent_changed`, `memory_changed`, `explicit_refresh`.
+
+Причины v0.3 `availability_changed` и `price_changed` **перенесены на
+execution-уровень** (v0.4, R-NBA-3): изменение доступности или цены не
+отменяет NBA — оно пересчитывает execution options в C05 (§34). NBA
+пересматривается, только если изменился сам контекст цели/пользователя.
 
 Изменение consent или memory **не меняет задним числом** старую
 recommendation, но может сделать её непригодной для дальнейшего действия
@@ -767,9 +917,11 @@ recommendation, но может сделать её непригодной дл�
 
 ## 22. Expiry
 
-Recommendation имеет TTL или условия истечения: availability устарела;
-price snapshot устарел; journey завершён; пользователь изменил intent;
-candidate стал недоступен.
+Recommendation имеет TTL или условия истечения: journey завершён;
+пользователь изменил intent или goal; контекст, на котором основан NBA,
+устарел или перестал быть допустимым. Устаревание availability или price
+snapshot — условие пересчёта **execution options** (§34), а не expiry NBA
+(v0.4, R-NBA-3).
 
 Отдельно от expiry (v0.2): **invalidation** — запрет дальнейшего
 использования по policy/action gate: consent отозван; safety policy
@@ -809,11 +961,17 @@ booking flow.**
 
 ## 23. Safety
 
+**Safety — это gate, а не Recommendation family (v0.4, R-NBA-5).**
+`SAFETY_BOUNDARY` допустим как `RecommendationResult` (§32), но **не
+является CanonicalRecommendation**: запись со статусом `SAFETY_BOUNDARY`
+не содержит NBA и не может быть primary или alternative.
+
 Контракт ссылается на safety policy, а не определяет медицинскую логику
 заново (MVP Safety Policy — planned, Roadmap §7.3; границы — Killer PRD
 §4.1 OD-K6, §8–9). Минимальные правила:
 
-- forbidden candidate не ранжируется;
+- forbidden NBA не ранжируется; forbidden execution candidate не
+  предлагается (§8, §34);
 - health inference не создаётся из food/beauty сигналов (Killer PRD
   OD-K6);
 - user-stated contraindication учитывается как ограничение (user-stated
@@ -846,13 +1004,17 @@ compatibility; whitelist category; retention validity; revocation status
 model_provider:
 model_version:
 prompt_version:
-ranking_policy_version:
-candidate_snapshot_ref:    # immutable (§7)
-memory_snapshot_ref:       # immutable (§7)
-context_snapshot_ref:      # immutable (§7)
+decision_policy_version:      # Recommendation Decision Policy (§31)
+taxonomy_version:             # Goal/Outcome/NBA taxonomy (§28, §33)
+memory_snapshot_ref:          # immutable (§7)
+context_snapshot_ref:         # immutable (§7)
 safety_policy_version:
 consent_policy_version:
 ```
+
+Replay execution-уровня (provider ranking, availability) — зона
+ответственности Execution Mapping / Provider Ranking и Booking (§34) и
+не входит в replay-контракт NBA-решения (v0.4).
 
 Полный prompt и **hidden reasoning / chain-of-thought модели не
 сохраняются** как часть Recommendation Contract (нормативный запрет).
@@ -910,8 +1072,320 @@ Architecture** (R1, R2/R10, R6), **B — Product + Measurement** (R4, R5),
   (совместно с AMD-001 C5 export/forget). OQ-R9 **не блокирует**
   регистрацию базовых recommendation events — privacy-minimum записи
   сохранён (§3), события не содержат чувствительных значений.
+- **OQ-R11 — OPEN (v0.4, пакет A).** Семейства NBA `ADDRESS | SUPPORT |
+  RECOVER | OBSERVE` и состав `target`/`action_type` — **кандидаты**, не
+  финальный канон: подлежат валидации против полной MVP Goal/Outcome
+  таксономии (§28, §33). Реестр кодов Goal/Outcome как канон пока не
+  существует (Goal и Outcome определены в [[Ayla Glossary]]); рабочие коды
+  версионируются через `taxonomy_version` (§3) и не претендуют на канон до
+  валидации.
+- **OQ-R12 — OPEN (v0.4, пакет A).** Приведение Killer PRD §5 в
+  соответствие с разделением NBA / Execution / Provider Ranking: Killer
+  PRD §5.1–5.2 описывает candidate-centric pipeline над service/provider
+  кандидатами; этот контракт (v0.4, R-NBA-2/3/8) переносит правила gates
+  3–6 Killer PRD §5.1 на уровень Provider Ranking (§34) без их удаления.
+  Правка Killer PRD — отдельный шаг; связанный открытый вопрос о
+  нормативном статусе Killer PRD — OD-AUDIT-003 (KB-аудит 2026-08-19). До
+  правки Killer PRD место применения его правил фиксируется этим
+  контрактом (§5, §34).
+
+## 27. Goal Resolution (v0.4)
+
+Goal — желаемый результат на уровне изменения состояния пользователя
+([[Ayla Glossary]]); Goal не является услугой или действием. Goal
+появляется из следующих источников:
+
+- **явный выбор пользователя (C01)** — выбор цели/сценария на входе
+  (соответствует этапам 1–3 [[Ayla MVP User Journey Specification]]);
+- **естественный язык** — через Intent Resolution
+  ([[Ayla Intent Model Specification]]);
+- **подтверждённый inference** — при средней уверенности допустимо
+  продолжать с подтверждающей формулировкой; подтверждение пользователя
+  обязательно перед side-effect execution (Intent Model, §Confidence and
+  Clarification);
+- **разрешённый активный journey context** — текущий допустимый контекст
+  journey.
+
+Нормативно:
+
+- **неподтверждённый inference не является user-stated фактом**: goal с
+  `source: inferred` и `confirmed: false` не используется Decision Policy
+  как явная цель пользователя;
+- если связь intent ↔ Transformation Goal неизвестна, она **не
+  выдумывается** и остаётся `unknown/not_established` (Intent Model,
+  §Transformation Goal and Intent; OD-7);
+- каждый goal фиксируется с `source` и `confirmed` (§29);
+- там, где требуется, clarification/confirmation представлены явно — через
+  C03 (§30), а не скрытым допущением.
+
+## 28. Outcome Resolution (v0.4)
+
+Outcome — наблюдаемое изменение или завершение сценария после действия
+([[Ayla Glossary]]).
+
+- К Goal относится **1..N Outcomes** — желаемые наблюдаемые результаты,
+  на которые направлен запрос.
+- Источники Outcomes: явная таксономия / multi-select; естественный язык;
+  подтверждённая интерпретация. Каждый outcome фиксируется с `source` и
+  `confirmed` (§29); неподтверждённая интерпретация не является user-stated
+  фактом (§27).
+- **Несколько Outcomes остаются одним запросом / одним journey**, если
+  иное не установлено другим каноническим правилом.
+- Реестр кодов Goal/Outcome как канон пока не существует; `goal.code` и
+  `outcome.code` ссылаются на версионированную Goal/Outcome taxonomy
+  (`taxonomy_version`, §3), подлежащую валидации (OQ-R11). До появления
+  реестра используются стабильные строковые коды рабочей таксономии, не
+  претендующие на статус канона.
+
+## 29. Recommendation Context (v0.4)
+
+Структурированный вход Recommendation Decision Policy (§31):
+
+```yaml
+RecommendationContext:
+  intent:                   # resolution_ref — выход Intent Model
+  goal:
+    code:                   # код Goal taxonomy (§28)
+    source:                 # user_selected | user_stated |
+                            # confirmed_inference | journey_context
+    confirmed: true | false
+  outcomes:
+    - code:
+      source:
+      confirmed:
+  context_facts:
+    - fact_code:
+      value:
+      source:               # user_selected | user_stated | confirmed |
+                            # memory | inferred
+      freshness:            # fresh | stale_marked | unknown (§12)
+      consent_scope:        # scope_id из [[Consent Scope Registry]]
+  journey_context:          # разрешённый активный journey/stage context
+  safety_input:             # user-stated ограничения и safety-сигналы (§23)
+```
+
+Нормативно:
+
+- различие источников обязательно: user-selected / user-stated / confirmed
+  отделены от memory и inferred; inferred не приравнивается к user-stated
+  факту;
+- факты из memory подчиняются relevance, freshness, consent и safety
+  (§6, §24; AYLA-DEC-0024; reconfirmation как usage/freshness gate —
+  AYLA-DEC-0073);
+- чувствительные значения в Recommendation record не копируются — только
+  snapshot refs и digests (§3, §7).
+
+## 30. Context Sufficiency и адаптивная Clarification (C03) (v0.4)
+
+Decision Policy (§31) объявляет **required context facts** для каждого
+`(family, target, action_type)`. Состояние каждого требуемого факта:
+`known | missing | needs_confirmation`.
+
+Нормативно (R-NBA-7):
+
+- sufficiency оценивается **до** выбора NBA и **переоценивается после
+  каждого релевантного ответа** пользователя;
+- **C03 — адаптивная clarification**: вопросы порождаются из missing /
+  needs_confirmation фактов, требуемых политикой, а не из фиксированной
+  анкеты (факт — Journey v0.3, этап 5: минимально необходимый вопрос, не
+  более 5 вопросов за сессию Discovery; Intent Model: не более 2
+  clarification approaches на intent, затем `unresolved`);
+- если контекст уже достаточен, **C03 пропускается**;
+- различаются исходы:
+  - `INSUFFICIENT_CONTEXT` — нужный факт разумно может быть получен
+    сейчас → C03;
+  - `OBSERVE` — информация в настоящий момент не существует или
+    дальнейшие вопросы бесполезны → OBSERVE является **валидным NBA**
+    (§33), а не дефектом контекста;
+- владение conversation-уровнем sufficiency-диалога — за
+  [[BOT-003 Discovery and Recommendation Conversation Specification]]
+  (recommendation sufficiency); этот контракт владеет доменной моделью
+  результата.
+
+## 31. Recommendation Decision Policy (v0.4)
+
+Recommendation Decision Policy — контролируемый набор правил выбора NBA.
+Правила покрывают **как минимум** (R-NBA-6):
+
+- **eligibility** — допустимость NBA в текущем admissible set (§6, §23,
+  §24);
+- **context fit** — соответствие NBA goal, outcomes и context facts (§29);
+- **exclusion** — запрещающие правила (safety, consent, policy);
+- **priority** — порядок среди suitable NBA;
+- **sufficiency** — достаточность контекста для ответственного выбора
+  (§30).
+
+Нормативно:
+
+- **LLM не может** самостоятельно создавать или переопределять families,
+  targets, eligibility, exclusions, safety, выбор primary или reason codes
+  (факт — AYLA-DEC-0045 / OD-9: LLM не является ranking authority);
+- выход политики — ranked suitable NBAs + reason codes + фактически
+  использованные факты (вход WHY, §13);
+- версия политики фиксируется в записи (`decision_policy_version`, §3);
+- economic neutrality (§11) и safety (§23) — внешние ограничения и не
+  переопределяются правилами priority;
+- provider-ranking семантика не входит в Decision Policy (R-NBA-8, §34).
+
+## 32. RecommendationResult (v0.4)
+
+Исход recommendation pass:
+
+```yaml
+status:
+  CLEAR_PRIMARY          # один primary NBA
+  MULTIPLE_SUITABLE      # несколько равноподходящих NBA: primary по policy
+                         # + допустимые alternatives (§9, §10)
+  INSUFFICIENT_CONTEXT   # нужны obtainable факты → C03 (§30)
+  SAFETY_BOUNDARY        # сработал safety gate; не является NBA (§23)
+```
+
+Дополнительно:
+
+- `no_action` («ничего не делать») — валидный объяснимый результат
+  (факт — AYLA-DEC-0045 / OD-9; MVP Scope and Release Contract);
+  представляется как NBA; размещение в таксономии — при валидации
+  (OQ-R11);
+- runtime-код для `SAFETY_BOUNDARY` — `SAFETY_BLOCKED` (Journey v0.3,
+  этап 7; [[Recommendation UX Addendum]] §5) — эквивалентное каноническое
+  имя, дубликат не вводится;
+- `NO_CANDIDATES` остаётся **execution-stage** исходом (нет допустимых
+  execution options, §8, §34) и здесь не дублируется.
+
+## 33. NBA Taxonomy (v0.4, candidate)
+
+NBA задаётся **композиционно**: `family + target + action_type`, а не
+плоским списком (R-NBA-4).
+
+Начальные candidate families:
+
+| Family | Смысл |
+|---|---|
+| `ADDRESS` | действие, направленное на изменение состояния по цели |
+| `SUPPORT` | поддерживающее действие (сопровождение, поддержание) |
+| `RECOVER` | восстановление после регресса/срыва |
+| `OBSERVE` | наблюдение/выжидание без немедленного действия |
+
+Статус (нормативный): семейства — **кандидаты, не финальный канон** до
+валидации против полной MVP Goal/Outcome таксономии (OQ-R11). LLM не
+может вводить новые families или targets (§31). `SAFETY_BOUNDARY` не
+является family (§23).
+
+## 34. Граница C04/C05 и Execution Mapping (v0.4)
+
+Нормативно:
+
+- **C04 = WHAT + WHY** — представление Canonical NBA и его объяснения
+  (§13, §16). AI presentation интерпретирует и формулирует ядро
+  естественным языком, не изменяя решение (R-NBA-1).
+- **C05 = HOW** — после acceptance NBA (§17) Execution Mapping отображает
+  NBA в конкретные execution options.
+
+Каноническая цепочка:
+
+```text
+Canonical Recommendation (NBA)
+→ Execution Mapping
+→ execution options (SERVICE_PATH | self-care | observe | …)
+→ Service
+→ Provider Ranking
+→ Booking
+```
+
+- `SERVICE_PATH` означает «реализуемо через услуги Ayla» и **не
+  идентифицирует конкретную услугу**;
+- на уровне Execution Mapping / Provider Ranking продолжают действовать
+  правила Killer PRD §5.1 gates 3–6 (eligibility/availability → relevance
+  → preference → economic-neutrality) — перенесены сюда из pipeline v0.3
+  **без удаления** (re-home); конкретный provider ranking algorithm —
+  отдельный downstream workstream (факт — Journey v0.3, OD-17) и
+  Recommendation Engine Specification (planned);
+- execution option, исключённый safety/eligibility/availability, не
+  предлагается (§8); полная недоступность исполнения подходящего NBA —
+  execution feasibility outcome с честным раскрытием (§11), а не основание
+  сменить NBA;
+- C01–C05 — рабочие коды этапов, введённые этим контрактом (v0.4): C01 —
+  вход/выбор цели (этапы 1–3 Journey v0.3), C02 — Intent detection
+  (этап 4), C03 — Clarification (этап 5), C04 — Recommendation +
+  Explanation (этапы 7–8), C05 — исполнение: availability/booking
+  (этапы 10–12). Маппинг на канонические этапы Journey подлежит
+  подтверждению при синхронизации с Journey Spec.
 
 ## Change Log
+
+### v0.4 (2026-08-19) — Продуктово-семантический слой: Recommendation = Next Best Action
+
+- **R-NBA-1 (controlled core + AI presentation):** Recommendation имеет
+  контролируемое каноническое ядро; AI интерпретирует и формулирует
+  представление (C04), но не является decision authority (§2, §34).
+- **R-NBA-2 (NBA semantics):** Canonical Recommendation = Next Best
+  Action. Предмет решения в record заменён: `decision_subject`
+  (family/target/action_type/target_outcomes) вместо
+  `candidate_id`/`rank`/`candidate_set_ref`/`ranking_policy_version` (§2,
+  §3, §9, §10). Recommendation не является Goal, Outcome, услугой,
+  provider или каталожной выдачей.
+- **R-NBA-3 (economic neutrality / execution separation):**
+  Recommendation Suitability ≠ Execution Feasibility — цена, доступность,
+  комиссия, слоты не могут сделать менее подходящий NBA primary (§11);
+  availability/price убраны из причин supersession и expiry NBA (§21,
+  §22); execution-уровневые evidence отделены от decision-уровня (§12).
+- **R-NBA-4 (compositional taxonomy):** NBA = `family + target +
+  action_type`; начальные семейства ADDRESS/SUPPORT/RECOVER/OBSERVE —
+  кандидаты до валидации против MVP Goal/Outcome таксономии (§33,
+  OQ-R11).
+- **R-NBA-5 (safety gate):** Safety — gate, не семейство;
+  `SAFETY_BOUNDARY` — RecommendationResult, не CanonicalRecommendation
+  (§23, §32).
+- **R-NBA-6 (Decision Policy):** контролируемые правила eligibility /
+  context fit / exclusion / priority / sufficiency; LLM не создаёт и не
+  переопределяет families, targets, eligibility, exclusions, safety,
+  primary selection, reason codes (§31).
+- **R-NBA-7 (adaptive C03):** clarification порождается из
+  missing/needs-confirmation фактов, требуемых политикой, а не из
+  фиксированной анкеты; sufficiency переоценивается после ответов; C03
+  пропускается при достаточном контексте; `INSUFFICIENT_CONTEXT` vs
+  `OBSERVE` разведены (§30).
+- **R-NBA-8 (engine boundary):** Recommendation Engine = «что сделать»;
+  Execution Mapping = «как»; Provider Ranking = «кто». Pipeline разделён
+  границей исполнения (§5); Candidate Model перенесён на
+  execution-уровень без удаления правил (§8); цепочка `NBA → Execution
+  Mapping → execution options → Service → Provider Ranking → Booking`;
+  `SERVICE_PATH` не идентифицирует конкретную услугу; C04 = WHAT + WHY,
+  C05 = HOW (§34).
+- **Goal/Outcome/Context:** Goal Resolution (источники goal, запрет
+  выдумывания связи, `source`/`confirmed`, §27); Outcome Resolution
+  (1..N, один journey, §28); RecommendationContext с различением
+  user-selected/stated/confirmed/memory/inferred (§29); Context
+  Sufficiency `known | missing | needs_confirmation` (§30);
+  RecommendationResult: `CLEAR_PRIMARY | MULTIPLE_SUITABLE |
+  INSUFFICIENT_CONTEXT | SAFETY_BOUNDARY` + канонический `no_action`
+  (OD-9); `SAFETY_BOUNDARY` ↔ runtime `SAFETY_BLOCKED`, `NO_CANDIDATES`
+  оставлен execution-уровню (§32).
+- **WHY:** объяснение использует только факты и reason codes, реально
+  повлиявшие на решение; `Context Fact ≠ Reason Code`; AI формулирует,
+  но не изобретает причинные основания (§13).
+- **Перенос owner ruling 2026-07-29:** классификация объяснений
+  displayable / internal-only и правило «нет displayable объяснения → не
+  показываем» перенесены в §13 из Recommendation UX Addendum §2 (закрывает
+  действие 1 UX-RECON-001 / KB-007; OQ-REC-6 о владельце классификации
+  остаётся открытым в Addendum).
+- **Сохранено из v0.3 без изменений:** immutable Recommendation +
+  RecommendationSet с собственными `recommendation_id` (§3–4);
+  supersession-модель (§21); immutable snapshot refs, запрет второго
+  хранилища памяти (§7); consent и economic-neutrality правила (§11,
+  §24); lifecycle как projection (§14); publication matrix и event
+  ownership (§15); `presented ≠ viewed` (§16); acceptance/decline (§17);
+  qualified-action attribution, direct/assisted/unattributed (§18);
+  attribution windows — Measurement Framework (§19); Killer Moment через
+  `recommendation_id` (§20); Booking ownership после начала booking flow
+  (§22); replay без hidden chain-of-thought (§25); OQ-R9 остаётся открытым
+  (Privacy/Legal).
+- **Новые OQ:** OQ-R11 (NBA taxonomy — кандидат до валидации), OQ-R12
+  (правка Killer PRD §5 под разделение NBA/Execution/Provider Ranking;
+  связан с OD-AUDIT-003). Новые разделы §27–§34 размещены после §26 для
+  сохранения ссылок на разделы v0.3 из Recommendation UX Addendum.
+- Domain Event Registry, Journey Spec и Killer PRD этой версией **не
+  изменяются**. Статус: draft / proposed.
 
 ### v0.3 (2026-07-29) — Owner rulings по OQ-R
 

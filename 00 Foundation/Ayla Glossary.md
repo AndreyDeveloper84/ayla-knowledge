@@ -4,7 +4,7 @@ title: Ayla Glossary
 type: terminology-standard
 status: review
 activation_status: pending-infrastructure
-version: "2.1"
+version: "2.2"
 owner: Product Architecture
 priority: P0
 knowledge_area:
@@ -17,7 +17,7 @@ system_owner:
   - ayla-knowledge
 source_repository: ayla-knowledge
 created: 2026-07-18
-updated: 2026-07-19
+updated: 2026-08-25
 source_kind: canonical
 classification: internal
 data_sensitivity: none
@@ -1442,7 +1442,7 @@ Glossary v2.1 считается утверждённым, когда:
 
 1. Использовать ли `Body Wellness` как один domain или umbrella category.
 2. Разделять ли `Provider` и `Merchant` в будущей marketplace-модели.
-3. Нужен ли отдельный термин `Care Plan`.
+3. ~~Нужен ли отдельный термин `Care Plan`~~ — **решено 2026-08-24 (В-6, owner ruling): нет.** Каноническое и пользовательское имя — **Personal Plan**; `Care Plan` — только рабочий alias `SPEC_CARE_CONTRACT`; `CareEpisode` категорически не использовать — имя занято другой сущностью (эпизод послепроцедурного сопровождения из AUDIT_CARE_RUNTIME).
 4. Входит ли `Coach` в Specialist.
 5. Как назвать пользовательский экран памяти: «Что Ayla знает обо мне» или иначе.
 6. Нужен ли отдельный `Clinical Boundary`.
@@ -1462,6 +1462,14 @@ Glossary v2.1 считается утверждённым, когда:
 ---
 
 # Change Log
+
+## v2.2 — 2026-08-25
+
+- закрыт открытый вопрос §26.3 по решению владельца В-6 (2026-08-24,
+  `docs/OD_CARE_CONTRACT_RULINGS.md`): отдельный термин `Care Plan` не
+  вводится; каноническое имя — **Personal Plan**; `Care Plan` — рабочий
+  alias рабочей спецификации; `CareEpisode` запрещено (имя занято другой
+  сущностью).
 
 ## v2.1 — 2026-07-19
 

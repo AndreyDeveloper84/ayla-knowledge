@@ -19,7 +19,7 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-29
-updated: 2026-08-08
+updated: 2026-08-20
 review_cycle: monthly
 ---
 
@@ -63,3 +63,6 @@ SUPERSEDED
 | Intent Model v1.0 | AI System | `03 AI System\Ayla Intent Model Specification.md` | CANONICAL (v1.0, approved / accepted / canonical, 2026-08-08) | v0.9.2 (historical approved/accepted, 2026-07-28; superseded by v1.0) | Owner-approved. Alignment complete. Active Canon revision of `ayla.ai.intent-model`. |
 | Conversation Model v1.0 | Architecture | `05 Architecture\Ayla Conversation Model Specification.md` | CANONICAL (v1.0, approved / accepted / canonical, 2026-08-08) | — | Owner-approved. Alignment complete. Active Canon revision of `ayla.domain.conversation-model`. |
 | Killer PRD | Legacy | `02 Strategy\Killer PRD.md`; `D:\Проекты\Ayla\Killer_PRD_v1.1_RU.md` | LEGACY REFERENCE ONLY | — | Только для поиска требований/решений/рисков. Не родительский документ и не основа структуры MVP Scope. |
+| Ayla Memory Domain Contract | Architecture | `05 Architecture\Ayla Memory Domain Contract.md` | CANONICAL (v1.0, approved / accepted / canonical, 2026-08-20) | — | Owner-approved (CANONIZATION RULING — Memory Domain package, AYLA-DEC-0081). Storage-level материализация AYLA-DEC-0023/0024 и Memory Model Spec. Active Canon revision of `ayla.architecture.memory-domain-contract`. |
+| Ayla Context Resolution Contract | Architecture | `05 Architecture\Ayla Context Resolution Contract.md` | CANONICAL (v1.0, approved / accepted / canonical, 2026-08-20) | — | Owner-approved (CANONIZATION RULING — Memory Domain package, AYLA-DEC-0081). Единый retrieval boundary `resolve_context(..., purpose)`. Active Canon revision of `ayla.architecture.context-resolution-contract`. |
+| Ayla Memory and Context Migration Plan | Architecture | `05 Architecture\Ayla Memory and Context Migration Plan.md` | CANONICAL (v1.0, approved / accepted / canonical, 2026-08-20) | — | Owner-approved (CANONIZATION RULING — Memory Domain package, AYLA-DEC-0081). 9-шаговая миграция без big-bang; шаг 1 (conflict bug fix) выполнен. Active Canon revision of `ayla.architecture.memory-context-migration-plan`. |

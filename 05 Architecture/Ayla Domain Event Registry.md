@@ -583,7 +583,7 @@ notes: >
   (OQ-AC-3/OQ-AC-7, Ayla MVP Appointment Contract) и customer-side
   «Визит не состоялся» (OQ-AC-17, Deferred — вне текущего Master MVP
   Controlled Pilot). Зарегистрировано v0.5 (2026-08-18) по governance
-  decision AYLA-DEC-0026 по прецеденту досрочной регистрации
+  decision AYLA-DEC-0080 по прецеденту досрочной регистрации
   AYLA-DEC-0022 п. 9: normal completion path полностью определён
   (semantic_status: defined); exception-path evidence/correction
   authority остаётся pending (OQ-AC-3/OQ-AC-7) и не блокирует
@@ -1285,7 +1285,7 @@ attribution, владение `recommendation_id` и attribution-событие�
 На 2026-08-18 событий со статусом `pending-semantic-definition` в
 реестре нет. `appointment.completed` зарегистрирован v0.5
 (`semantic_status: defined` — normal completion path по
-[[Ayla MVP Appointment Contract]] §5B, AYLA-DEC-0026); exception-path
+[[Ayla MVP Appointment Contract]] §5B, AYLA-DEC-0080); exception-path
 evidence/correction authority остаётся pending с OQ-AC-3/OQ-AC-7
 (см. OQ-E3). Незакрытая семантика, остающаяся в реестре: candidate
 mappings семейства `memory.*` (§6.4, §11).
@@ -1296,7 +1296,7 @@ mappings семейства `memory.*` (§6.4, §11).
 |---|---|---|---|
 | `intent.*` | Intent Resolution | Intent Resolver | active |
 | `consent.*` | Consent / Authorization | Consent Service | active |
-| `appointment.*` | Appointment | Appointment Service (CAP-011) | active (`appointment.rescheduled` — registered v0.4, AYLA-DEC-0022; `appointment.completed` — registered v0.5, AYLA-DEC-0026) |
+| `appointment.*` | Appointment | Appointment Service (CAP-011) | active (`appointment.rescheduled` — registered v0.4, AYLA-DEC-0022; `appointment.completed` — registered v0.5, AYLA-DEC-0080) |
 | `memory.*` | Memory Service (W3) | Memory Service | active |
 | `recommendation.*` — domain (created, superseded, expired, invalidated) | Recommendation | Recommendation Engine | active (v0.3, registered) |
 | `recommendation.*` — interaction (presented, accepted, declined) | Channel Delivery / Interaction | Channel Adapter (MAX) | active (v0.3, registered) |
@@ -1384,7 +1384,7 @@ Legacy-имена — только compatibility mapping, не допустим�
 | `AppointmentCreated` | Roadmap §6.4 | `appointment.created` | ready after registry approval |
 | `AppointmentRequested` | CDM §11 | TBD | semantic review required (ревью п. 2) |
 | `AppointmentConfirmed` | Roadmap §6.4, CDM §11 | `appointment.confirmed` | ready after registry approval |
-| `AppointmentCompleted` | Roadmap §6.4, CDM §11 | `appointment.completed` | registered v0.5 (AYLA-DEC-0026; exception path pending — OQ-E3) |
+| `AppointmentCompleted` | Roadmap §6.4, CDM §11 | `appointment.completed` | registered v0.5 (AYLA-DEC-0080; exception path pending — OQ-E3) |
 | `AppointmentCancelled` | Roadmap §6.4, CDM §11 | `appointment.cancelled` | ready after registry approval |
 | `AppointmentRescheduled` | CDM §11 | `appointment.rescheduled` | ready after registry approval (registered v0.4, AYLA-DEC-0022) |
 | `AppointmentRejected` / `AppointmentMarkedNoShow` | CDM §11 | `appointment.rejected` / `appointment.no_show` | candidate |
@@ -1421,7 +1421,7 @@ Legacy-имена — только compatibility mapping, не допустим�
   producer — Appointment Domain через authoritative backend completion
   mechanism; deadline `scheduled_end + 3 hours`; commit-time exception
   check ([[Ayla MVP Appointment Contract]] §5A/§5B; регистрация —
-  AYLA-DEC-0026); прохождение времени записи не является событием.
+  AYLA-DEC-0080); прохождение времени записи не является событием.
   Открытыми остаются: спор/no-show/исправимость (exception-path
   evidence и role authority — OQ-AC-3/OQ-AC-7/OQ-AC-18) и связь с
   `OutcomeRecorded`.
@@ -1476,7 +1476,7 @@ A timeline is a consumer projection with its own visibility, freshness, and priv
 
 - **§6.3:** `appointment.completed` зарегистрирован
   (`registration_status: registered`, `semantic_status: defined`) по
-  governance decision AYLA-DEC-0026 (accepted 2026-08-18) по прецеденту
+  governance decision AYLA-DEC-0080 (accepted 2026-08-18) по прецеденту
   досрочной регистрации AYLA-DEC-0022 п. 9: семантика normal completion
   нормативно определена [[Ayla MVP Appointment Contract]] §5A/§5B
   (zero-action happy path; authoritative backend completion mechanism;
