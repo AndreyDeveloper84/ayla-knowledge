@@ -19,7 +19,7 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-29
-updated: 2026-08-08
+updated: 2026-08-20
 review_cycle: monthly
 ---
 
@@ -30,6 +30,7 @@ review_cycle: monthly
 ## Правила
 
 - Approved Owner Decisions обязательны к применению строго в пределах указанного в них scope.
+- Один идентификатор `AYLA-DEC-NNNN` = одно решение на всю Knowledge Base. Один ID не может обозначать решения разных уровней (стратегическое, MVP boundary, техническое) или разных предметных областей; перед присвоением номер проверяется по обоим реестрам (этот регистр и `02 Strategy\Ayla Decision Log.md`). Переиспользование и повторная выдача занятого номера запрещены.
 - Owner Decision не может неявно переопределять Product Essence.
 - Owner Decision создаётся только если после проверки по лестнице разрешения (см. `CANON_CONFLICT_REGISTER.md`) остаются минимум два разумных варианта, materially меняющих: продукт, MVP, главный journey, обязательства, safety/privacy, критический контракт или срок выпуска.
 
@@ -80,7 +81,7 @@ Status:         DECIDED
 Интеллектуальная координация: Ayla
 ```
 
-Примечание по ID: предпочтительный `AYLA-DEC-0012` занят в `02 Strategy\Ayla Decision Log.md` (owner directions по Domain Capability Registry); по правилу ruling использован следующий свободный — `AYLA-DEC-0026` (Decision Log занимает диапазон до `AYLA-DEC-0025`).
+Примечание по ID: предпочтительный `AYLA-DEC-0012` занят в `02 Strategy\Ayla Decision Log.md` (owner directions по Domain Capability Registry); по правилу ruling использован следующий свободный — `AYLA-DEC-0026` (на момент регистрации Decision Log занимал диапазон до `AYLA-DEC-0025`). 2026-08-18 Decision Log присвоил тот же номер записи «Master MVP Canon Freeze» — коллизия KB-001; разрешена 2026-08-19: AYLA-DEC-0026 сохранён за настоящим решением (Living Digital Twin), freeze-запись перенумерована в AYLA-DEC-0080 (см. Decision Log v1.11 и `docs/audits/2026-08-19-KB-001-DEC-0026-collision-repair.md`).
 
 Источник: `D:\Проекты\Ayla\OWNER_RULING_LIVING_DIGITAL_TWIN_PRIMARY_VISUAL_INTERFACE.md` (owner ruling, 2026-07-29). Owner Decision не переопределяет Product Essence; изменение Essence выполняется через подготовку v1.1 с отдельным owner approval.
 
@@ -1278,3 +1279,52 @@ Status:         DECIDED
 ```
 
 Source: WINDOW-04 — Memory Identity Owner Decision Session, 2026-08-09 (owner ruling).
+
+### AYLA-DEC-0081 — Memory Domain Package Canonization and Memory/Consent Rulings
+
+```text
+ID:             AYLA-DEC-0081
+Date:           2026-08-20
+Question:       Канонизировать ли Memory Domain package (Memory Domain Contract, Context Resolution Contract, Memory and Context Migration Plan) и подтвердить memory/consent rulings после reconciliation?
+Options:        n/a — прямое решение Product Owner (ruling), не выбор из эскалированных вариантов
+Decision:       Пакет канонизирован (status: approved / decision_status: accepted / canonical_status: approved, version 1.0). Consent Scope Registry v1.4 подтверждён действующим canonical CSR. Подтверждены OR-MEM-1…6; закрыты OD-MEM-1…4 и CSR-OD-5 (Consent Domain = canonical owner Consent Records, MVP physical custodian ai-bot-platform; memory_green legacy/deprecated; confidence только на MemoryProposal/audit; NutritionProfile — Nutrition Domain SoT с отдельным Privacy/Legal perimeter). Yellow/red activation НЕ разрешён.
+Rationale:      Аудит памяти 2026-08-19 (перепроверен по коду) + reconciliation по AYLA-DEC-0023/0024 и Memory Model Spec v1.0 завершены без остаточных cross-document inconsistencies; открытых memory-architecture решений не остаётся.
+Scope:          Memory Domain, Consent Domain boundary, Context Resolution. Явный non-scope: yellow/red activation; начало шагов 2+ Migration Plan этим решением не авторизуется; UX/Legal тексты preference_memory, age lookup #597, NutritionProfile perimeter — отдельные follow-up.
+Affected docs:  Ayla Memory Domain Contract; Ayla Context Resolution Contract; Ayla Memory and Context Migration Plan; Consent Scope Registry; CANON_INDEX.
+Status:         DECIDED
+```
+
+Source: CANONIZATION RULING — Memory Domain package, 2026-08-20 (owner ruling).
+
+### AYLA-DEC-0082 — Action Is Not Outcome Evidence (В-5)
+
+```text
+ID:             AYLA-DEC-0082
+Date:           2026-08-25
+Question:       Является ли факт выполнения действия (плана) доказательством
+                достижения результата (Desired Outcome)?
+Options:        n/a — прямое решение Product Owner (ruling), зафиксировано
+                как В-5 (2026-08-24, docs/OD_CARE_CONTRACT_RULINGS.md §2–3);
+                канонизация одобрена 2026-08-25 («0082 одобряю»).
+Decision:       Не является. Факт выполнения действия не является
+                доказательством достижения результата. Outcome Progress
+                вычисляется исключительно из наблюдений, относящихся к самому
+                результату. Никакое количество выполненных действий не
+                изменяет Outcome Progress. Plan Adherence и Outcome Progress —
+                две независимые линии, не сводимые ни в одно число, ни в одну
+                шкалу, ни в один визуальный индикатор. Норма — hard invariant.
+Rationale:      docs/SPEC_CARE_CONTRACT.md §3.3 (нормативная формулировка) и
+                О-6 (в каноне нормы не было); классы достоверности LDT §9;
+                DRF-1295 («о данных можно, об организме нельзя»); LDT §13
+                (Body Dignity). Проверка обратным примером: «вы хорошо
+                продвигаетесь в снижении веса» после трёх массажей —
+                запрещённая формулировка по пункту 1 нормы (docs/
+                DRAFT_AYLA-DEC-0082_ACTION_NOT_OUTCOME_EVIDENCE.md §4).
+Scope:          Personal Plan / Progress Observations / Recommendation (NBA);
+                все downstream UX- и AI-документы.
+Affected docs:  Living Digital Twin Manifesto §9 (v1.2 — пятое запрещённое
+                смешение классов + нормативный абзац); эпик DRF-1331.
+Status:         DECIDED
+```
+
+Source: В-5 (owner ruling, 2026-08-24) + owner approval 2026-08-25; драфт канонизации — окно goals, `docs/DRAFT_AYLA-DEC-0082_ACTION_NOT_OUTCOME_EVIDENCE.md`.
