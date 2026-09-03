@@ -5,7 +5,7 @@ type: specification
 status: approved
 decision_status: accepted
 canonical_status: approved
-version: "1.0"
+version: "1.1"
 owner: Product Owner
 knowledge_area:
   - product
@@ -22,7 +22,7 @@ data_categories:
 security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
-updated: 2026-08-12
+updated: 2026-09-03
 review_cycle: monthly
 ---
 
@@ -30,7 +30,9 @@ review_cycle: monthly
 
 **Status:** CANONICAL  
 **Scope:** BOT-001 First Contact only  
-**Implementation:** FORBIDDEN in this document
+**Implementation:** FORBIDDEN in this document  
+**Amendments:** A-1 (2026-09-03) — see **§24**. Every clause it touches carries an
+inline `AMENDED 2026-09-03 (§24, A-1)` marker. No original clause is deleted.
 
 ---
 
@@ -111,7 +113,8 @@ Greeting behavior MUST adapt to entry context: user state, channel and available
 A greeting alone MUST NOT create a Task. A Task emerges only when a standalone understood actionable intent is identified.
 
 **P5 — Progressive information collection only.**  
-Information MUST be collected progressively and only when required by the current intent, Task, booking, safety or consent flow. Standalone questionnaires and broad onboarding data collection are forbidden.
+Information MUST be collected progressively and only when required by the current intent, Task, booking, safety or consent flow. Standalone questionnaires and broad onboarding data collection are forbidden.  
+*AMENDED 2026-09-03 (§24, A-1): narrowed — in MAX Mini App customer entry the server-driven goal question sequence is permitted as the default first surface. It stays forbidden as a gate and forbidden in MAX Bot First Contact. Broad onboarding data collection remains forbidden everywhere.*
 
 **P6 — Single canonical conversational logic (CUX-010).**  
 The MAX Bot MUST own the canonical First Contact conversational logic. The Mini App MUST act as a UI/container/presentation surface and MUST NOT implement an independent conversational flow.
@@ -299,6 +302,7 @@ Quick Actions are optional contextual accelerators. They are not navigation, not
 - Quick Actions MUST be contextually valid for the current user state and entry context.
 - Quick Actions MUST NOT expose unavailable actions.
 - Tapping a Quick Action MUST start the corresponding intent progression; it MUST NOT launch a broad questionnaire.
+  *Unamended by A-1: A-1 concerns Mini App entry, not Quick Action targets.*
 
 ### 12.2 Examples (non-canonical)
 
@@ -316,6 +320,8 @@ These are examples only. Exact copy is not canonicalized here.
 ## 13. Progressive information collection
 
 First Contact MUST NOT begin with a standalone questionnaire or broad onboarding form.
+
+*AMENDED 2026-09-03 (§24, A-1): in MAX Mini App customer entry First Contact MAY begin with the goal surface — a server-driven question sequence that produces the customer's goal — provided that surface is not a gate (§24, condition C-2). Broad onboarding forms remain forbidden. MAX Bot First Contact is unamended.*
 
 ### 13.1 Allowed collection
 
@@ -336,6 +342,7 @@ Targeted clarification is a focused question asked to satisfy a specific require
 The following MUST NOT appear in First Contact:
 
 - a standalone "Анкета" object or button;
+  *AMENDED 2026-09-03 (§24, A-1): in MAX Mini App customer entry an entry point to the goal surface is permitted, and the surface itself is permitted. The prohibition on presenting it as a gate, and on the whole pattern in MAX Bot First Contact, stands. Historical note: DRF-1199 removed such a button in the bot on the strength of this bullet; that removal remains correct for MAX Bot.*
 - a multi-field profile completion screen presented as a gate;
 - a broad "tell us about yourself" sequence;
 - turning the first free-text message into a generalized questionnaire.
@@ -458,7 +465,7 @@ The following decision table governs BOT-001 First Contact.
 | 1 | User sends first message / enters surface. | Determine entry context: channel, user state, trigger/deep link. |
 | 2 | First message contains clear actionable intent. | Progress intent immediately (Intent Before Ceremony, CUX-012). Skip scripted greeting. Begin Task-oriented progression if appropriate. |
 | 3 | First message is a greeting only. | Respond with contextual greeting. Do not create Task. Offer free-text input and optional Quick Actions. |
-| 4 | User state = New User. | Use New User greeting behavior. No onboarding questionnaire. |
+| 4 | User state = New User. | Use New User greeting behavior. No onboarding questionnaire. *AMENDED 2026-09-03 (§24, A-1): in MAX Mini App customer entry a New User without a goal lands on the goal surface; it is not a gate.* |
 | 5 | User state = Returning User, no Active Task. | Use Returning User greeting behavior. No automatic Task creation. |
 | 6 | User state = Active Task. | Offer continuity contextualized to the Active Task. Allow free-text new intent. Do not force continuation. |
 | 7 | User selects Quick Action. | Progress the corresponding intent. Do not launch a questionnaire. |
@@ -551,7 +558,9 @@ Examples use Russian because the pilot user language is Russian. They illustrate
 The following are explicitly out of scope for BOT-001 First Contact:
 
 1. **No mandatory onboarding.** Ayla MUST NOT require a guided onboarding sequence before useful action.
+   *AMENDED 2026-09-03 (§24, A-1): unchanged in force — the word that carries this non-goal is **require**. A-1 makes the goal surface the default first screen of MAX Mini App customer entry but forbids it from being required: naming an already-known service on that same surface reaches useful action without answering any question (§24, condition C-2).*
 2. **No standalone questionnaire.** Ayla MUST NOT present an "Анкета" object or broad onboarding questionnaire.
+   *AMENDED 2026-09-03 (§24, A-1): narrowed to MAX Bot First Contact and to broad onboarding questionnaires. In MAX Mini App customer entry the server-driven goal question sequence is permitted under §24. It is not a broad onboarding questionnaire: it collects one thing, the goal, and it does not collect profile data.*
 3. **No mandatory profile completion.** Ayla MUST NOT require the user to complete a profile before expressing an intent.
 4. **No mandatory consent wall.** Consent MUST NOT be a universal first-screen gate.
 5. **No independent Mini App conversational implementation.** The Mini App MUST NOT own First Contact conversational logic.
@@ -595,6 +604,9 @@ The following criteria MUST be verifiable for BOT-001 First Contact.
 ### 20.5 Progressive information collection
 
 - AC-5.1: No standalone questionnaire appears in First Contact.
+  *AMENDED 2026-09-03 (§24, A-1): scoped to MAX Bot First Contact. For MAX Mini App customer entry, AC-5.1a and AC-5.1b below replace it.*
+- AC-5.1a: In MAX Mini App customer entry, a customer without a goal lands on the goal surface, and every question on it is supplied by the server. The Mini App MUST NOT hold its own question list or its own next-question logic.
+- AC-5.1b: The goal surface is not a gate. On that same surface, without answering any question, a customer who already knows the service can name it and reach service selection.
 - AC-5.2: No mandatory profile completion screen appears as a gate.
 - AC-5.3: Targeted clarification is allowed when required by intent, Task, booking, safety or consent.
 
@@ -644,7 +656,7 @@ Each approved Product Owner decision appears exactly once below. No superseded d
 | **Q2** | Greeting alone does not create Task; standalone understood intent starts progression | §4 P4; §6.1; §7.1; §16.4; §20.2. |
 | **Q3** | Contextual greeting + smart defaults | §4 P3; §6; §8; §9; §10; §17 decision flow. |
 | **Q4** | Hybrid First Contact: free-text primary + 3–5 contextual Quick Actions; consent on demand | §4 P2, P7; §11; §12; §14; §20.4; §20.6. |
-| **Q5** | No standalone questionnaire; progressive dialogue collection | §4 P5; §13; §19 Non-goal #2; §20.5. |
+| **Q5** | No standalone questionnaire; progressive dialogue collection | §4 P5; §13; §19 Non-goal #2; §20.5. **Amended by A-1 (2026-09-03) for MAX Mini App customer entry only — see §24.** |
 | **Q6** | Mini App is UI/container; MAX Bot owns First Contact logic | §4 P6; §15; §19 Non-goal #5; §20.7. |
 | **Q7** | Minimal segmentation: New User / Returning User / User with an Active Task | §4 P8; §8; §9; §10; §17; §19 Non-goal #7; §20.3. |
 | **Q8** | Task is canonical Product Concept; runtime/domain mapping deferred | §3 Definitions (Task); §4 P9; §16; §19 Non-goal #8; §20.8. |
@@ -660,3 +672,82 @@ Each approved Product Owner decision appears exactly once below. No superseded d
 - **Canonicalization basis:** Ayla Product Decision & Canon Authoring Process v1.0, Phase 10
 
 **Document status:** CANONICAL
+
+---
+
+## 24. Amendment A-1 (2026-09-03) — goal questionnaire as MAX Mini App customer entry
+
+### 24.1 Record
+
+- **Amendment ID:** A-1
+- **Date:** 2026-09-03
+- **Authority:** Product Owner, decision taken in dialogue and confirmed twice
+- **Implementing task:** DRF-1451
+- **Decision registry:** `Ayla/docs/OPEN_DECISIONS.md`, entry 39
+- **Scope of the amendment:** **MAX Mini App customer entry only.** MAX Bot First Contact
+  is unamended by A-1.
+- **Nothing is deleted.** Every clause A-1 touches keeps its original text and carries an
+  inline marker pointing here.
+
+### 24.2 The decision
+
+A customer opening the MAX Mini App for the first time lands on the **goal surface**. That
+surface asks the customer a sequence of questions; completing them produces the customer's
+goal. On the **same surface**, a customer who already knows what they want names the service
+and proceeds to service selection without answering any question.
+
+### 24.3 Conditions the amendment carries with it
+
+A-1 is granted only together with these conditions. A goal surface that fails any of them is
+outside A-1 and falls back under the original prohibitions.
+
+- **C-1 — Server-owned questions.** Every question, and the decision of which question comes
+  next, belongs to the Bot-owned decision logic and reaches the Mini App as data. The Mini App
+  renders it and posts the answer back. It MUST NOT hold a question list, a question order, or
+  any "what to ask next" computation. This is Non-goal #5 and §15 restated, not relaxed: the
+  goal surface is a *projection* of Bot-owned logic. **Non-goal #5 is not amended.**
+- **C-2 — Not a gate.** The surface MUST NOT block anything. Naming an already-known service —
+  as free text or by picking an offered option — is available on the surface itself, alongside
+  the questions, and reaches service selection with **zero** questions answered. This is not a
+  "skip" link and not a second screen. Free-text input remains available and unblocked
+  (AC-1.2, AC-1.3).
+- **C-3 — Goal only.** The surface collects the goal. It MUST NOT collect profile fields,
+  contact data or personal data beyond what §13.1 already allows. Non-goals #3 (mandatory
+  profile completion) and #4 (consent wall) are not amended.
+- **C-4 — Repeatable, never one-shot.** Per DRF-1225 a customer may pass through the goal
+  surface any number of times, and a customer who already has a goal keeps an entry into it.
+- **C-5 — Bot untouched.** In MAX Bot First Contact, a standalone questionnaire and a
+  standalone "Анкета" button remain forbidden (§13.3, §19 #2). The removal performed by
+  DRF-1199 in the bot remains correct and MUST NOT be reverted on the strength of A-1.
+
+### 24.4 Why the prohibition existed, and why it is lifted here
+
+The prohibition came from decision **Q5** (canonicalized 2026-08-12): broad onboarding
+questionnaires delay useful action and turn entry into ceremony, which contradicts **Q9 /
+P1 — Intent Before Ceremony (CUX-012)**. On that basis DRF-1199 removed the standalone
+"Анкета" button from the bot.
+
+The Product Owner, having read that analysis (PR #1342 on 2026-08-31, and again on
+2026-09-03), decided that MAX Mini App customer entry is the one place where it does not
+apply. The Mini App has no conversational entry of its own: a customer arriving with no goal
+previously met an empty records list and no question at all, so the ceremony argument had
+nothing on the other side of the scale.
+
+**Intent Before Ceremony is preserved, not overridden**, and that is what condition C-2 is
+for: a customer who arrives with an intent expresses it on the very first surface, ahead of
+any question, and is progressed immediately. The questions exist for the customer who has no
+intent to express yet — which is precisely the case Q9 never addressed.
+
+### 24.5 What A-1 does not license
+
+- It does not license a Mini App–owned conversational flow (Non-goal #5, §15, AC-7.2, AC-7.3).
+- It does not license a mandatory onboarding sequence (Non-goal #1) — see C-2.
+- It does not license mandatory profile completion (Non-goal #3) or a consent gate
+  (Non-goal #4, AC-6.1).
+- It does not license a questionnaire in MAX Bot First Contact (C-5).
+- It does not license blocking, hiding or delaying free-text input (AC-1.3).
+
+### 24.6 Acceptance criteria added by A-1
+
+- AC-5.1a and AC-5.1b in §20.5.
+
