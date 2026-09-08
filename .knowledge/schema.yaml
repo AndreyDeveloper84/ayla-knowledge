@@ -1,10 +1,11 @@
-schema_version: "1.13"
+schema_version: "1.14"
 specification: "../00 Foundation/Ayla Knowledge Architecture Specification.md"
 
 schema_changes:
   "1.14":
     - "register document types `standard`, `map`, `research` (non-canonical research layer)"
     - "add `engineering-process` to the concerns vocabulary"
+    - "register `machine_readable_contracts` section; first entry `planning-rules-registry` (owner decision D-1, 2026-09-08)"
   "1.13":
     - adopt Variant C Knowledge Node versioning: node_id/title uniqueness is enforced only among Active Canon revisions
     - replace global node_id uniqueness with Active Canon scoped uniqueness
@@ -552,3 +553,13 @@ ai_export:
     - production-dumps
     - credentials
     - encryption-material
+
+# Machine-readable контракты: YAML/JSON-файлы, которые не являются Knowledge
+# Nodes и не покрываются validate_knowledge.py. Каждая запись объявляет путь,
+# валидатор (исполняется в CI шагом validate-knowledge.yml) и поле версии,
+# по которому runtime отвергает неизвестную major до разбора тела.
+machine_readable_contracts:
+  planning-rules-registry:
+    path: "03 AI System/Contracts/planning-rules-registry.yaml"
+    validator: "scripts/validate_planning_rules.py"
+    version_field: registry_version
