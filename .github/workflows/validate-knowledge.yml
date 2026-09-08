@@ -29,6 +29,9 @@ jobs:
       - name: Validate knowledge
         run: python scripts/validate_knowledge.py
 
+      - name: Validate planning rules registry
+        run: python scripts/validate_planning_rules.py
+
       - name: Check generated metadata registry
         run: python scripts/render_domain_registry.py --check
 

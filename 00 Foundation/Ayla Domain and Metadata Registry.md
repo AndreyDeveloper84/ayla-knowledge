@@ -42,7 +42,7 @@ migration_source:
   imported: 2026-07-19
 generated_from:
   path: .knowledge/schema.yaml
-  schema_version: "1.13"
+  schema_version: "1.14"
   command: python scripts/render_domain_registry.py
 ---
 
@@ -56,7 +56,7 @@ generated_from:
 
 Документ предоставляет авторам и reviewers человекочитаемое представление
 машинного metadata-контракта Ayla. Он не создаёт независимый набор enum:
-таблицы ниже детерминированно сгенерированы из schema v1.13.
+таблицы ниже детерминированно сгенерированы из schema v1.14.
 
 ## 2. Source of truth
 
