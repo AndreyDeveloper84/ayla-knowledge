@@ -2,9 +2,10 @@
 node_id: ayla.architecture.mvp-recommendation-contract
 title: Ayla MVP Recommendation Contract
 type: specification
-status: draft
+status: review
 decision_status: proposed
-version: "0.4"
+canonical_status: candidate
+version: "1.0"
 owner: Product Architecture
 priority: P0
 knowledge_area:
@@ -28,7 +29,7 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-28
-updated: 2026-08-19
+updated: 2026-09-12
 review_cycle: monthly
 depends_on:
   - "[[Ayla Constitution]]"
@@ -46,13 +47,29 @@ related:
   - "[[Ayla Memory Model Specification]]"
   - "[[BOT-003 Discovery and Recommendation Conversation Specification]]"
   - "[[Recommendation UX Addendum]]"
+  - "[[Recommendation Architecture Final Reconciliation]]"
 ---
 
 # Ayla MVP Recommendation Contract
 
-> **Статус:** Draft v0.4 — proposed. Это не канонизация: документ определяет
-> доменный контракт Recommendation для MVP и подлежит финальному review
-> перед регистрацией событий.
+> **Статус:** **PROPOSED v1.0 — awaiting owner approval** (пакет 2 от
+> 12.09.2026, B7: «одним пакетом» — v1.0 вместе с amendments A1 и A2;
+> утверждает владелец, F3). До утверждения документ остаётся *proposed
+> contract*, не CANON (Final Reconciliation v1.0 §1.1). В `status`
+> frontmatter стоит `review` / `canonical_status: candidate` — словарь
+> схемы `.knowledge/schema.yaml` не содержит значения «proposed».
+>
+> **v1.0 = v0.4 + A1 + A2** (Final Reconciliation v1.0 §6.2). Amendments
+> внесены **в разделы, которых касаются**, блоками с пометкой
+> «v1.0 · A1» / «v1.0 · A2» и ссылкой на пункт пакета 2 (B1–B14, C1–C3,
+> D4) либо на раздел Final Reconciliation v1.0. Текст v0.4, который v1.0
+> не отменяет, сохранён без правок; где v1.0 молчит — оставлено как было
+> (перечень в Change Log v1.0).
+>
+> - **A1** (Goal optional, Semantic Resolution; дельты WD §20 D-1…D-10):
+>   §5, §27–§31, §33, §34.
+> - **A2** (синхронизация с каноном v1.1 — B1, B7): §3, §5, §7, §8, §10,
+>   §15, §17, §22, §23, §25, §26, §30, §34.
 > Основания: AYLA-DEC-0002 (memory-first тезис), AYLA-DEC-0018 (Product
 > Thesis Validation), AYLA-DEC-0023 (whitelist), AYLA-DEC-0024 (Memory
 > Contract), AYLA-DEC-0025 (event rules), AYLA-DEC-0045 / OD-9 (LLM не
@@ -204,27 +221,42 @@ Recommendation:            # immutable decision record
   recommendation_role: primary | alternative
   parent_recommendation_id:   # для alternative — primary, из которой выполнен rerank
   rerank_reason:              # для alternative; null у primary
-  decision_subject:           # Canonical Next Best Action (v0.4, §33)
-    family:                   # ADDRESS | SUPPORT | RECOVER | OBSERVE (candidate, §33)
-    target:                   # целевой объект действия в терминах домена
-    action_type:              # тип действия внутри family
-    target_outcomes: []       # коды Outcomes, на которые направлен NBA (§28)
+  decision_subject:           # Canonical Next Best Action = WHAT (v0.4, §33; v1.0 · B2)
+    family:                   # ADDRESS | SUPPORT | RECOVER | OBSERVE — provisional для Controlled Pilot (v1.0 · B9)
+    target:                   # целевой объект действия в терминах домена (= direction_code в Final Reconciliation §5)
+    target_outcomes: []       # DesiredOutcome refs, на которые направлен NBA (§28; v1.0 · A1)
+                              # action_type из v0.4 перенесён в ExecutionOption (§34; v1.0 · A1 D-7)
   result_status:              # RecommendationResult (v0.4, §32)
+  readiness_state:            # READY | NEEDS_DISCRIMINATION | NEEDS_REQUIRED_CONTEXT | INSUFFICIENT_EVIDENCE | BLOCKED (§30; v1.0 · A2)
   reason_codes: []
   evidence_refs: []
-  context_snapshot_ref:       # immutable snapshot (§7)
-  memory_snapshot_ref:        # immutable snapshot (§7)
+  context_snapshot_ref:       # Decision Snapshot — один из трёх логических снимков (§7; v1.0 · B10)
+  memory_snapshot_ref:        # immutable snapshot (§7); Phase 1 — null
   decision_policy_version:    # версия Recommendation Decision Policy (v0.4, §31)
   taxonomy_version:           # версия Goal/Outcome/NBA taxonomy (v0.4, §28, §33)
+  safety_policy_version:      # v1.0 · A2 (канон v1.1 §7.2)
+  catalog_mapping_version:    # v1.0 · A2 (канон v1.1 §14.6)
   presentation_policy_version:  # версия правил представления C04 (v0.4, §34)
   explanation:
-  safety_evaluation:
+  safety_evaluation:          # ref: {state, rule_id, policy_version, evidence_ref, activated_at} (§23; v1.0 · A2)
   consent_evaluation:
   created_at:
-  expires_at:
+  actionable_until:           # v1.0 · A2 (B13): = 2 ч ConversationState / active recommendation context;
+                              # прежнее имя expires_at (v0.4) снято, чтобы не читалось как срок жизни записи
   record_schema_version:      # версия схемы записи (v0.4; заменяет recommendation_version)
   presentation_version:       # версия представления; переформатирование без нового id
 ```
+
+> **v1.0 · A2 (пакет 2: B2, B13; Final Reconciliation §4 конфликт D, §5).**
+> Предмет записи — **NBA = WHAT** (B2: «Recommendation = WHAT. Service/master
+> = downstream execution. Главное архитектурное разделение»). «Primary
+> candidate» канона v1.1 §10.1 читается как *execution candidate* внутри
+> Capability-пространства, а не как предмет записи. Запись **immutable и
+> переживает TTL контекста**: 2 ч — actionability (`actionable_until`), а
+> хранение — по отдельной retention policy (B13: «не смешивать… иначе через
+> два часа нельзя доказать, какая Recommendation привела к Booking»).
+> Retention — не поле записи; число лет открыто (Final Reconciliation §8 O2).
+> Минимум для пилота — Final Reconciliation §5.
 
 Предмет решения (v0.4, R-NBA-2): `decision_subject` — Canonical NBA, а
 не service/provider candidate. Поля v0.3 `candidate_id`, `rank`,
@@ -246,8 +278,8 @@ Attribution-связь сохраняется через `recommendation_id` (§
 - **изменяемый `lifecycle_status` в записи не хранится** (v0.2, ревью):
   актуальное состояние — вычисляемая projection (`active | superseded |
   expired | invalidated`) по времени, событиям и action gates (§14, §17,
-  §22); в записи — только `created_at`, `expires_at`,
-  `supersedes_recommendation_id`;
+  §22); в записи — только `created_at`, `actionable_until` (v1.0 · B13,
+  прежнее `expires_at`), `supersedes_recommendation_id`;
 - privacy-минимум (v0.2, ревью; расширен v0.3 по OQ-R9): идентификаторы
   псевдонимизированы; sensitive values не копируются. **Privacy export
   minimum (зафиксирован v0.3)** — пользовательскому privacy request
@@ -302,19 +334,35 @@ NBA. Приведение текста Killer PRD §5 в соответстви�
 отдельная правка Killer PRD (OQ-R12, §26); до неё этот контракт фиксирует
 место применения правил.
 
+> **v1.0 · A1 + A2 (пакет 2: B5, B6, C1; WD §20 D-1, D-6, D-10; Final
+> Reconciliation §2).** Этапы 3–4 v0.4 (линейные Goal Resolution →
+> Outcome Resolution) заменены **Semantic Resolution** с optional Goal
+> (D-1, D-2, D-3): выход — `SemanticResolutionResult` (`goal?` 0..1,
+> `desired_outcomes[]` 0..N, `resolution_status`, `semantic_readiness`,
+> WD §11.2), Goal не синтезируется; **рекомендация не требует создания
+> Goal (B5)**. Этапы 7–8 — **DecisionReadiness** (канон v1.1 Decision 5,
+> §30): C03 = адаптивный DecisionReadiness flow, анкета `area → feeling →
+> goal` перестаёт быть обязательным входом (B5; отдельный явный путь
+> «Создать цель» в Mini App остаётся вне конвейера). Safety gate (этап 9)
+> — четыре состояния + `UNKNOWN` fail-closed + `NOT_APPLICABLE` и
+> правило B6 (§23). На пилоте DecisionReadiness — **shadow mode** (C1:
+> «считает потенциальные решения, не управляет пользователем, пока
+> thresholds не доказаны»). Таблица ниже приведена к этому чтению;
+> нумерация этапов — рабочая.
+
 **Сегмент решения (Recommendation Engine — «что сделать»; C01–C04):**
 
 | # | Этап | Вход | Выход |
 |---|---|---|---|
-| 1 | Intent Resolution (C02) | пользовательское сообщение + session context | `resolution_ref` (Intent Model output) |
+| 1 | Intent Resolution (C02) | пользовательское сообщение + session context | `resolution_ref` (Intent Model output 0.5 — не меняется) |
 | 2 | Authorization and Consent Gate | resolution + consent state | допуск/отказ (fail-closed, CSR §2) |
-| 3 | Goal Resolution (C01) | resolution + разрешённый journey context | goal + `source` + `confirmed` (§27) |
-| 4 | Outcome Resolution | goal + user expression | outcomes[1..N] с `source`/`confirmed` (§28) |
+| 3 | Semantic Resolution (v1.0 · A1: Goal optional) | resolution + user expression + разрешённый journey context | `SemanticResolutionResult`: `goal?` 0..1 с `source`/`confirmed`, `desired_outcomes[]` 0..N, `resolution_status`, `semantic_readiness` (§27–§28) |
+| 4 | Adaptive Clarification семантики (C02/C03, v1.0 · A1 D-6) | `resolution_status` | `SKIP / CONFIRM_ONE / CHOOSE_MANY / ASK_CONTEXT`; ≤1 вопрос за ход; после ответа — re-resolution (§30) |
 | 5 | Context Retrieval | допуск + purpose | `context_snapshot_ref` (immutable) |
 | 6 | Memory Retrieval | purpose-limited request (AYLA-DEC-0024 п. 3) | `memory_snapshot_ref` (immutable) |
-| 7 | Adaptive Clarification (C03) | missing/needs-confirmation факты, требуемые политикой | уточнённые context facts (§30) |
-| 8 | Context Sufficiency Evaluation | RecommendationContext (§29) | sufficiency result (§30) |
-| 9 | Safety Gate | goal, outcomes, context, safety_input | допуск / `SAFETY_BOUNDARY` (§23, §32) |
+| 7 | DecisionReadiness (C03, v1.0 · A2) | SemanticResolutionResult + RecommendationContext (§29) + safety state + candidate set | `READY / NEEDS_DISCRIMINATION / NEEDS_REQUIRED_CONTEXT / INSUFFICIENT_EVIDENCE / BLOCKED` + `DecisionEvidence` (§30) |
+| 8 | Required-context clarification (C03) | `NEEDS_*` / `INSUFFICIENT_EVIDENCE` | один вопрос, только если ответ меняет admissibility, ranking или execution parameter (§30) |
+| 9 | Safety Gate (сквозной, v1.0 · A2 B6) | goal?, outcomes, context, safety_input | `NORMAL / CLARIFY / CAUTION / STOP` (+ `UNKNOWN`, `NOT_APPLICABLE`); `SAFETY_BOUNDARY` как результат (§23, §32) |
 | 10 | Recommendation Decision Policy | всё выше | ranked suitable NBAs + reason codes (§31) |
 | 11 | Recommendation Assembly | policy output | RecommendationSet: primary NBA + допустимые alternatives |
 | 12 | Explanation Assembly (WHY) | decision + реально использованные facts/evidence | Explanation (§13) |
@@ -328,7 +376,7 @@ NBA. Приведение текста Killer PRD §5 в соответстви�
 | # | Этап | Вход | Выход |
 |---|---|---|---|
 | 15 | Execution Mapping (C05 = HOW) | принятый NBA (§17) | execution options (§34) |
-| 16 | Service / Availability / Eligibility | execution option | доступные варианты исполнения |
+| 16 | CanonicalService / TenantOffer eligibility (v1.0 · A2 C2) | execution option + tenant scope | только `approved`-канон и `mapping_status = VERIFIED`; иначе `NO_VERIFIED_CANDIDATES` (§8, §34) |
 | 17 | Provider Ranking | eligible providers | ranked providers (правила Killer PRD §5.1 gates 3–6; §8, §34) |
 | 18 | Booking | выбранный provider/slot | booking flow; ownership — Booking context (§22) |
 | 19 | Attribution | действие пользователя / результат | qualified action / outcome link (§18–20; владелец — Attribution context, §15) |
@@ -395,6 +443,18 @@ AYLA-DEC-0023 п. 2).
 
 ## 7. Immutable Snapshots (context, memory)
 
+> **v1.0 · A2 (пакет 2: B10; Final Reconciliation §4 конфликт 4).**
+> Снимков **три логических**, и они не смешиваются в одном объекте:
+> **Decision Snapshot** (в Recommendation record — `context_snapshot_ref`,
+> `memory_snapshot_ref`, версии политик), **Execution Mapping Snapshot**
+> (в ExecutionOption: услуга, мастер, цена, длительность, `distance_meters`)
+> и **Transaction Snapshot** (в PendingBookingIntent / Booking: слот,
+> цена на момент подтверждения, exact client-confirmed execution option —
+> D4). ADR-0013 «Recommendation Snapshot», строивший один снимок вокруг
+> candidate-модели, — `superseded` этим разделом и §25 (B10: «смешивает
+> decision, candidate/provider ranking и transaction state»). Правило ADR
+> «UX рендерит из snapshot, не из live» сохраняется для каждого из трёх.
+
 Для каждой recommendation decision фиксируются **immutable, версионированные
 snapshot references** (v0.2, ревью P0-5). Ссылка на mutable source entity
 (текущее состояние, временной retrieval result) запрещена: каждый
@@ -447,6 +507,21 @@ NBA (§11). Правила этого раздела сохранены из v0.
 
 Различаются: **Candidate → Eligible Candidate → Ranked Candidate →
 Selected Execution Option**.
+
+> **v1.0 · A2 (пакет 2: C2; `docs/OPEN_DECISIONS.md` §76, §105; Final
+> Reconciliation §2 слои 12–13, инвариант (г)).** Eligibility услуги
+> для Recommendation — **только `mapping_status = VERIFIED`** у
+> `approved`-канона; **второй ветки нет** и «ноль VERIFIED» не разрешает
+> откат на `REVIEW_REQUIRED` (§76). Пустой результат — штатное состояние
+> с именем **`NO_VERIFIED_CANDIDATES`**, не поломка. Дословно C2: «VERIFIED
+> → может участвовать в semantic Recommendation; не VERIFIED →
+> Catalog/Search/direct booking при остальных gates возможны, Ayla
+> Recommendation — нельзя». Семантически: VERIFIED-канон + активный
+> мастер + расписание доказывают *execution availability*, не *semantic
+> suitability* — последняя решается на уровне NBA (§31). Ранжирование
+> провайдеров — staged: hard eligibility → semantic fit → transaction fit
+> → personalization → quality → tie-break (канон v1.1 Decision 6);
+> экономика — вне ranking (§11).
 
 ```yaml
 Candidate:                  # execution-level, не часть Recommendation record
@@ -526,6 +601,14 @@ alternative:               # Recommendation record с recommendation_role: alter
 
 Альтернативы **не показываются** ради искусственного «ассортимента» и не
 предлагаются как равноправный каталог по умолчанию (Killer PRD §5.1).
+
+> **v1.0 · A2 (пакет 2: B4; Final Reconciliation §4 конфликт B).**
+> «Другой вариант» доступен всегда после primary; **список альтернатив
+> (≤2, C04.3) не показывается автоматически — пользователь открывает его
+> действием**. Запрос альтернативы создаёт новую Recommendation с
+> `parent_recommendation_id` и `rerank_reason = ALTERNATIVE_REQUESTED`
+> (канон v1.1 §10.2); `Что ещё?` — session-level сигнал, не durable
+> dislike (§10.3).
 
 ## 11. Economic Neutrality
 
@@ -633,7 +716,7 @@ immutable record не хранится):
 ```text
 active        — создана, не superseded, не expired, не invalidated
 superseded    — заменена новым решением (supersedes_recommendation_id)
-expired       — истёк TTL/freshness (expires_at, §22)
+expired       — истёк TTL/freshness (actionable_until — v1.0 · B13; §22)
 invalidated   — дальнейшее использование запрещено policy/action gate
                 (consent revocation, safety policy change, provider
                 removal — иная природа, чем expiry; v0.2, ревью)
@@ -662,6 +745,19 @@ Recommendation не превращается в агрегат всей поль
 изменяется; регистрация — отдельная задача). Publication matrix принята
 **owner ruling OQ-R2/R10 — ACCEPT (v0.3)**:
 
+> **v1.0 · A2 (пакет 2: B8; канон v1.1 §17.3, §17.5; Final Reconciliation
+> §4 конфликт 5).** Таксономия событий **одна** — product event backbone
+> канона v1.1 §17.3; этот раздел остаётся publication matrix к ней.
+> **`recommendation.accepted` не вводится** (B8: «ENGAGED доказывает
+> взаимодействие, `booking_intent.created` — переход к исполнению; generic
+> accepted интерпретируется сильнее доказанного»). `recommendation.declined`
+> как отдельное событие снято: явный отказ — reaction `REJECTED` (канон
+> v1.1 §10.3), фиксируется interaction-слоем. `presented` = transport ack
+> (OQ-R3, §16). `qualified_action.attributed` — только по provenance chain
+> `Recommendation → PendingBookingIntent → Booking` (§18; канон v1.1
+> §17.6): без provenance атрибуции нет, эвристика по окну времени в P0 не
+> применяется. Инвариант: `shown ≠ engaged ≠ booked ≠ completed ≠ liked`.
+
 | Event | Semantic class | Authoritative owner | Publication scope |
 |---|---|---|---|
 | `recommendation.created` | domain + integration | Recommendation | cross_context |
@@ -669,9 +765,12 @@ Recommendation не превращается в агрегат всей поль
 | `recommendation.expired` | domain | Recommendation | internal |
 | `recommendation.invalidated` | domain + integration | Recommendation | cross_context |
 | `recommendation.presented` | interaction + integration | Channel Delivery / Interaction | cross_context |
-| `recommendation.accepted` | interaction + integration | Channel Delivery / Interaction | cross_context |
-| `recommendation.declined` | interaction + integration | Channel Delivery / Interaction | cross_context |
+| `recommendation.explanation_requested` (v1.0 · B8) | interaction | Channel Delivery / Interaction | cross_context |
+| `recommendation.alternative_requested` (v1.0 · B8) | interaction | Channel Delivery / Interaction | cross_context |
+| `recommendation.engaged` (v1.0 · B8; = `Посмотреть варианты`, не acceptance) | interaction + integration | Channel Delivery / Interaction | cross_context |
+| `booking_intent.created` (v1.0 · B8; переход к исполнению, несёт `recommendation_id`) | domain + integration | Booking / Handoff | cross_context |
 | `qualified_action.attributed` | attribution + integration | Attribution / Measurement | cross_context |
+| ~~`recommendation.accepted`~~, ~~`recommendation.declined`~~ | — | сняты v1.0 (B8) | — |
 
 Детали (owner ruling):
 
@@ -684,7 +783,7 @@ Recommendation не превращается в агрегат всей поль
   Recommendation, содержащей `supersedes_recommendation_id`; payload
   включает оба идентификатора.
 - **`recommendation.expired`** — internal в MVP: корректность
-  использования обеспечивается `expires_at` и read/action gate (§22);
+  использования обеспечивается `actionable_until` (v1.0 · B13) и read/action gate (§22);
   integration consumers не должны зависеть от гарантированной доставки
   expiry event. Событие используется для projection, cleanup, analytics,
   observability.
@@ -693,7 +792,8 @@ Recommendation не превращается в агрегат всей поль
   policy change, provider removal, policy prohibition; action gate всё
   равно остаётся обязательным (в v0.2 был candidate — подтверждён
   ruling R2/R10).
-- **Interaction events** (`presented`, `accepted`, `declined`):
+- **Interaction events** (`presented`, `explanation_requested`,
+  `alternative_requested`, `engaged`; v1.0 · B8):
   authoritative owner — **Channel Delivery / Interaction**, а не
   Recommendation Engine, потому что channel layer знает, что было
   доставлено, какой acknowledgement получен и какое явное действие
@@ -751,12 +851,24 @@ internal technical event и отдельно не регистрируется.
 
 ## 17. Acceptance и Decline
 
-- `recommendation.accepted` — **пользователь явно выбрал конкретный
+> **v1.0 · A2 (пакет 2: B8, D4; канон v1.1 §10.3, Decision 13).**
+> Событие `recommendation.accepted` и поле `acceptance_action` **сняты**
+> (B8). Вместо generic acceptance — реакции канона v1.1 §10.3:
+> `WHY_REQUESTED / ALTERNATIVE_REQUESTED / ENGAGED / REJECTED /
+> CONSTRAINT_ADDED`; `Посмотреть варианты` = `ENGAGED`, **не доказанное
+> принятие**. Переход к исполнению доказывается только
+> `booking_intent.created` → `PendingBookingIntent(recommendation_id,
+> execution_option)`, где **фиксируется именно та execution option,
+> которую клиент видел и подтвердил (D4)**. Acceptance ≠ Booking
+> сохраняется (BOT-003 §13). Текст v0.4 ниже сохранён как история
+> определения; действующее правило — этот блок.
+
+- ~~`recommendation.accepted`~~ (v0.4) — **пользователь явно выбрал конкретный
   recommendation option (NBA) как следующий вариант действия** (строгое
   определение, v0.2). Конкретное действие фиксируется отдельно:
 
 ```yaml
-acceptance_action: select | proceed_to_booking | request_booking
+acceptance_action: select | proceed_to_booking | request_booking   # снято v1.0 (B8)
 ```
 
   Acceptance NBA открывает execution segment (C05, §34): выбор execution
@@ -765,8 +877,9 @@ acceptance_action: select | proceed_to_booking | request_booking
   booking flow и подтверждение записи — **разные** уровни намерения и не
   считаются одинаковым acceptance. Acceptance **не означает** завершённую
   запись (appointment completion).
-- `recommendation.declined` — **только явный отказ**. Бездействие не
-  равно decline.
+- ~~`recommendation.declined`~~ (v0.4) — **только явный отказ**. Бездействие не
+  равно decline. v1.0: явный отказ = reaction `REJECTED`; бездействие
+  по-прежнему ничем не является (B8).
 - При выборе alternative фиксируется связь (v0.2 — по модели §3,
   `option_id` не используется):
 
@@ -917,6 +1030,29 @@ recommendation, но может сделать её непригодной дл�
 
 ## 22. Expiry
 
+> **v1.0 · A2 (пакет 2: B13, D4; канон v1.1 §4, §16.8–§16.9; Final
+> Reconciliation §4 конфликт E).** `expires_at` → **`actionable_until`**:
+> это TTL *actionability* (= 2 ч ConversationState / active recommendation
+> context, канон v1.1 Decision 1), **не срок жизни записи** — immutable
+> Recommendation record хранится для attribution/audit по отдельной
+> retention policy (B13). Через два часа контекст не продолжается напрямую,
+> но `recommendation_id` и цепочка `Recommendation → PendingBookingIntent
+> → Booking` остаются доказуемыми.
+>
+> **Инвариант D4 (revalidation):** авторитетна **конкретная execution
+> option, которую видел и подтвердил клиент** (если это ребро мастера —
+> значит ребро мастера). Booking обязан snapshot/revalidate **именно её**;
+> любое расхождение (показано 60 мин / 1500 ₽, применилось бы 45 мин /
+> другая цена) = **`MATERIAL_CHANGE`** → показать пользователю → **новое
+> подтверждение**. Не silent normalization и не «ребро всегда главнее».
+> Результат валидации BookingIntent — `VALID / NEEDS_RESOLUTION /
+> MATERIAL_CHANGE / BLOCKED` (канон v1.1 §16.9), отличен от
+> DecisionReadiness. **Реестр кодов:** `MATERIAL_CHANGE` — зонтичное
+> понятие контракта; в каталоге ему соответствуют `409 QUOTE_CHANGED`
+> (`details.field ∈ {price, duration_minutes}`, `quoted`, `applied`) и
+> `409 SLOT_UNAVAILABLE`; коды каталога не переименовываются (Final
+> Reconciliation §4, `docs/MEASURE_D4_QUOTE_CHANGED_393.md`).
+
 Recommendation имеет TTL или условия истечения: journey завершён;
 пользователь изменил intent или goal; контекст, на котором основан NBA,
 устарел или перестал быть допустимым. Устаревание availability или price
@@ -929,7 +1065,8 @@ snapshot — условие пересчёта **execution options** (§34), а 
 допустимость.
 
 Инвариант (нормативный): **отсутствие события `recommendation.expired`
-не разрешает использовать рекомендацию после `expires_at`** — read/action
+не разрешает использовать рекомендацию после `actionable_until`** (v1.0 ·
+B13; в v0.4 — `expires_at`) — read/action
 gate проверяет актуальность напрямую (аналог consent/memory read gate,
 AYLA-DEC-0024 п. 5а).
 
@@ -965,6 +1102,26 @@ booking flow.**
 `SAFETY_BOUNDARY` допустим как `RecommendationResult` (§32), но **не
 является CanonicalRecommendation**: запись со статусом `SAFETY_BOUNDARY`
 не содержит NBA и не может быть primary или alternative.
+
+> **v1.0 · A2 (пакет 2: B6, C3; канон v1.1 Decision 4 §7.1; Final
+> Reconciliation §2 слой 6, инвариант (з)).** Safety state — **четыре
+> состояния** `NORMAL / CLARIFY / CAUTION / STOP` (канон v1.1 §7.1) плюс
+> `UNKNOWN` (fail-closed: считается как STOP до оценки) и
+> `NOT_APPLICABLE` (правило не применимо к кандидату). Каждая оценка несёт
+> `rule_id`, `policy_version`, `evidence_ref`, `activated_at` и
+> allowed/forbidden capabilities. **До утверждённой safety-signal matrix
+> (C3) действует B6:** потенциально медицинский смысл (боль, отёки,
+> хроническая усталость) **fail-closes затронутую capability в
+> `CLARIFY`** — задаётся один decision-changing safety-вопрос; до ответа
+> semantic Recommendation не формируется. Матрица — открытый вход
+> контракта: `RequiredContextSpec` для `owner = SAFETY` (Final
+> Reconciliation §6.5); её отсутствие блокирует выход slice к
+> пользователям, но не канонизацию. Safety-гейтов **два**: conversational
+> safety state (здесь, до Recommendation) и service-level health gate на
+> записи (`requires_health_check ∈ {True, UNKNOWN}` → `HEALTH_CHECK_*`, не
+> `BOOKING_ERROR`; `docs/OPEN_DECISIONS.md` §98) — кандидат с таким флагом
+> может быть рекомендован как направление, исполнение уходит к человеку, и
+> это раскрывается в WHY/C05 честно.
 
 Контракт ссылается на safety policy, а не определяет медицинскую логику
 заново (MVP Safety Policy — planned, Roadmap §7.3; границы — Killer PRD
@@ -1016,6 +1173,18 @@ Replay execution-уровня (provider ranking, availability) — зона
 ответственности Execution Mapping / Provider Ranking и Booking (§34) и
 не входит в replay-контракт NBA-решения (v0.4).
 
+> **v1.0 · A2 (пакет 2: B10).** Replay NBA-решения воспроизводится из
+> Decision Snapshot (этот раздел + §7); Execution Mapping Snapshot и
+> Transaction Snapshot воспроизводят свои слои отдельно (§7). ADR-0013
+> §5 Open Questions 1–5 перенесены сюда как открытые входы (без ответа):
+> (1) кто создаёт и хранит snapshot — bot-platform или backend (split
+> ADR-0009); (2) persistence/TTL snapshot и privacy (session-only норма
+> UX-OD-003) — теперь читается через B13 (retention — отдельная политика);
+> (3) связь snapshot с событиями `recommendation.created` /
+> `.presented`; (4) versioning policy полей `*_version` и что считается
+> bump-ом; (5) граница «новый snapshot» при повторном рендере и у
+> alternative (`parent_recommendation_id`).
+
 Полный prompt и **hidden reasoning / chain-of-thought модели не
 сохраняются** как часть Recommendation Contract (нормативный запрет).
 Replay гарантируется только в пределах retention dependency (§7).
@@ -1064,7 +1233,10 @@ Architecture** (R1, R2/R10, R6), **B — Product + Measurement** (R4, R5),
   атрибут объяснимости, не вероятность (§9).
 - **OQ-R8 — post-MVP backlog.** Paid placement вне organic ranking —
   out of MVP scope (§11).
-- **OQ-R9 — OPEN (пакет D, владелец Privacy/Legal).** Privacy export
+- **OQ-R9 — OPEN (пакет D, владелец Privacy/Legal).** v1.0 · B13:
+  retention immutable Recommendation record — отдельная политика, не поле
+  записи и не 2-часовой TTL контекста; число лет — открыто (Final
+  Reconciliation §8 O2). Privacy export
   minimum зафиксирован (§3); открыты для Privacy/Legal: retention
   period; deletion vs legal hold; интерпретация derived data; являются
   ли digests personal data; export format; обработка immutable audit
@@ -1072,7 +1244,13 @@ Architecture** (R1, R2/R10, R6), **B — Product + Measurement** (R4, R5),
   (совместно с AMD-001 C5 export/forget). OQ-R9 **не блокирует**
   регистрацию базовых recommendation events — privacy-minimum записи
   сохранён (§3), события не содержат чувствительных значений.
-- **OQ-R11 — OPEN (v0.4, пакет A).** Семейства NBA `ADDRESS | SUPPORT |
+- **OQ-R11 — PROVISIONAL (v1.0, пакет 2: B9).** Семейства NBA
+  `ADDRESS / SUPPORT / RECOVER / OBSERVE` — **provisional для Controlled
+  Pilot** («не вечная таксономия без validation»); `action_type` из
+  композиции снят в ExecutionOption (A1 D-7). Реестр кодов Goal/Outcome —
+  по-прежнему открыт (OQ-GO-1: рабочий термин `DesiredOutcome`).
+  Формулировка v0.4 ниже — история:
+  Семейства NBA `ADDRESS | SUPPORT |
   RECOVER | OBSERVE` и состав `target`/`action_type` — **кандидаты**, не
   финальный канон: подлежат валидации против полной MVP Goal/Outcome
   таксономии (§28, §33). Реестр кодов Goal/Outcome как канон пока не
@@ -1089,7 +1267,18 @@ Architecture** (R1, R2/R10, R6), **B — Product + Measurement** (R4, R5),
   правки Killer PRD место применения его правил фиксируется этим
   контрактом (§5, §34).
 
-## 27. Goal Resolution (v0.4)
+## 27. Goal Resolution (v0.4) → Semantic Resolution: Goal optional (v1.0 · A1)
+
+> **v1.0 · A1 (пакет 2: B5; WD §20 D-1, D-2; Final Reconciliation §4
+> конфликт 3, §2 слой 3).** Goal в Recommendation — **0..1, optional**:
+> «не заставлять создавать Goal ради рекомендации» (B5). Goal **не
+> синтезируется** (D-2, OD-SR-3): если связь неизвестна — `not_established`.
+> Этап «Goal Resolution» как обязательный шаг снят; Goal — одна из осей
+> `SemanticResolutionResult` (§28). Явный путь «Создать цель» в Mini App
+> остаётся **отдельным** действием пользователя вне рекомендательного
+> конвейера (B5; канон v1.1 §12.1: Goal `ACTIVE` только после explicit
+> user action). Источники и правило «неподтверждённый inference — не
+> user-stated факт» ниже сохраняются.
 
 Goal — желаемый результат на уровне изменения состояния пользователя
 ([[Ayla Glossary]]); Goal не является услугой или действием. Goal
@@ -1118,13 +1307,29 @@ Goal — желаемый результат на уровне изменени�
 - там, где требуется, clarification/confirmation представлены явно — через
   C03 (§30), а не скрытым допущением.
 
-## 28. Outcome Resolution (v0.4)
+## 28. Outcome Resolution (v0.4) → SemanticResolutionResult (v1.0 · A1)
+
+> **v1.0 · A1 (WD §20 D-3, D-10; WD §11.2 OD-SR-1…6).** Outcome Resolution
+> **не требует уже существующего Goal** (D-3). Вводится upstream-объект
+> **`SemanticResolutionResult`** (D-10): `goal?` (0..1), `desired_outcomes[]`
+> (0..N — на уровне объекта), `resolution_status ∈ {RESOLVED,
+> NEEDS_CONFIRMATION, AMBIGUOUS, INSUFFICIENT}`, `semantic_readiness ∈
+> {READY_FOR_DECISION (⇒ desired_outcomes ≥ 1), DISCOVERY_REQUIRED}`.
+> Маппинг на Adaptive Clarification: `RESOLVED → SKIP`,
+> `NEEDS_CONFIRMATION → CONFIRM_ONE`, `AMBIGUOUS → CHOOSE_MANY` (когда
+> интерпретации совместимы), `INSUFFICIENT → ASK_CONTEXT`; после ответа —
+> re-resolution. В объект **не входят** family, action, service, provider,
+> price, availability, ranking, reason codes, execution route (OD-SR-6).
+> Рабочий термин — `DesiredOutcome` (OQ-GO-1 открыт); канонический реестр
+> кодов по-прежнему не существует. `RecommendationSet` несёт
+> `semantic_resolution_ref` (Final Reconciliation §5).
 
 Outcome — наблюдаемое изменение или завершение сценария после действия
 ([[Ayla Glossary]]).
 
 - К Goal относится **1..N Outcomes** — желаемые наблюдаемые результаты,
-  на которые направлен запрос.
+  на которые направлен запрос. *v1.0 · A1: кардинальность на уровне
+  `SemanticResolutionResult` — 0..N, и Outcomes существуют без Goal.*
 - Источники Outcomes: явная таксономия / multi-select; естественный язык;
   подтверждённая интерпретация. Каждый outcome фиксируется с `source` и
   `confirmed` (§29); неподтверждённая интерпретация не является user-stated
@@ -1141,10 +1346,19 @@ Outcome — наблюдаемое изменение или завершени�
 
 Структурированный вход Recommendation Decision Policy (§31):
 
+> **v1.0 · A1 (WD §20 D-4, D-5, D-9).** `goal` — **optional**; отсутствие
+> Goal само по себе **не** `INSUFFICIENT_CONTEXT` (D-4). Goal уточняется
+> только если конкретное правило Decision Policy требует его для текущего
+> решения (D-5). Goal участвует через *controlled priority/alignment*, не
+> override'ит safety, eligibility, exclusions, consent, evidence, context
+> fit (D-9, §31). Вход Decision Policy: Intent Resolution Output +
+> `SemanticResolutionResult` + `RecommendationContext` (OD-SR-6).
+
 ```yaml
 RecommendationContext:
   intent:                   # resolution_ref — выход Intent Model
-  goal:
+  semantic_resolution_ref:  # SemanticResolutionResult (§28; v1.0 · A1)
+  goal:                     # optional, 0..1 (v1.0 · A1 D-4)
     code:                   # код Goal taxonomy (§28)
     source:                 # user_selected | user_stated |
                             # confirmed_inference | journey_context
@@ -1175,7 +1389,35 @@ RecommendationContext:
 - чувствительные значения в Recommendation record не копируются — только
   snapshot refs и digests (§3, §7).
 
-## 30. Context Sufficiency и адаптивная Clarification (C03) (v0.4)
+## 30. Context Sufficiency и адаптивная Clarification (C03) (v0.4) → DecisionReadiness (v1.0 · A2)
+
+> **v1.0 · A2 + A1 (пакет 2: B5, C1; канон v1.1 Decision 5 §8; WD §20
+> D-5, D-6, D-10; Final Reconciliation §2 слои 4, 7).** «Context
+> Sufficiency» = **DecisionReadiness** — детерминированная оценка,
+> достаточно ли подтверждённых данных для следующего решения; **LLM
+> self-confidence не является механизмом решения**. Состояния и правила
+> (канон v1.1 §8, дословно по смыслу):
+>
+> ```text
+> READY                    → рекомендовать
+> NEEDS_DISCRIMINATION     → один вопрос с наибольшей различающей ценностью
+>                            (+ delegation=HIGH → MAY recommend)
+> NEEDS_REQUIRED_CONTEXT   → спросить обязательно
+> INSUFFICIENT_EVIDENCE    → самый широкий полезный вопрос
+> BLOCKED                  → рекомендация запрещена; blocking policy
+> ```
+>
+> Вопрос допустим только если ответ меняет admissibility, ranking или
+> required execution parameters; высокая делегация не обходит required
+> context и safety; `SURPRISE_ME` — отдельная discovery-семантика, не
+> override. Каждое решение несёт `DecisionEvidence` / reason codes.
+> **Две оси sufficiency** (D-10, OD-SR-6): semantic (§28) и decision
+> (здесь); gap в RecommendationContext не переводит `RESOLVED` семантику в
+> `INSUFFICIENT`. **C03 = адаптивный DecisionReadiness flow** (B5):
+> анкета `area → feeling → goal` не является обязательным входом; поле,
+> не влияющее на решение, не заявляется учтённым (доктрина 12.09). На
+> пилоте — **shadow mode** (C1). Исходы `INSUFFICIENT_CONTEXT` /
+> `OBSERVE` ниже сохраняются как результат (§32) поверх этих состояний.
 
 Decision Policy (§31) объявляет **required context facts** для каждого
 `(family, target, action_type)`. Состояние каждого требуемого факта:
@@ -1225,7 +1467,9 @@ Recommendation Decision Policy — контролируемый набор пр�
 - версия политики фиксируется в записи (`decision_policy_version`, §3);
 - economic neutrality (§11) и safety (§23) — внешние ограничения и не
   переопределяются правилами priority;
-- provider-ranking семантика не входит в Decision Policy (R-NBA-8, §34).
+- provider-ranking семантика не входит в Decision Policy (R-NBA-8, §34);
+- *v1.0 · A1 (D-9):* Goal — controlled priority/alignment, **не override**
+  safety, eligibility, exclusions, consent, evidence, context fit.
 
 ## 32. RecommendationResult (v0.4)
 
@@ -1252,10 +1496,17 @@ status:
 - `NO_CANDIDATES` остаётся **execution-stage** исходом (нет допустимых
   execution options, §8, §34) и здесь не дублируется.
 
-## 33. NBA Taxonomy (v0.4, candidate)
+## 33. NBA Taxonomy (v0.4, candidate) → provisional (v1.0 · B9)
 
-NBA задаётся **композиционно**: `family + target + action_type`, а не
-плоским списком (R-NBA-4).
+> **v1.0 · A1 + пакет 2 B9 (WD §20 D-7, D-8).** Семейства
+> `ADDRESS / SUPPORT / RECOVER / OBSERVE` — **provisional для Controlled
+> Pilot** (B9 (а): «не вечная таксономия без validation»); альтернатива WD
+> `INTERVENE / SUPPORT / OBSERVE` (D-8) не принята. `action_type` —
+> маршрут исполнения и **перенесён в ExecutionOption** (D-7, §34):
+> композиция NBA в записи — `family + target + target_outcomes` (§3).
+
+NBA задаётся **композиционно**: `family + target` (+ `target_outcomes`), а
+не плоским списком (R-NBA-4). *v0.4: `family + target + action_type`.*
 
 Начальные candidate families:
 
@@ -1280,6 +1531,25 @@ NBA задаётся **композиционно**: `family + target + action_t
   естественным языком, не изменяя решение (R-NBA-1).
 - **C05 = HOW** — после acceptance NBA (§17) Execution Mapping отображает
   NBA в конкретные execution options.
+
+> **v1.0 · A1 + A2 (пакет 2: B2, B3, B4, C2; WD §20 D-6, D-7; Final
+> Reconciliation §2).** Тройное разделение: **Recommendation = NBA = WHAT**
+> (C04), **Execution Mapping = HOW** (C05), **Provider = WHO** (C05).
+> **C04 показывает направление + WHY + действия** `Подобрать вариант` /
+> `Почему` / `Другой вариант`; **услуга, мастер, цена, слот на C04 не
+> показываются** (B3) — они на C05 после перехода к execution mapping.
+> Альтернативы C04.3 — только действием пользователя (B4). Execution
+> options несут `action_type` (D-7), Execution Mapping Snapshot (§7) и
+> распределяются по цепочке `Need → Capability → CanonicalService →
+> TenantOffer` (канон v1.1 Decision 11 §14); eligibility — только
+> `VERIFIED` (C2, §8), иначе `NO_VERIFIED_CANDIDATES`. Коды этапов (D-6):
+> **C01** = Hybrid First Contact (free text primary + contextual Quick
+> Actions; чип = user expression тем же путём, что и текст); **C02** =
+> Intent Resolution + Semantic Resolution с единым Adaptive Clarification
+> (`SKIP / CONFIRM_ONE / CHOOSE_MANY / ASK_CONTEXT`; «C02.4» — UX-метка
+> режима `CHOOSE_MANY`, не стадия); **C03** = адаптивный DecisionReadiness
+> flow; **C04** = WHAT + WHY; **C05** = HOW + WHO. Описание C01–C05 v0.4 ниже
+> — история; маппинг на этапы Journey — по Journey v1.2.
 
 Каноническая цепочка:
 
@@ -1312,6 +1582,42 @@ Canonical Recommendation (NBA)
   подтверждению при синхронизации с Journey Spec.
 
 ## Change Log
+
+### v1.0 (2026-09-12) — PROPOSED, awaiting owner approval (пакет 2, B7: одним пакетом с A1 + A2)
+
+Основание: `docs/RECOMMENDATION_ARCHITECTURE_FINAL_RECONCILIATION_v1.0_2026-09-12.md`
+(§6.1 п.1, §6.2), `docs/OWNER_DECISIONS_2026-09-12_PACKAGE2.md`. Каждая
+дельта — с пунктом пакета 2 или разделом Final Reconciliation; блоки в
+тексте помечены «v1.0 · A1» / «v1.0 · A2».
+
+| Раздел | Дельта | Основание |
+|---|---|---|
+| frontmatter, шапка | `version 1.0`, `status: review`, `canonical_status: candidate`; статус «PROPOSED v1.0 — awaiting owner approval» | B7, F3; словарь схемы (нет «proposed») |
+| §3 | `decision_subject` = NBA/WHAT; `action_type` → ExecutionOption; `readiness_state`, `safety_policy_version`, `catalog_mapping_version`; `expires_at` → `actionable_until`; запись immutable, retention — политика | B2, B9, B13; A1 D-7; A2 |
+| §5 | этапы 3–4 → Semantic Resolution (Goal optional); 7–8 → DecisionReadiness; safety 4 состояния; этап 16 → VERIFIED-eligibility; shadow mode | B5, B6, C1, C2; A1 D-1, D-6, D-10 |
+| §7 | три логических снимка; ADR-0013 superseded | B10 |
+| §8 | eligibility только VERIFIED, `NO_VERIFIED_CANDIDATES`, без второй ветки; staged ranking | C2, §76/§105; канон v1.1 Decision 6 |
+| §10 | альтернативы — только действием пользователя; lineage `ALTERNATIVE_REQUESTED` | B4; канон v1.1 §10.2 |
+| §15 | одна таксономия = канон v1.1 §17.3; `accepted`/`declined` сняты; добавлены `explanation_requested`, `alternative_requested`, `engaged`, `booking_intent.created`; attribution только по provenance | B8; канон v1.1 §17.5–17.6 |
+| §17 | `recommendation.accepted` и `acceptance_action` сняты; реакции §10.3; PendingBookingIntent хранит exact client-confirmed execution option | B8, D4 |
+| §22 | `actionable_until` = 2 ч actionability; retention отдельно; инвариант D4 `MATERIAL_CHANGE` → новое подтверждение; реестр кодов `QUOTE_CHANGED` / `SLOT_UNAVAILABLE` | B13, D4; канон v1.1 §16.8–16.9 |
+| §23 | четыре состояния safety + `UNKNOWN` / `NOT_APPLICABLE`; B6 CLARIFY fail-closed до матрицы; два safety-гейта; `RequiredContextSpec owner=SAFETY` — открытый вход | B6, C3; §98 |
+| §25 | replay по трём снимкам; Open Questions ADR-0013 1–5 перенесены | B10 |
+| §26 | OQ-R11 → provisional (B9); OQ-R9 — retention отдельно от TTL (B13) | B9, B13 |
+| §27–§29 | Goal optional 0..1, без синтеза; `SemanticResolutionResult` (`resolution_status`, `semantic_readiness`); Outcomes без Goal; `goal` optional в контексте; Goal — controlled priority | B5; A1 D-1…D-5, D-9, D-10 |
+| §30 | DecisionReadiness: 5 состояний и правила канона v1.1 §8; C03 = адаптивный DRE flow; две оси sufficiency; shadow mode | B5, C1; A2; A1 D-5, D-6, D-10 |
+| §31 | Goal не override | A1 D-9 |
+| §33 | семейства provisional; `action_type` вниз | B9; A1 D-7, D-8 |
+| §34 | WHAT / HOW / WHO; C04 без услуги/мастера/цены/слота; альтернативы по действию; VERIFIED-eligibility; коды C01–C05 по D-6 | B2, B3, B4, C2; A1 D-6, D-7 |
+
+**Не изменено (v1.0 молчит или прямо велит не трогать):** §1–§2, §4, §6,
+§9 (`match_quality_class`), §11, §12, §13 (owner ruling 2026-07-29 без
+изменений), §14 (projection; имя `expired` сохранено), §16 (OQ-R3), §18–§21,
+§24, §32 (имена результатов; `readiness_state` — отдельное поле, не
+замена), Intent Resolution Output Contract 0.5 (Final Reconciliation §6.4),
+Killer PRD §5 (OQ-R12 — отдельная правка). Реестр событий этим документом
+по-прежнему **не изменяется** — регистрация по §15 идёт в
+[[Ayla Domain Event Registry]] отдельным ходом (Final Reconciliation §6.5).
 
 ### v0.4 (2026-08-19) — Продуктово-семантический слой: Recommendation = Next Best Action
 

@@ -66,7 +66,8 @@ related:
 > Approved v1.1 + явно принятые owner decisions + выборочные улучшения из
 > draft + синхронизация с актуальным каноном. С owner approval v1.2
 > предыдущая approved revision v1.1 переведена в статус `superseded`
-> (`approved_v1_1.md`, 2026-08-08); историческая редакция сохраняется в
+> (`01 Product/User Journeys/history/approved_v1_1.md` — перенесён из корня
+> 12.09.2026, B14; 2026-08-08); историческая редакция сохраняется в
 > Git history и snapshot-файле. Active Canon uniqueness по Variant C
 > соблюдена: только одна revision узла находится в active canonical
 > статусе.

@@ -47,6 +47,14 @@ related:
 # Ayla Goal Outcome Semantic Model Working Design
 
 > **Статус:** Draft v0.9 — Working Design checkpoint. **Non-canonical.**
+>
+> **2026-09-12 (PROPOSED — awaiting owner approval; Final Reconciliation v1.0
+> §6.2 A1, §6.3):** дельты §20 (D-1…D-7, D-9, D-10) **применены amendment A1**
+> к [[Ayla MVP Recommendation Contract]] v1.0 (proposed); D-8 закрыт пакетом 2
+> B9 — семейства `ADDRESS / SUPPORT / RECOVER / OBSERVE` provisional для
+> Controlled Pilot (вариант `INTERVENE / SUPPORT / OBSERVE` не принят).
+> Документ остаётся non-canonical evidence base для Goal/Outcome Taxonomy
+> Design (§23); текст ниже не менялся.
 > Документ фиксирует архитектурный checkpoint по семантике Goal / Outcome /
 > Recommendation перед проектированием Goal/Outcome Taxonomy и подготовкой
 > amendment к [[Ayla MVP Recommendation Contract]].
