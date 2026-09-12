@@ -2,7 +2,7 @@
 task_id: UX-RECON-001
 title: Reconciliation — MVP Recommendation Contract (Canon vs UX Draft)
 type: specification
-status: review
+status: archived
 review_status: pending_owner_review
 version: "0.1"
 created: 2026-07-29
@@ -35,6 +35,15 @@ export_policy: full
 updated: 2026-07-29
 review_cycle: monthly
 ---
+
+> **Архив (PROPOSED 2026-09-12 — awaiting owner approval; Final
+> Reconciliation v1.0 §6.3).** Действие 1 этого разбора (перенос правила
+> «нет displayable объяснения → не показываем» в контракт §13) выполнено в
+> контракте v0.4; остальные действия закрыты amendment A4 (Recommendation UX
+> Addendum v0.2, пакет 2 B3/B4). Документ сохраняется как отчёт, на месте —
+> чтобы не рвать ссылки из `gaps/`, `screens/` и Addendum; `status` →
+> `archived`. Содержимое ниже не менялось.
+
 
 # Reconciliation — MVP Recommendation Contract (Canon vs UX Draft)
 

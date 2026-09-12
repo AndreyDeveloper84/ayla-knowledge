@@ -2,10 +2,10 @@
 node_id: ayla.product.bot-003.discovery-recommendation
 title: BOT-003 Discovery and Recommendation Conversation Specification
 type: specification
-status: draft
+status: review
 decision_status: proposed
 canonical_status: candidate
-version: "0.1"
+version: "0.2"
 owner: Product Owner
 knowledge_area:
   - product
@@ -43,7 +43,7 @@ depends_on:
 
 # BOT-003 Discovery and Recommendation Conversation Specification
 
-**Status:** CANDIDATE FOR CANON REVIEW  
+**Status:** CANDIDATE FOR CANON REVIEW → **PROPOSED v1.0 — awaiting owner approval** (candidate → approved одним пакетом с контрактом v1.0; Final Reconciliation v1.0 §6.1 п.3; при утверждении `status`/`canonical_status` → `approved`)  
 **Scope:** BOT-003 Discovery and Recommendation Conversation  
 **Implementation:** FORBIDDEN in this document  
 **Authority:** Candidate prose from approved Product decisions; not Canonical
@@ -97,7 +97,7 @@ The product boundaries are distinct:
 | Question | Owner |
 |---|---|
 | Do we understand what the user means? | Intent Model: Intent sufficiency |
-| Do we know enough to responsibly recommend? | BOT-003: Recommendation sufficiency |
+| Do we know enough to responsibly recommend? | BOT-003: Recommendation sufficiency **= DecisionReadiness** (контракт v1.0 §30; канон v1.1 Decision 5: `READY / NEEDS_DISCRIMINATION / NEEDS_REQUIRED_CONTEXT / INSUFFICIENT_EVIDENCE / BLOCKED`) — v0.2, A2 |
 | Which eligible candidate should win? | Recommendation capability / formation layer |
 
 ## 6. Material Blocking Gap and Discovery Progression
@@ -278,6 +278,14 @@ No Q1–Q12 question is OPEN. The active approved decisions are exactly Q3, Q4, 
 The approved BOT-003 Product decisions are grounded in higher Canon, so this candidate is ready for independent review. Final BOT-003 canonicalization remains blocked until the normative downstream/domain dependencies required by BOT-003 have resolved their authority status.
 
 Classification: `CANONICALIZATION FOLLOW-UP / BLOCKER`.
+
+> **v0.2 (2026-09-12, PROPOSED — awaiting owner approval).** Блокер снимается
+> ходом §6.1 п.1 Final Reconciliation v1.0: `Ayla MVP Recommendation
+> Contract` v0.4 → v1.0 (proposed, вместе с A1/A2) утверждается **одним
+> пакетом** с этим документом (candidate → approved). Q3/Q4/Q6/Q8/Q9 уже
+> APPROVED владельцем. `Ayla MVP Appointment Contract` v0.2 этим пакетом
+> не затрагивается (v1.0 о нём молчит) — остаётся `draft / proposed`;
+> BOT-003 не зависит от него в части Recommendation.
 
 ## Scenario Self-Check
 

@@ -7,12 +7,14 @@ aliases:
   - Recommendation Snapshot
 adr_id: ADR-0013
 type: adr
-status: draft
-decision_status: proposed
-revision: 0
-version: "0.1"
+status: review
+decision_status: superseded-proposed
+revision: 1
+version: "0.2"
 amendments: []
-superseded_by: null
+superseded_by:
+  - "[[Ayla MVP Recommendation Contract]]"
+  - "[[Recommendation Architecture Final Reconciliation]]"
 owner: Architecture + Recommendation
 priority: P0
 knowledge_area:
@@ -28,7 +30,7 @@ system_owner:
   - ayla-recommendation
 source_repository: ayla-knowledge
 created: 2026-07-29
-updated: 2026-07-29
+updated: 2026-09-12
 source_kind: canonical
 classification: internal
 data_sensitivity: none
@@ -58,10 +60,20 @@ review_cycle: event-driven
 
 ## Статус
 
-**Статус документа:** Draft
-**Статус решения:** Proposed — решение не принято; документ является
-предложением для owner (Architecture + Recommendation).
-**Версия:** 0.1 (2026-07-29)
+**Статус документа:** **PROPOSED v1.0 — awaiting owner approval:
+superseded** (пакет 2 от 12.09.2026, **B10 (а)**: «ADR-0013 superseded —
+смешивает decision, candidate/provider ranking и transaction state»).
+**Чем заменён:** [[Ayla MVP Recommendation Contract]] v1.0 §7 (три
+логических снимка) и §25 (replay) + канон v1.1 Decision 7 (immutable
+Recommendation object) — Final Reconciliation v1.0 §4 конфликт 4, §6.3.
+**Что сохраняется:** правило «UX рендерит из snapshot, не из live» — для
+каждого из трёх снимков: Decision Snapshot (в Recommendation record),
+Execution Mapping Snapshot (в ExecutionOption), Transaction Snapshot (в
+PendingBookingIntent / Booking). Open Questions 1–5 (§5) перенесены в
+контракт v1.0 §25 как открытые входы.
+**Версия:** 0.2 (2026-09-12); при утверждении владельцем `status` →
+`superseded`, `decision_status` → `superseded`. Решение ADR **не
+принималось** (v0.1 — proposed) и не принимается: текст ниже — история.
 
 > **Владение.** UX не владеет recommendation-правилами. Этот ADR —
 > предложение, подготовленное по запросу Product Owner (task UX-ADR-001), и

@@ -1,7 +1,9 @@
 # Ayla Intent Registry — machine-readable appendix к Ayla Intent Model Specification
 #
 # Canonical source: ayla-knowledge / 03 AI System/Contracts/intent-registry.yaml
-# Нормативный источник семантики: 03 AI System/Ayla Intent Model Specification.md (v1.0, draft / proposed / candidate)
+# Нормативный источник семантики: 03 AI System/Ayla Intent Model Specification.md (v1.0, approved / accepted / approved — Active Canon с 2026-08-08)
+# A3 (Final Reconciliation v1.0 §6.2, PROPOSED 2026-09-12): метка статуса приведена к .md; семантика, 11 intent types + UNKNOWN,
+#   18 слотов и Output Contract 0.5 не меняются; CHOOSE_MANY живёт downstream от resolver'а (WD §19).
 # Change control: изменение этого файла — через change control ayla-knowledge;
 #   additive-изменение = minor, изменение семантики = major (после заморозки "1.0").
 # registry_version версионирует ЭТОТ реестр независимо;
@@ -11,8 +13,8 @@ registry_version: "1.0"
 compatible_contract_version: "0.5"
 source_document: "03 AI System/Ayla Intent Model Specification.md"
 source_version: "1.0"
-status: draft
-updated: 2026-08-03
+status: approved            # A3: соответствует .md (approved v1.0); было draft при approved .md
+updated: 2026-09-12
 
 # Класс исполнения определяет порог подтверждения слотов (requirement_satisfaction):
 #   read_only  — non-reference слоты: filled; reference слоты: однозначный entity_ref
