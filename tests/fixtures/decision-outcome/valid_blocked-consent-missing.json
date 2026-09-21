@@ -1,0 +1,20 @@
+{
+  "contract_version": "1.0",
+  "decision_outcome": "BLOCKED",
+  "reason_code": "consent_missing",
+  "evidence_refs": [
+    {
+      "kind": "consent_state",
+      "ref": "example-consent-check-1"
+    }
+  ],
+  "provenance": {
+    "policy": "ayla-decision-policy",
+    "step": "explicit_intent"
+  },
+  "blocked_capabilities": [
+    "example_capability"
+  ],
+  "calculated_at": "2026-09-21T09:00:00+03:00",
+  "policy_version": "example-policy-v1"
+}

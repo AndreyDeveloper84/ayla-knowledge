@@ -1,0 +1,18 @@
+{
+  "contract_version": "2.0",
+  "decision_outcome": "ACT",
+  "reason_code": "plan_next_action",
+  "evidence_refs": [
+    {
+      "kind": "plan_action_version",
+      "ref": "example-plan-action-version-1"
+    }
+  ],
+  "provenance": {
+    "policy": "ayla-decision-policy",
+    "step": "plan_next_action"
+  },
+  "blocked_capabilities": [],
+  "calculated_at": "2026-09-21T09:00:00+03:00",
+  "policy_version": "example-policy-v1"
+}

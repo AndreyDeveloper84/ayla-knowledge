@@ -1,0 +1,16 @@
+{
+  "contract_version": "1.0",
+  "action_id": "3f6c2a10-8b1e-4d2a-9c3e-0a1b2c3d4e05",
+  "plan_id": "9a7d5e20-1c4b-4f6a-8e2d-5b6c7d8e9f00",
+  "action_type": "log_water",
+  "cadence": "per_day",
+  "target_count": 6,
+  "status": "removed",
+  "source": "user_edited",
+  "source_ref": "body_shape",
+  "source_version": 1,
+  "changed_by": "user",
+  "changed_at": "2026-09-23T20:40:00+03:00",
+  "reason_code": "action_removed",
+  "supersedes_action_id": "3f6c2a10-8b1e-4d2a-9c3e-0a1b2c3d4e04"
+}

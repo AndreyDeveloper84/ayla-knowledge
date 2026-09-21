@@ -1,0 +1,19 @@
+{
+  "contract_version": "1.0",
+  "decision_outcome": "HANDOFF",
+  "reason_code": "safety_handoff",
+  "evidence_refs": [
+    {
+      "kind": "safety_verdict",
+      "ref": "example-safety-verdict-1"
+    }
+  ],
+  "provenance": {
+    "policy": "ayla-decision-policy",
+    "step": "safety"
+  },
+  "blocked_capabilities": [],
+  "calculated_at": "2026-09-21T09:00:00+03:00",
+  "policy_version": "example-policy-v1",
+  "handoff_reason": "safety_handoff"
+}

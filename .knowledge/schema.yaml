@@ -1,7 +1,10 @@
-schema_version: "1.14"
+schema_version: "1.15"
 specification: "../00 Foundation/Ayla Knowledge Architecture Specification.md"
 
 schema_changes:
+  "1.15":
+    - "register JSON Schema machine-readable contracts of stage C (plan-action, diary-day, decision-outcome; DRF-2261, AYLA-DEC-0092/0095/0097) with shared validator scripts/validate_contract_schemas.py"
+    - "planning-rules-registry: PLAN_CADENCE kind and plan_template subject (AYLA-DEC-0093); registry major 1.0"
   "1.14":
     - "register document types `standard`, `map`, `research` (non-canonical research layer)"
     - "add `engineering-process` to the concerns vocabulary"
@@ -563,3 +566,27 @@ machine_readable_contracts:
     path: "03 AI System/Contracts/planning-rules-registry.yaml"
     validator: "scripts/validate_planning_rules.py"
     version_field: registry_version
+  plan-action:
+    format: json-schema
+    path: "03 AI System/Contracts/plan-action.schema.json"
+    fixtures: "tests/fixtures/plan-action"
+    validator: "scripts/validate_contract_schemas.py"
+    version_field: contract_version
+    version: "1.0"
+    contract: "05 Architecture/Ayla Personal Plan Contract.md"
+  diary-day:
+    format: json-schema
+    path: "03 AI System/Contracts/diary-day.schema.json"
+    fixtures: "tests/fixtures/diary-day"
+    validator: "scripts/validate_contract_schemas.py"
+    version_field: contract_version
+    version: "1.0"
+    contract: "05 Architecture/Ayla Diary and Water Contract.md"
+  decision-outcome:
+    format: json-schema
+    path: "03 AI System/Contracts/decision-outcome.schema.json"
+    fixtures: "tests/fixtures/decision-outcome"
+    validator: "scripts/validate_contract_schemas.py"
+    version_field: contract_version
+    version: "1.0"
+    contract: "05 Architecture/Ayla Decision Policy Contract.md"

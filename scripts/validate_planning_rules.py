@@ -2,12 +2,18 @@
 """Validate the Ayla planning rules registry.
 
 Проверяет ``03 AI System/Contracts/planning-rules-registry.yaml`` против
-PLANNING_CONSTRAINTS_CONTRACT_v1.0.md (§3 закрытый перечень kind, §4 форма
+PLANNING_CONSTRAINTS_CONTRACT_v1.1.md (§3 закрытый перечень kind, §4 форма
 UNKNOWN, §5 provenance) и направления владельца от 08.09.2026 (статусы
 KNOWN / UNKNOWN / INTENTIONALLY_UNSUPPORTED).
 
 Главный инвариант: ``UNKNOWN`` — значение, а не отсутствие поля. Отсутствие
 поля ``value`` — ошибка сборки, а не UNKNOWN (контракт §4.1).
+
+``PLAN_CADENCE`` (AYLA-DEC-0093, 2026-09-21) — четырнадцатый тип, добавленный
+владельцем: только организационная регулярность действия плана. Держится
+вдвоём с ``subject_kind: plan_template``: PLAN_CADENCE не может описывать
+услугу (canonical_service) как курс, а plan_template не может нести правила
+курсов и интервалов услуг.
 """
 
 from __future__ import annotations
@@ -39,6 +45,7 @@ CLOSED_KINDS = {
     "INCOMPATIBILITY",
     "RECOVERY_WINDOW",
     "SAFETY_CONSTRAINT",
+    "PLAN_CADENCE",
 }
 
 CLOSED_STATUSES = {"KNOWN", "UNKNOWN", "INTENTIONALLY_UNSUPPORTED"}
@@ -53,7 +60,15 @@ CLOSED_UNKNOWN_REASONS = {
 }
 
 CLOSED_SCOPES = {"GENERAL", "TENANT", "MARKETPLACE"}
-CLOSED_SUBJECT_KINDS = {"capability", "canonical_service", "tenant_offer", "category"}
+CLOSED_SUBJECT_KINDS = {"capability", "canonical_service", "tenant_offer", "category", "plan_template"}
+
+# PLAN_CADENCE ⇔ plan_template (AYLA-DEC-0093): регулярность привычки в плане
+# и правила услуг не смешиваются ни в одну сторону.
+PLAN_CADENCE_KIND = "PLAN_CADENCE"
+PLAN_TEMPLATE_SUBJECT = "plan_template"
+PLAN_ACTION_TYPES = {"book_service", "log_food", "log_water"}
+PLAN_CADENCES = {"per_day", "per_week", "per_2_weeks"}
+PLAN_TARGET_COUNT_RANGE = (1, 14)
 
 RULE_ID_RE = re.compile(r"^PR-[A-Z0-9_]+(?:-[A-Z0-9_]+)*$")
 VERSION_RE = re.compile(r"^\d+\.\d+$")
@@ -130,7 +145,7 @@ def _check_header(registry: dict[str, Any], errors: list[str]) -> None:
     kinds = registry.get("kinds")
     if not isinstance(kinds, list) or set(kinds) != CLOSED_KINDS or len(kinds) != len(CLOSED_KINDS):
         errors.append(
-            "kinds: обязан быть ровно закрытым перечнем из 13 типов контракта §3; "
+            f"kinds: обязан быть ровно закрытым перечнем из {len(CLOSED_KINDS)} типов контракта §3; "
             f"получено {kinds!r}"
         )
     statuses = registry.get("statuses")
@@ -251,6 +266,56 @@ def _check_rule(rule: Any, seen_ids: set[str], errors: list[str]) -> None:
     _check_value_by_status(rule, errors)
     _check_applicability(rule_id, rule.get("applicability"), errors)
     _check_provenance(rule_id, rule.get("provenance"), errors)
+    _check_plan_cadence(rule, errors)
+
+
+def _check_plan_cadence(rule: dict[str, Any], errors: list[str]) -> None:
+    """AYLA-DEC-0093: PLAN_CADENCE только у plan_template и наоборот; форма KNOWN."""
+    rule_id = rule.get("rule_id", "<без rule_id>")
+    kind = rule.get("kind")
+    applicability = rule.get("applicability")
+    subject_kind = applicability.get("subject_kind") if isinstance(applicability, dict) else None
+
+    if kind == PLAN_CADENCE_KIND and subject_kind != PLAN_TEMPLATE_SUBJECT:
+        errors.append(
+            f"{rule_id}: PLAN_CADENCE допустим только с subject_kind={PLAN_TEMPLATE_SUBJECT!r} — "
+            f"регулярность привычки не описывает услугу как курс (AYLA-DEC-0093); "
+            f"получено {subject_kind!r}"
+        )
+    if subject_kind == PLAN_TEMPLATE_SUBJECT and kind != PLAN_CADENCE_KIND:
+        errors.append(
+            f"{rule_id}: subject_kind={PLAN_TEMPLATE_SUBJECT!r} допустим только у PLAN_CADENCE — "
+            f"шаблон плана не несёт правил курсов и интервалов услуг; получено kind={kind!r}"
+        )
+    if kind != PLAN_CADENCE_KIND:
+        return
+    if rule.get("status") == "INTENTIONALLY_UNSUPPORTED":
+        errors.append(f"{rule_id}: PLAN_CADENCE не бывает INTENTIONALLY_UNSUPPORTED")
+    if rule.get("status") != "KNOWN":
+        return
+    value = rule.get("value")
+    actions = value.get("actions") if isinstance(value, dict) else None
+    if not isinstance(actions, list) or not actions:
+        errors.append(f"{rule_id}: PLAN_CADENCE KNOWN обязан нести value.actions — непустой список")
+        return
+    seen_types: set[str] = set()
+    low, high = PLAN_TARGET_COUNT_RANGE
+    for action in actions:
+        if not isinstance(action, dict):
+            errors.append(f"{rule_id}: элемент value.actions должен быть mapping")
+            continue
+        action_type = action.get("action_type")
+        if action_type not in PLAN_ACTION_TYPES:
+            errors.append(f"{rule_id}: action_type ∈ {sorted(PLAN_ACTION_TYPES)}, получено {action_type!r}")
+        elif action_type in seen_types:
+            errors.append(f"{rule_id}: action_type {action_type!r} повторяется")
+        else:
+            seen_types.add(action_type)
+        if action.get("cadence") not in PLAN_CADENCES:
+            errors.append(f"{rule_id}: cadence ∈ {sorted(PLAN_CADENCES)}, получено {action.get('cadence')!r}")
+        count = action.get("target_count")
+        if isinstance(count, bool) or not isinstance(count, int) or not low <= count <= high:
+            errors.append(f"{rule_id}: target_count — целое {low}..{high}, получено {count!r}")
 
 
 def validate(registry: dict[str, Any]) -> list[str]:
