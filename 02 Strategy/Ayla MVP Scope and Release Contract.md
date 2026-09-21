@@ -5,7 +5,7 @@ type: specification
 status: draft
 decision_status: proposed
 canonical_status: candidate
-version: "0.4"
+version: "0.5"
 owner: Product Owner
 priority: P0
 knowledge_area:
@@ -25,7 +25,7 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-27
-updated: 2026-08-17
+updated: 2026-09-21
 review_cycle: monthly
 depends_on:
   - "[[Ayla Product Essence]]"
@@ -293,17 +293,42 @@ AYLA-DEC-0014) и не является canonical activation. Новые обл�
 > introduction и Memory Foundation добавлены как явные IN_SCOPE
 > capabilities.
 
+> **Изменено (v0.5, `AYLA-DEC-0087`…`0101`, 2026-09-21).** Цель
+> необязательна. В состав продукта добавлены: Plan Lite, дневник питания
+> с происхождением записей и завершением дня, ориентиры питания с
+> происхождением значения, вода, Диетолог-отчёты, proactive-уведомления
+> по opt-in. Детали — в контрактах этапа C; здесь только граница релиза.
+
 - Transformation Goal creation / refinement (минимальная структура цели;
-  детальная модель — Domain);
+  детальная модель — Domain). **Цель необязательна** (`AYLA-DEC-0087`):
+  ни дневник, ни вода, ни вопрос, ни запись, ни явно выбранное действие
+  её не требуют;
+- **Plan Lite** (`AYLA-DEC-0088`, `0089`, `0090`–`0093`) — 1–3 действия
+  (записаться на услугу / дневник N дней / вода N раз), прогресс только
+  «N из M», без наблюдений тела; создаётся только после явного
+  подтверждения человеком; план без цели — только собранный человеком;
+- **дневник питания** (`AYLA-DEC-0095`, `0101`) — записи с происхождением
+  (текст / фото / исправлено человеком), завершение дня, оценка дня только
+  по завершённому дню; «Забудь всё» стирает дневник;
+- **ориентиры питания** — с происхождением каждого значения (рассчитан
+  Ayla / от специалиста / нет ориентира), без выдуманных параметров;
+- **вода** (`AYLA-DEC-0099`) — в миллилитрах; стакан — настраиваемая
+  UI-механика, не норма;
+- **Диетолог-отчёты** (`AYLA-DEC-0098`) — объяснение фактов дневника в
+  разрешённых границах; флаги здоровья во внешнюю LLM не передаются;
+- **proactive-уведомления по opt-in** (`AYLA-DEC-0087`) — отчёты, вода,
+  возврат к плану; не проактивные рекомендации услуг;
 - минимальные разрешённые inputs (progressive profiling, Constitution
   Ст. VI);
 - **Food Intelligence (OD-MVP-2)** — приём food input, включая фото;
   распознавание; пользовательская коррекция существенной ошибки
   распознавания; связывание наблюдения с Transformation Goal как
   разрешённого контекста рекомендаций; наблюдение может стать memory
-  candidate. Не входит автоматически: полноценный дневник питания, точный
-  calorie tracking, обязательный подсчёт БЖУ, диетические программы,
-  медицинские выводы (Observation ≠ medical fact);
+  candidate. Не входит: обязательный подсчёт БЖУ, диетические программы,
+  медицинские выводы (Observation ≠ medical fact). *(v0.5: дневник питания
+  входит — см. пункт «дневник питания» выше; калории и БЖУ показываются
+  как факты записей и ориентир с происхождением, без обязательного
+  подсчёта и без диетических программ.)*;
 - **Memory Foundation (OD-MVP-3)** — working/session context; различие
   observation и confirmed fact; memory candidates; policy/consent gate;
   Phase 2 opt-in persistent memory; explainability сохранённого контекста,
@@ -343,8 +368,8 @@ capability обязана быть доступна в назначенном ow
 
 | Input | Статус |
 |---|---|
-| food | IN_SCOPE (v0.4, OD-MVP-2) — первая конкретная реализация Everyday Signal: приём input/фото, распознавание, пользовательская коррекция, связывание с Transformation Goal как разрешённого контекста рекомендаций; dedicated full food diary/точный calorie tracking — DEFERRED; один из равнозначных trigger-сценариев (Vision §10, AYLA-DEC-0028) |
-| water | DEFERRED |
+| food | IN_SCOPE (v0.4, OD-MVP-2) — первая конкретная реализация Everyday Signal: приём input/фото, распознавание, пользовательская коррекция, связывание с Transformation Goal как разрешённого контекста рекомендаций; один из равнозначных trigger-сценариев (Vision §10, AYLA-DEC-0028). **v0.5:** дневник питания — IN_SCOPE (`AYLA-DEC-0087`, `0095`) |
+| water | IN_SCOPE (v0.5, `AYLA-DEC-0087`, `0099`) — в миллилитрах; стакан — UI-механика |
 | sleep | DEFERRED |
 | mood | DEFERRED; без inferred mental state (Constitution Ст. X) |
 | symptoms | OUT_OF_SCOPE |
@@ -475,7 +500,8 @@ Living Digital Twin **не входит в обязательный состав
 - advanced Outcome Learning (CAP-007);
 - сложная Experimentation Platform (CAP-025);
 - продвинутый ML ranking;
-- dedicated wellness-трекеры (food/water/sleep/activity — §6.1);
+- dedicated wellness-трекеры sleep/activity (§6.1). *(v0.5: food diary и
+  water переведены в IN_SCOPE — `AYLA-DEC-0087`.)*;
 - глубокая provider verification;
 - внутренний баланс провайдера с выводом T+24ч (эпик этапа 2,
   AYLA-DEC-0008);
@@ -750,8 +776,8 @@ AYLA-DEC-0027; их создание — часть coordinated migration и exe
 - **Числовые пороги release evidence (KEEP_NON_BLOCKING).** Принадлежат
   Measurement Framework (Thesis §8.1, §10).
 - **Post-MVP wellness trackers (KEEP_NON_BLOCKING).** Возврат dedicated
-  food/water/sleep/activity трекеров — отдельное scope-решение после
-  пилота.
+  sleep/activity трекеров — отдельное scope-решение после пилота.
+  *(v0.5: для food и water решено — `AYLA-DEC-0087`.)*
 - **Exact mobile distribution route for pilot (KEEP_NON_BLOCKING).**
   Маршрут распространения (internal testing / closed distribution / store
   publication) определяется операционно; store как единственный канал не
@@ -772,6 +798,17 @@ AYLA-DEC-0027; их создание — часть coordinated migration и exe
 > Этот журнал отражает историю изменений документа и не является
 > нормативной частью спецификации. Нормативным считается текущее состояние
 > разделов 1–15, а не записи ниже.
+
+### v0.5 (2026-09-21) — Состав продукта по решениям владельца (DRF-2260)
+
+- §6.1: цель необязательна; добавлены Plan Lite, дневник питания,
+  ориентиры с происхождением, вода, Диетолог-отчёты, proactive-уведомления
+  по opt-in; в таблице входов food diary и water → IN_SCOPE.
+- §7: DEFERRED сужен до sleep/activity.
+- §15: открытый вопрос о трекерах сужен до sleep/activity.
+- Основание: `AYLA-DEC-0087` (K-1) и `AYLA-DEC-0088`…`0101`
+  (OWNER_DECISION_REGISTER). Статус документа (draft / candidate) не
+  меняется: канонизация MVP Scope — отдельный шаг.
 
 ### v0.4 (2026-08-07) — Targeted amendment: release composition per OD-MVP-1…4
 

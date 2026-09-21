@@ -3,7 +3,7 @@ node_id: ayla.strategy.mvp-reset-roadmap
 title: Ayla MVP Reset Roadmap
 type: specification
 status: approved
-version: "1.0"
+version: "1.1"
 owner: Product Owner
 priority: P0
 depends_on:
@@ -22,7 +22,7 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-29
-updated: 2026-07-29
+updated: 2026-09-21
 review_cycle: monthly
 ---
 
@@ -37,6 +37,21 @@ review_cycle: monthly
 > Roadmap не переопределяет Product Essence и не занимает места в продуктовой иерархии между Essence и Product Vision. Каноническая рабочая версия хранится в `ayla-knowledge`. Внешняя копия `D:\Проекты\Ayla\Ayla_MVP_Reset_Roadmap.md` не является authoritative.
 
 **Цель:** максимально быстро перестроить текущий продукт под новую Product Essence и выпустить MVP без блокировки на полноценном 3D Digital Twin.
+
+## Заменённые разделы (v1.1, 2026-09-21)
+
+**Версия 1.1 — частичная замена.** Разделы ниже заменены решениями владельца и **не действуют**. Их текст сохранён на месте для истории, каждый помечен строкой «Заменено». Все остальные разделы действуют без изменений. Основание: `AYLA-DEC-0087` (K-1) — «Reset Roadmap выпускается версией 1.1 с разделом “Заменённые разделы” — §2 “Основной путь”, §5 Sprint 1–4 и §7 “Минимальные новые сущности” заменены новыми DEC и не действуют, остальные разделы действуют».
+
+| Раздел | Что больше не действует | Чем заменено |
+|---|---|---|
+| §2, блок «Основной путь» | обязательный линейный путь «регистрация → цель → фото/видео → … → прогресс» | `AYLA-DEC-0087`: цель необязательна; ни дневник, ни вода, ни вопрос, ни запись, ни явно выбранное действие не требуют цели. Перечень P0-документов §2 остаётся |
+| §5 Sprint 1 «Goal + Baseline» | цель как первый обязательный шаг; baseline, фото/видео | `AYLA-DEC-0087`; `AYLA-DEC-0088` (без наблюдений тела); `AYLA-DEC-0094` (Desired Outcome не активируется) |
+| §5 Sprint 2 «Desired Outcome + Plan» | желаемый образ, вероятностная визуализация, уверенность, «комплексный план» | `AYLA-DEC-0088` (Plan Lite: 1–3 действия, «N из M»); `AYLA-DEC-0089` (таблица «цель → план»); `AYLA-DEC-0094` |
+| §5 Sprint 3 «Daily Execution» | состав ежедневного исполнения (сон, активность, расписание плана) | `AYLA-DEC-0087` (состав продукта: Plan Lite, дневник, ориентиры, вода, сканер, Диетолог-отчёты, proactive по opt-in); `AYLA-DEC-0095` (день дневника); `AYLA-DEC-0099` (вода) |
+| §5 Sprint 4 «Progress Loop» | повторная фотофиксация, «старт / сегодня / цель», обновление уверенности | `AYLA-DEC-0088` (прогресс — только «N из M» действий); `AYLA-DEC-0094` |
+| §7 «Минимальные новые сущности» | перечень TransformationGoal … ProcedureRecommendation как обязательный | `AYLA-DEC-0088`, `AYLA-DEC-0094`; сущности определяют контракты этапа C (Goal and Desired Outcome, Personal Plan, Diary and Water) |
+
+§5 Sprint 5 «Procedure → Specialist → Booking» и Sprint 6 «Release Hardening» действуют.
 
 ## 1. Немедленно
 
@@ -63,6 +78,8 @@ P0-документы:
 7. Prediction and Confidence Policy — создать.
 
 Основной путь:
+
+> **Заменено: `AYLA-DEC-0087`, не действует** (v1.1). Цель необязательна; обязательного линейного пути нет. Текст ниже сохранён для истории.
 
 ```text
 регистрация
@@ -142,6 +159,8 @@ Auth, Profile, Chat, Memory, Goals, Media, Visual Model, Plan, Schedule, Food, W
 
 ### Sprint 1 — Goal + Baseline
 
+> **Заменено: `AYLA-DEC-0087`, `AYLA-DEC-0088`, `AYLA-DEC-0094`, не действует** (v1.1).
+
 - Transformation Goal;
 - срок и приоритеты;
 - consent;
@@ -151,6 +170,8 @@ Auth, Profile, Chat, Memory, Goals, Media, Visual Model, Plan, Schedule, Food, W
 
 ### Sprint 2 — Desired Outcome + Plan
 
+> **Заменено: `AYLA-DEC-0088`, `AYLA-DEC-0089`, `AYLA-DEC-0094`, не действует** (v1.1).
+
 - желаемый образ;
 - вероятностная визуализация;
 - уровень уверенности;
@@ -158,6 +179,8 @@ Auth, Profile, Chat, Memory, Goals, Media, Visual Model, Plan, Schedule, Food, W
 - объяснение факторов.
 
 ### Sprint 3 — Daily Execution
+
+> **Заменено: `AYLA-DEC-0087`, `AYLA-DEC-0095`, `AYLA-DEC-0099`, не действует** (v1.1).
 
 - главный экран;
 - план дня;
@@ -170,6 +193,8 @@ Auth, Profile, Chat, Memory, Goals, Media, Visual Model, Plan, Schedule, Food, W
 - сообщения Ayla.
 
 ### Sprint 4 — Progress Loop
+
+> **Заменено: `AYLA-DEC-0088`, `AYLA-DEC-0094`, не действует** (v1.1).
 
 - повторная фотофиксация;
 - старт / сегодня / цель;
@@ -212,6 +237,8 @@ Auth, Profile, Chat, Memory, Goals, Media, Visual Model, Plan, Schedule, Food, W
 - сложную геймификацию.
 
 ## 7. Минимальные новые сущности
+
+> **Заменено: `AYLA-DEC-0088`, `AYLA-DEC-0094`, не действует** (v1.1). Сущности определяют контракты этапа C.
 
 - TransformationGoal
 - BaselineAssessment
@@ -379,3 +406,15 @@ Auth, Profile, Chat, Memory, Goals, Media, Visual Model, Plan, Schedule, Food, W
 ```
 
 После подтверждения этого цикла углублять 3D, симуляцию и прогнозирование.
+
+## История версий
+
+### v1.1 — 2026-09-21 — частичная замена (DRF-2260)
+
+- Добавлен раздел «Заменённые разделы». §2 «Основной путь», §5 Sprint 1–4 и §7 «Минимальные новые сущности» помечены «Заменено … не действует» со ссылками на `AYLA-DEC-0087`, `0088`, `0089`, `0094`, `0095`, `0099`. Текст разделов сохранён.
+- Статус документа (`approved`, CANONICAL) не менялся; новых значений статуса не вводилось. В CANON_INDEX — строка v1.1 CANONICAL и строка v1.0 SUPERSEDED (прецедент Product Essence v1.1 → v1.2).
+- Закрыт OD-AUDIT-004 (противоречие с MVP User Journey в части обязательного линейного пути) — `AYLA-DEC-0087`.
+
+### v1.0 — 2026-07-29
+
+- Owner approval; канонический операционный источник.
