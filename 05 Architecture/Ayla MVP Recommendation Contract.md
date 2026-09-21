@@ -4,7 +4,7 @@ title: Ayla MVP Recommendation Contract
 type: specification
 status: draft
 decision_status: proposed
-version: "0.4"
+version: "0.5"
 owner: Product Architecture
 priority: P0
 knowledge_area:
@@ -28,7 +28,7 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-28
-updated: 2026-08-19
+updated: 2026-09-21
 review_cycle: monthly
 depends_on:
   - "[[Ayla Constitution]]"
@@ -46,13 +46,28 @@ related:
   - "[[Ayla Memory Model Specification]]"
   - "[[BOT-003 Discovery and Recommendation Conversation Specification]]"
   - "[[Recommendation UX Addendum]]"
+  - "[[Ayla Decision Policy Contract]]"
 ---
 
 # Ayla MVP Recommendation Contract
 
-> **Статус:** Draft v0.4 — proposed. Это не канонизация: документ определяет
+> **Статус:** Draft v0.5 — proposed. Это не канонизация: документ определяет
 > доменный контракт Recommendation для MVP и подлежит финальному review
 > перед регистрацией событий.
+>
+> **v0.5 (2026-09-21) — поправка по решениям владельца AYLA-DEC-0087,
+> 0091, 0094, 0096, 0097, 0100** (бриф этапа B ред. 2, Итог 3 п.14) и по
+> решению владельца 21.09 о переносе из ayla-knowledge PR #21 (журнал
+> главного окна CD §71, вне git). Суть: Goal не является обязательным
+> этапом (§5, §27–§31); исход выбора следующего шага — закрытый набор
+> [[Ayla Decision Policy Contract]] (§32); порядок входного пути N-1 (§5,
+> §23); аллергический фильтр с `UNKNOWN` (§23); NBA-семейства до пилота не
+> включаются (§26, §33); вариант исполнения `plan` без цели Ayla не
+> предлагает (§34); Desired Outcome не активируется (§3, §28). Блоки
+> поправки помечены «v0.5». Текст v0.4 сохранён. Версия — v0.5, а не
+> v1.0: перенос «v1.0 = v0.4 + A1 + A2» из #21 целиком не выполняется
+> (Change Log v0.5).
+>
 > Основания: AYLA-DEC-0002 (memory-first тезис), AYLA-DEC-0018 (Product
 > Thesis Validation), AYLA-DEC-0023 (whitelist), AYLA-DEC-0024 (Memory
 > Contract), AYLA-DEC-0025 (event rules), AYLA-DEC-0045 / OD-9 (LLM не
@@ -205,10 +220,10 @@ Recommendation:            # immutable decision record
   parent_recommendation_id:   # для alternative — primary, из которой выполнен rerank
   rerank_reason:              # для alternative; null у primary
   decision_subject:           # Canonical Next Best Action (v0.4, §33)
-    family:                   # ADDRESS | SUPPORT | RECOVER | OBSERVE (candidate, §33)
+    family:                   # ADDRESS | SUPPORT | RECOVER | OBSERVE (candidate, §33); до пилота не заполняется — null (v0.5, §33)
     target:                   # целевой объект действия в терминах домена
     action_type:              # тип действия внутри family
-    target_outcomes: []       # коды Outcomes, на которые направлен NBA (§28)
+    target_outcomes: []       # коды Outcomes, на которые направлен NBA (§28); не ссылки на DesiredOutcome (v0.5, AYLA-DEC-0094)
   result_status:              # RecommendationResult (v0.4, §32)
   reason_codes: []
   evidence_refs: []
@@ -225,6 +240,20 @@ Recommendation:            # immutable decision record
   record_schema_version:      # версия схемы записи (v0.4; заменяет recommendation_version)
   presentation_version:       # версия представления; переформатирование без нового id
 ```
+
+> **v0.5 (AYLA-DEC-0094).** `target_outcomes` остаются рабочими кодами
+> Outcomes v0.4 (§28). Ссылками на записи `DesiredOutcome` они не
+> являются: Desired Outcome в первом релизе не активируется, писателей
+> `DesiredOutcome` / `PlanOutcomeLink` / `ProgressObservation` нет, и
+> immutable-запись Recommendation не становится вторым носителем
+> «желаемого результата». Поля исхода выбора следующего шага (AYLA-DEC-0097)
+> в запись Recommendation не копируются — они живут в одной записи
+> DecisionOutcome ([[Ayla Decision Policy Contract]]; §32).
+>
+> **v0.5 (CD §71 п.2).** До пилота `decision_subject.family` не
+> заполняется — значение `null`; NBA-семейства включаются только после
+> пилота (решение владельца 21.09, журнал главного окна CD §71 п.2, вне
+> git; §33).
 
 Предмет решения (v0.4, R-NBA-2): `decision_subject` — Canonical NBA, а
 не service/provider candidate. Поля v0.3 `candidate_id`, `rank`,
@@ -302,19 +331,34 @@ NBA. Приведение текста Killer PRD §5 в соответстви�
 отдельная правка Killer PRD (OQ-R12, §26); до неё этот контракт фиксирует
 место применения правил.
 
+> **v0.5 (AYLA-DEC-0096, AYLA-DEC-0087).** (1) **До этапа 1** каждое
+> сообщение проходит ступень 1 входного пути — минимальный входной детектор
+> опасности только по тексту текущего сообщения, без памяти и профиля;
+> кризис и неотложка получают детерминированный ответ всегда, в том числе
+> при согласии, не данном или отозванном, и при работе оператора
+> ([[Ayla Decision Policy Contract]], «Состояния и переходы»). Этап 2 ниже —
+> ступень 2 (согласия и разрешённый контекст); этап 9 — ступень 3,
+> **расширенная safety с разрешённым контекстом**. Порядок «consent/privacy
+> → safety» Killer PRD §5.1 относится к составлению рекомендации из
+> персонального контекста и действует внутри ступеней 2–4 (Journey v1.3).
+> (2) Этапы 3–4 — **Goal optional**: Goal 0..1, не синтезируется;
+> **рекомендация не требует создания Goal**; Outcome Resolution не требует
+> уже существующего Goal (AYLA-DEC-0087; §27–§28). Строки этапов 7–8
+> таблицы не меняются; уточнения — в §30.
+
 **Сегмент решения (Recommendation Engine — «что сделать»; C01–C04):**
 
 | # | Этап | Вход | Выход |
 |---|---|---|---|
 | 1 | Intent Resolution (C02) | пользовательское сообщение + session context | `resolution_ref` (Intent Model output) |
 | 2 | Authorization and Consent Gate | resolution + consent state | допуск/отказ (fail-closed, CSR §2) |
-| 3 | Goal Resolution (C01) | resolution + разрешённый journey context | goal + `source` + `confirmed` (§27) |
-| 4 | Outcome Resolution | goal + user expression | outcomes[1..N] с `source`/`confirmed` (§28) |
+| 3 | Goal Resolution (C01) (v0.5: Goal optional) | resolution + разрешённый journey context | goal 0..1 + `source` + `confirmed`; не синтезируется, неизвестная связь — `not_established` (§27) |
+| 4 | Outcome Resolution (v0.5: без обязательного Goal) | goal (если есть) + user expression | outcomes[0..N] с `source`/`confirmed`, рабочие коды (§28) |
 | 5 | Context Retrieval | допуск + purpose | `context_snapshot_ref` (immutable) |
 | 6 | Memory Retrieval | purpose-limited request (AYLA-DEC-0024 п. 3) | `memory_snapshot_ref` (immutable) |
 | 7 | Adaptive Clarification (C03) | missing/needs-confirmation факты, требуемые политикой | уточнённые context facts (§30) |
 | 8 | Context Sufficiency Evaluation | RecommendationContext (§29) | sufficiency result (§30) |
-| 9 | Safety Gate | goal, outcomes, context, safety_input | допуск / `SAFETY_BOUNDARY` (§23, §32) |
+| 9 | Safety Gate (v0.5: расширенная safety, ступень 3 AYLA-DEC-0096) | goal?, outcomes, context, safety_input | допуск / `SAFETY_BOUNDARY` (§23, §32) |
 | 10 | Recommendation Decision Policy | всё выше | ranked suitable NBAs + reason codes (§31) |
 | 11 | Recommendation Assembly | policy output | RecommendationSet: primary NBA + допустимые alternatives |
 | 12 | Explanation Assembly (WHY) | decision + реально использованные facts/evidence | Explanation (§13) |
@@ -981,6 +1025,39 @@ booking flow.**
 - unsafe recommendation не может быть сохранена как primary;
 - при safety block — S8 Boundary Handling (полная UJS; Journey v0.3, N8).
 
+> **v0.5 (AYLA-DEC-0096).** Safety Gate этого контракта — ступень 3
+> входного пути (расширенная safety с разрешённым контекстом). Ступень 1 —
+> минимальный входной детектор по тексту сообщения — работает раньше
+> любого этапа §5 и не зависит от согласия (§5, [[Ayla Decision Policy Contract]]).
+
+**Аллергический фильтр состава (v0.5, AYLA-DEC-0100).** Отдельный от
+safety state жёсткий фильтр для **всех** кандидатов, у которых есть
+состав (позиции, продукты, средства), — **в том числе с неизвестным или
+неполным составом: для них исход `UNKNOWN`**. Кандидат не выпадает из-под
+фильтра из-за того, что его состав неизвестен (AYLA-DEC-0100: «при
+неизвестном или неполном составе результат фильтра — “неизвестно”, а не
+“безопасно”»; CSR §5.9). Нормы (источник — [[Consent Scope Registry]]
+§5.9, `03 AI System/Contracts/allergy-filter-result.schema.json`):
+
+- исход фильтра — ровно один из `CONFLICT` / `NO_CONFLICT_FOUND` /
+  `UNKNOWN`; значения «безопасно» нет;
+- `CONFLICT` — позиция исключается из выдачи;
+- `UNKNOWN` (состав неизвестен или неполон, распознавание неуверенно) —
+  **не «безопасно»**: позиция не показывается как подходящая по аллергии;
+  это не STOP и не состояние safety — `UNKNOWN` фильтра и любое
+  одноимённое значение safety разные понятия;
+- `NO_CONFLICT_FOUND` — не утверждение о безопасности; никаких гарантий по
+  одному отсутствию найденного аллергена;
+- для обработки аллергии читают только этот фильтр (читатель
+  `recommendations`) и сканер; кроме того — доступ самого человека к своей
+  записи (показ, экспорт, удаление; CSR §5.9);
+  **в текст для модели, включая WHY (§13), аллергии не попадают**; каждый
+  доступ и отказ журналируются (`memory.allergy.accessed` /
+  `memory.allergy.access_denied`, [[Ayla Domain Event Registry]] §6.4);
+- запись аллергий активируется только по условиям
+  [[Ayla Memory Domain Contract]] §12.1; пока записи нет, фильтр ничего не
+  исключает и ничего не утверждает.
+
 ## 24. Consent
 
 До использования Memory проверяются: active consent scope; purpose
@@ -1078,7 +1155,14 @@ Architecture** (R1, R2/R10, R6), **B — Product + Measurement** (R4, R5),
   таксономии (§28, §33). Реестр кодов Goal/Outcome как канон пока не
   существует (Goal и Outcome определены в [[Ayla Glossary]]); рабочие коды
   версионируются через `taxonomy_version` (§3) и не претендуют на канон до
-  валидации.
+  валидации. **v0.5:** семейства `ADDRESS / SUPPORT / RECOVER / OBSERVE`
+  **до пилота не включаются** — решение владельца 21.09 (журнал главного
+  окна CD §71 п.2, вне git; бриф N-2: «Сложный NBA (скоринг, обучение,
+  семейства) — после пилота»). Вопрос о составе семейств остаётся открытым
+  на после пилота.
+- **OQ-R13 — OPEN (v0.5).** Соответствие `RecommendationResult` (§32) и
+  `decision_outcome` [[Ayla Decision Policy Contract]] (DP ОВ-15). В §32
+  дана предлагаемая таблица; подтверждает владелец.
 - **OQ-R12 — OPEN (v0.4, пакет A).** Приведение Killer PRD §5 в
   соответствие с разделением NBA / Execution / Provider Ranking: Killer
   PRD §5.1–5.2 описывает candidate-centric pipeline над service/provider
@@ -1090,6 +1174,17 @@ Architecture** (R1, R2/R10, R6), **B — Product + Measurement** (R4, R5),
   контрактом (§5, §34).
 
 ## 27. Goal Resolution (v0.4)
+
+> **v0.5 (AYLA-DEC-0087; перенесено из ayla-knowledge PR #21, A1).** Goal
+> в Recommendation — **0..1, optional**: рекомендация не требует создания
+> Goal. Goal **не синтезируется**: если связь неизвестна — `not_established`.
+> Этап 3 §5 «Goal Resolution» обязательным шагом не является: без Goal
+> конвейер продолжается. Явный путь «Создать цель» остаётся **отдельным**
+> действием пользователя вне рекомендательного конвейера (цель становится
+> `ACTIVE` только после явного действия; меняется только явным действием —
+> [[Ayla Goal and Desired Outcome Contract]], «Состояния и переходы»,
+> таблица переходов). Источники и правило «неподтверждённый inference — не
+> user-stated факт» ниже сохраняются.
 
 Goal — желаемый результат на уровне изменения состояния пользователя
 ([[Ayla Glossary]]); Goal не является услугой или действием. Goal
@@ -1120,11 +1215,27 @@ Goal — желаемый результат на уровне изменени�
 
 ## 28. Outcome Resolution (v0.4)
 
+> **v0.5 (AYLA-DEC-0087, AYLA-DEC-0094; перенесено из PR #21 A1 с
+> изменением).** Outcome Resolution **не требует уже существующего Goal**:
+> выход этапов 3–4 §5 — goal 0..1 и outcomes 0..N (рабочие коды ниже).
+> **Не переносится из PR #21:** условие готовности «`READY_FOR_DECISION ⇒
+> desired_outcomes ≥ 1`» и термин `DesiredOutcome` для этих кодов
+> (отброшено, AYLA-DEC-0094); `SemanticResolutionResult`,
+> `resolution_status` и режимы семантического уточнения `SKIP /
+> CONFIRM_ONE / CHOOSE_MANY / ASK_CONTEXT` (WD D-6 / D-10) — для фиксации
+> K-1 не нужны (Goal optional выражен без них) и уходят в отдельный PR
+> (CD §71 п.1; KB-F, DRF-2270).
+> Desired Outcome в первом релизе не активируется (AYLA-DEC-0094):
+> писателей `DesiredOutcome` / `PlanOutcomeLink` / `ProgressObservation`
+> нет, новый источник истины «желаемого результата» не создаётся, и
+> готовность рекомендации на эту сущность не опирается.
+
 Outcome — наблюдаемое изменение или завершение сценария после действия
 ([[Ayla Glossary]]).
 
 - К Goal относится **1..N Outcomes** — желаемые наблюдаемые результаты,
-  на которые направлен запрос.
+  на которые направлен запрос. *v0.5: 0..N, и Outcomes существуют без
+  Goal.*
 - Источники Outcomes: явная таксономия / multi-select; естественный язык;
   подтверждённая интерпретация. Каждый outcome фиксируется с `source` и
   `confirmed` (§29); неподтверждённая интерпретация не является user-stated
@@ -1141,10 +1252,15 @@ Outcome — наблюдаемое изменение или завершени�
 
 Структурированный вход Recommendation Decision Policy (§31):
 
+> **v0.5 (AYLA-DEC-0087; перенесено из PR #21, A1).** `goal` —
+> **optional**; отсутствие Goal само по себе **не** `INSUFFICIENT_CONTEXT`.
+> Goal уточняется, только если конкретное правило Decision Policy требует
+> его для текущего решения.
+
 ```yaml
 RecommendationContext:
   intent:                   # resolution_ref — выход Intent Model
-  goal:
+  goal:                     # optional, 0..1 (v0.5, AYLA-DEC-0087)
     code:                   # код Goal taxonomy (§28)
     source:                 # user_selected | user_stated |
                             # confirmed_inference | journey_context
@@ -1176,6 +1292,20 @@ RecommendationContext:
   snapshot refs и digests (§3, §7).
 
 ## 30. Context Sufficiency и адаптивная Clarification (C03) (v0.4)
+
+> **v0.5 (AYLA-DEC-0087, AYLA-DEC-0097; перенесено из PR #21 с
+> изменением).** Анкета `area → feeling → goal` **не является обязательным
+> входом** рекомендации. Отсутствие цели не делает контекст
+> недостаточным (§29). Если конкретный ответ человека способен продолжить
+> сценарий, исход выбора — `CLARIFY` с одним вопросом; недостаточность
+> данных не приравнивается к `NO_ACTION` (AYLA-DEC-0097). Теневые модули
+> DecisionReadiness (`decision_readiness/`) и `decision-policy-v1-shadow`
+> (`decision_policy.py`; оба — за флагом `DRE_SHADOW_ENABLED`,
+> [[Ayla Decision Policy Contract]] R-7, R-8) относятся к порогам
+> готовности и recommendation pass и **не являются** выбором следующего
+> шага AYLA-DEC-0097 — тот строится отдельным
+> детерминированным модулем ([[Ayla Decision Policy Contract]]). Замена
+> этого раздела на DecisionReadiness (PR #21, A2) в v0.5 не переносится.
 
 Decision Policy (§31) объявляет **required context facts** для каждого
 `(family, target, action_type)`. Состояние каждого требуемого факта:
@@ -1225,7 +1355,10 @@ Recommendation Decision Policy — контролируемый набор пр�
 - версия политики фиксируется в записи (`decision_policy_version`, §3);
 - economic neutrality (§11) и safety (§23) — внешние ограничения и не
   переопределяются правилами priority;
-- provider-ranking семантика не входит в Decision Policy (R-NBA-8, §34).
+- provider-ranking семантика не входит в Decision Policy (R-NBA-8, §34);
+- *v0.5 (AYLA-DEC-0087; перенесено из PR #21, A1):* Goal — controlled
+  priority/alignment, **не override** safety, eligibility, exclusions,
+  consent, evidence, context fit.
 
 ## 32. RecommendationResult (v0.4)
 
@@ -1252,6 +1385,34 @@ status:
 - `NO_CANDIDATES` остаётся **execution-stage** исходом (нет допустимых
   execution options, §8, §34) и здесь не дублируется.
 
+> **v0.5 (AYLA-DEC-0097; бриф Итог 3 п.14: «`no_action` и поля исхода по
+> N-2»).** Исход выбора следующего шага — закрытый набор `ACT / CLARIFY /
+> NO_ACTION / BLOCKED / HANDOFF` из [[Ayla Decision Policy Contract]];
+> каждый исход несёт исход, причину (`reason_code`), ссылки на факты
+> (`evidence_refs`), происхождение (`provenance`), заблокированные функции
+> (`blocked_capabilities`), время расчёта (`calculated_at`) и версию
+> политики (`policy_version`) — по `03 AI System/Contracts/decision-outcome.schema.json`.
+> Эти поля хранятся в одной записи DecisionOutcome и в Recommendation не
+> дублируются. Recommendation pass этого контракта — поставщик кандидата
+> для исхода, а не второй набор исходов.
+>
+> **Имена не совпадают по смыслу.** `no_action` этого раздела — NBA
+> «ничего не делать» (v0.4). `NO_ACTION` Decision Policy — исход «полезного
+> действия или вопроса сейчас нет»; недостаточность данных им не является.
+> Пока NBA-семейства до пилота не включены (§33), `no_action` как NBA не
+> формируется; ситуация «нечего предложить» выражается исходом `NO_ACTION`
+> (`reason_code` `nothing_useful`): требование AYLA-DEC-0045 / OD-9
+> «обоснованное ничего не делать» до пилота выполняет исход `NO_ACTION`
+> (AYLA-DEC-0097, DP-10).
+>
+> **Предлагаемое соответствие (OQ-R13, подтверждает владелец):**
+>
+> | `RecommendationResult` | `decision_outcome` |
+> |---|---|
+> | `CLEAR_PRIMARY`, `MULTIPLE_SUITABLE` | `ACT` |
+> | `INSUFFICIENT_CONTEXT` | `CLARIFY`, если конкретный ответ человека продолжит сценарий; иначе `NO_ACTION` или `BLOCKED` с причиной |
+> | `SAFETY_BOUNDARY` | `BLOCKED` (`safety_block`); `HANDOFF`, если нужен оператор (`safety_handoff`) |
+
 ## 33. NBA Taxonomy (v0.4, candidate)
 
 NBA задаётся **композиционно**: `family + target + action_type`, а не
@@ -1270,6 +1431,14 @@ NBA задаётся **композиционно**: `family + target + action_t
 валидации против полной MVP Goal/Outcome таксономии (OQ-R11). LLM не
 может вводить новые families или targets (§31). `SAFETY_BOUNDARY` не
 является family (§23).
+
+> **v0.5.** Семейства `ADDRESS / SUPPORT / RECOVER / OBSERVE` **до пилота
+> не включаются** — ни как вход выбора следующего шага, ни как метка
+> записи: до пилота `decision_subject.family` не заполняется (`null`, §3);
+> NBA-семейства — после пилота (решение владельца 21.09, журнал главного
+> окна CD §71 п.2, вне git). Сложный NBA, скоринг и обучение — после
+> пилота (AYLA-DEC-0097). Формулировка PR #21 «provisional для Controlled
+> Pilot» не переносится.
 
 ## 34. Граница C04/C05 и Execution Mapping (v0.4)
 
@@ -1294,6 +1463,15 @@ Canonical Recommendation (NBA)
 
 - `SERVICE_PATH` означает «реализуемо через услуги Ayla» и **не
   идентифицирует конкретную услугу**;
+- **вариант исполнения «план» (v0.5, AYLA-DEC-0091):** без цели Ayla **не
+  предлагает и не создаёт** план по своей инициативе; такой план может
+  собрать только сам пользователь (ручной конструктор, источник `manual`).
+  Предложение собрать план допустимо, только если плана нет и есть
+  ACTIVE-цель с шаблоном ([[Ayla Decision Policy Contract]], ступень 6).
+  Явный запрос человека «собрать план» без цели — явное намерение: он
+  открывает ручной конструктор, а не предложение Ayla. Правило P-1 имеет
+  приоритет над текстом ayla-knowledge PR #21 (решение владельца 21.09,
+  журнал главного окна CD §71 п.3, вне git);
 - на уровне Execution Mapping / Provider Ranking продолжают действовать
   правила Killer PRD §5.1 gates 3–6 (eligibility/availability → relevance
   → preference → economic-neutrality) — перенесены сюда из pipeline v0.3
@@ -1312,6 +1490,44 @@ Canonical Recommendation (NBA)
   подтверждению при синхронизации с Journey Spec.
 
 ## Change Log
+
+### v0.5 (2026-09-21) — Поправка по AYLA-DEC-0087, 0091, 0094, 0096, 0097, 0100; выборочный перенос из ayla-knowledge PR #21 (DRF-2263)
+
+**Почему v0.5, а не v1.0.** PR #21 поднимал контракт до «PROPOSED v1.0 =
+v0.4 + A1 + A2». По решению владельца 21.09 (журнал главного окна CD §71
+п.1, вне git) в этот PR идут только изменения, нужные для K-1…M-1; A2
+(синхронизация с каноном v1.1: DecisionReadiness, VERIFIED-eligibility,
+три снимка, B8-события, `actionable_until`, четыре состояния safety и
+др.) и шапка v1.0 — вне предмета и уходят отдельным PR. Из A1 перенесена
+только часть про Goal optional. Формула «v1.0 = v0.4 + A1 + A2» стала бы
+ложной, поэтому версия — v0.5, статус не изменён (draft / proposed).
+
+| Раздел | Изменение | Основание | Из PR #21 |
+|---|---|---|---|
+| шапка, frontmatter | v0.5; related + Decision Policy Contract | — | 1.1 — изменено |
+| §3 | `target_outcomes` — рабочие коды, не DesiredOutcome refs; `family` до пилота не заполняется (`null`); поля исхода — в DecisionOutcome | DEC-0094, 0097; CD §71 п.2 | 1.3 — отброшено; 1.4 — изменено |
+| §5 | ступень 1 до этапа 1; этап 9 = ступень 3; этапы 3–4 — Goal optional (0..1, без синтеза), Outcomes без Goal (0..N); этап 4 «Adaptive Clarification семантики» и режимы `SKIP / CONFIRM_ONE / CHOOSE_MANY / ASK_CONTEXT` не вводятся | DEC-0096, 0087; CD §71 п.1 | 1.9 — изменено; 1.7 — вне предмета (KB-F, DRF-2270) |
+| §23 | ссылка на ступень 1; аллергический фильтр ко всем кандидатам с составом, включая неизвестный или неполный (исход `UNKNOWN`); `CONFLICT / NO_CONFLICT_FOUND / UNKNOWN`, без гарантий, вне текста модели, журнал доступа; доступ субъекта — по CSR §5.9 | DEC-0096, 0100; CSR §5.9 | 1.16 — изменено |
+| §26 | OQ-R11: семейства до пилота не включаются; новый OQ-R13 | CD §71 п.2; DP ОВ-15 | 1.25 — отброшено |
+| §27 | Goal 0..1, без синтеза, «Создать цель» — вне конвейера; `ACTIVE` и смена цели — только явным действием | DEC-0087; [[Ayla Goal and Desired Outcome Contract]] (таблица переходов) | 1.19 — перенесено |
+| §28 | Outcomes 0..N без Goal; без условия `≥ 1 desired outcome` и без `DesiredOutcome`; `SemanticResolutionResult`, `resolution_status` и режимы уточнения (WD D-6 / D-10) не переносятся | DEC-0087, 0094; CD §71 п.1 | 1.20 — изменено |
+| §29 | `goal` optional; отсутствие Goal ≠ `INSUFFICIENT_CONTEXT` | DEC-0087 | 1.21 — перенесено |
+| §30 | анкета не обязательный вход; CLARIFY vs NO_ACTION; теневые DecisionReadiness и `decision-policy-v1-shadow` ≠ выбор DEC-0097 | DEC-0087, 0097 | 1.22, 1.8, 1.23 — изменено |
+| §31 | Goal не override | DEC-0087 | 1.24 — перенесено |
+| §32 | исходы и поля по DEC-0097 — ссылка на DP; `no_action` ≠ `NO_ACTION`; «обоснованное ничего не делать» (DEC-0045) — исход `NO_ACTION`; предлагаемое соответствие | DEC-0097, 0045 | 1.8 — изменено |
+| §33 | семейства до пилота не включаются, `family` = `null`; абзац v0.4 «LLM не может вводить новые families…» восстановлен целиком перед блоком v0.5 | CD §71 п.2 | 1.25 — отброшено |
+| §34 | вариант «план» без цели Ayla не предлагает | DEC-0091; CD §71 п.3 | (2.8 FR — по смыслу) |
+
+**Не перенесено из PR #21 (вне предмета, отдельный PR по CD §71 п.1):**
+1.2, 1.5, 1.6, 1.7, 1.10–1.15, 1.17, 1.18, 1.26. Строка 1.7 (этап
+Semantic Resolution, этап 4 «Adaptive Clarification семантики»,
+`resolution_status` и режимы WD D-6 / D-10) — KB-F, DRF-2270: для фиксации
+K-1 достаточно «Goal 0..1, не синтезируется, отсутствие Goal ≠
+`INSUFFICIENT_CONTEXT`» (§5, §27–§29). Журнал v1.0 из #21 (1.27) не
+переносится — вместо него эта запись. Полная таблица —
+`docs/audits/2026-09-21-pr21-transfer-kb-e.md`; PR #21 —
+`canon/recommendation-v1.0-proposed`, голова `dfd9595d`.
+
 
 ### v0.4 (2026-08-19) — Продуктово-семантический слой: Recommendation = Next Best Action
 

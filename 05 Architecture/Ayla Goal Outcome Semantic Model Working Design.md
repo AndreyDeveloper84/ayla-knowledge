@@ -30,7 +30,7 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-08-20
-updated: 2026-08-22
+updated: 2026-09-21
 review_cycle: before-major-change
 depends_on:
   - "[[Ayla Intent Model Specification]]"
@@ -47,6 +47,31 @@ related:
 # Ayla Goal Outcome Semantic Model Working Design
 
 > **Статус:** Draft v0.9 — Working Design checkpoint. **Non-canonical.**
+>
+> **Заметка 2026-09-21 (AYLA-DEC-0094, «D-1» реестра решений).** Desired
+> Outcome в первом релизе **не активируется**. Модели `DesiredOutcome`,
+> `PlanOutcomeLink` и `ProgressObservation` остаются обездвиженными до
+> утверждения таксономии целей и результатов; новый источник истины для
+> «желаемого результата» не создаётся; живые носители — только срок цели
+> (`target_date`) и цель анкеты питания. Рабочие модели этого документа
+> (§11.2, §13 и др.) остаются evidence base для будущей Goal/Outcome
+> Taxonomy и в первый релиз не входят. Статус документа не меняется.
+>
+> Метки «D-1…D-10» в §20 — дельты этого документа к Recommendation
+> Contract (далее «WD §20 D-n»), не решения реестра: «D-1» в
+> [[OWNER_DECISION_REGISTER]] — AYLA-DEC-0094. Из дельт WD §20 в
+> [[Ayla MVP Recommendation Contract]] v0.5 перенесены: WD §20 D-2, D-3,
+> D-4, D-5, D-9 (Goal optional, Outcomes без Goal); D-1 — с изменением
+> (optional Goal в этапах 3–4 — да; объединённый этап Semantic Resolution —
+> нет). Не перенесены: D-6 (режимы Adaptive Clarification семантики
+> `SKIP / CONFIRM_ONE / CHOOSE_MANY / ASK_CONTEXT` и коды C01–C05) и D-10
+> (`SemanticResolutionResult`, `resolution_status`) — для фиксации K-1 не
+> нужны, отдельный PR (CD §71 п.1; KB-F, DRF-2270); D-7 — вне предмета
+> решений K-1…M-1; условие «≥ 1 desired outcome» для готовности и термин
+> `DesiredOutcome` — отброшены (AYLA-DEC-0094); D-8 не закрыт —
+> NBA-семейства до пилота не включаются (решение владельца 21.09, журнал
+> главного окна CD §71 п.2, вне git). Текст ниже не менялся.
+>
 > Документ фиксирует архитектурный checkpoint по семантике Goal / Outcome /
 > Recommendation перед проектированием Goal/Outcome Taxonomy и подготовкой
 > amendment к [[Ayla MVP Recommendation Contract]].
@@ -2184,6 +2209,14 @@ Goal/Outcome Semantic Taxonomy Design
   авторитетом.
 
 ### Change Log
+
+#### Заметка 2026-09-21 (без новой редакции текста)
+
+- в шапку добавлена заметка AYLA-DEC-0094 (Desired Outcome не
+  активируется в первом релизе) и перечень дельт WD §20, перенесённых в
+  [[Ayla MVP Recommendation Contract]] v0.5 (DRF-2263); версия, статус и
+  текст разделов §1–§23 не изменены. Шапка из ayla-knowledge PR #21
+  («дельты §20 применены amendment A1… D-8 закрыт B9») не переносится.
 
 #### v0.9 — 2026-08-22
 
