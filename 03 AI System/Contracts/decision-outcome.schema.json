@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://ayla.local/schemas/decision-outcome.schema.json",
   "title": "Ayla Decision Outcome",
-  "description": "Machine-readable appendix к Ayla Decision Policy Contract v0.1 (review / proposed / candidate). Исход минимального детерминированного выбора следующего шага (AYLA-DEC-0097, N-2) после входного пути из четырёх ступеней (AYLA-DEC-0096, N-1). Закрытый набор исходов ACT / CLARIFY / NO_ACTION / BLOCKED / HANDOFF. Модель (LLM) исход не выбирает, только формулирует выбранное. contract_version этой схемы: major 1 (шаблон ^1\\.[0-9]+$). Правило версий: additive-поле — minor; удаление, переименование поля или изменение семантики — major и change control. Потребитель обязан отвергнуть документ с неизвестной ему major-версией contract_version и не интерпретировать его по ближайшей известной (ТЗ §10, contract test «unknown major rejection»). Словарь reason_code, значения provenance.step, константа provenance.policy и поля clarify_question_ref / handoff_reason — proposed (предложение контракта, утверждает владелец; AYLA-DEC-0097 называет только семь полей и пять исходов). Словарь reason_code версионируется вместе с policy_version; схема проверяет только форму кода, принадлежность коду словаря проверяет потребитель по policy_version.",
+  "description": "Machine-readable appendix к Ayla Decision Policy Contract v0.1 (review / proposed / candidate). Исход минимального детерминированного выбора следующего шага (AYLA-DEC-0097, N-2) после входного пути из четырёх ступеней (AYLA-DEC-0096, N-1). Закрытый набор исходов ACT / CLARIFY / NO_ACTION / BLOCKED / HANDOFF. Модель (LLM) исход не выбирает, только формулирует выбранное. contract_version этой схемы: major 1 (шаблон ^1\\.[0-9]+$). Правило версий: additive-поле — minor; удаление, переименование поля или изменение семантики — major и change control. Потребитель обязан отвергнуть документ с неизвестной ему major-версией contract_version и не интерпретировать его по ближайшей известной (ТЗ §10, contract test «unknown major rejection»). Начальный словарь reason_code утверждён владельцем (CD §72 п.22), дорабатывается по ходу с новой policy_version. Значения provenance.step, константа provenance.policy и поля clarify_question_ref / handoff_reason — proposed (предложение контракта, ОВ-16; AYLA-DEC-0097 называет только семь полей и пять исходов). Словарь reason_code версионируется вместе с policy_version; схема проверяет только форму кода, принадлежность коду словаря проверяет потребитель по policy_version.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -29,7 +29,7 @@
     "reason_code": {
       "type": "string",
       "pattern": "^[a-z_]+$",
-      "description": "Proposed: начальный словарь кодов — предложение контракта (ОВ-3), утверждает владелец. Код причины из словаря версии policy_version. Код, отсутствующий в словаре этой версии, потребитель отвергает."
+      "description": "Начальный словарь кодов утверждён владельцем (CD §72 п.22); доработка — новой policy_version. Код причины из словаря версии policy_version. Код, отсутствующий в словаре этой версии, потребитель отвергает."
     },
     "evidence_refs": {
       "type": "array",
@@ -53,7 +53,7 @@
       }
     },
     "provenance": {
-      "description": "Proposed: состав provenance (policy, step) — предложение контракта (ОВ-3), не поле DEC сверх «происхождения».",
+      "description": "Proposed: состав provenance (policy, step) — предложение контракта (ОВ-16), не поле DEC сверх «происхождения».",
       "type": "object",
       "additionalProperties": false,
       "required": ["policy", "step"],
@@ -73,7 +73,7 @@
             "plan_proposal",
             "none"
           ],
-          "description": "Proposed (ОВ-3). Ступень порядка AYLA-DEC-0097, давшая исход. none — ни одна ступень не дала действия или вопроса."
+          "description": "Proposed (ОВ-16). Ступень порядка AYLA-DEC-0097, давшая исход. none — ни одна ступень не дала действия или вопроса."
         }
       }
     },
@@ -99,12 +99,12 @@
     "clarify_question_ref": {
       "type": "string",
       "minLength": 1,
-      "description": "Proposed: поле — предложение контракта (ОВ-3), не поле DEC. Ссылка на один конкретный вопрос (не его текст; текст формулирует модель). Обязателен при CLARIFY, запрещён при любом другом исходе."
+      "description": "Proposed: поле — предложение контракта (ОВ-16), не поле DEC. Ссылка на один конкретный вопрос (не его текст; текст формулирует модель). Обязателен при CLARIFY, запрещён при любом другом исходе."
     },
     "handoff_reason": {
       "type": "string",
       "pattern": "^[a-z_]+$",
-      "description": "Proposed: поле — предложение контракта (ОВ-3), не поле DEC. Причина передачи оператору. Обязателен при HANDOFF; вне HANDOFF — открытый вопрос ОВ-14 (сейчас не запрещён)."
+      "description": "Proposed: поле — предложение контракта (ОВ-16), не поле DEC. Причина передачи оператору. Обязателен при HANDOFF; вне HANDOFF — открытый вопрос ОВ-14 (сейчас не запрещён)."
     }
   },
   "allOf": [
