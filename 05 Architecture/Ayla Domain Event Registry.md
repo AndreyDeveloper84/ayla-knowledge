@@ -4,7 +4,7 @@ title: Ayla Domain Event Registry
 type: specification
 status: draft
 decision_status: proposed
-version: "1.0-draft"
+version: "0.6"
 owner: Product Architecture / Event Governance
 priority: P0
 knowledge_area:
@@ -27,7 +27,7 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-28
-updated: 2026-08-18
+updated: 2026-09-21
 review_cycle: monthly
 depends_on:
   - "[[Ayla Constitution]]"
@@ -46,7 +46,8 @@ related:
 
 # Ayla Domain Event Registry
 
-> **Статус:** Draft v0.4 — proposed. Создан по мандату AYLA-DEC-0025 п. 1
+> **Статус:** Draft v0.6 — proposed (версия во frontmatter и здесь
+> совпадает; см. Change Log v0.6). Создан по мандату AYLA-DEC-0025 п. 1
 > ([[Ayla Decision Log]]). Нормативную силу получает после approval
 > Product Architecture / Event Governance. **До approval реестра записи
 > имеют `registration_status: proposed`** — кроме семейств
@@ -57,7 +58,10 @@ related:
 > `appointment.rescheduled` (§6.3), зарегистрированного в v0.4 со
 > статусом `registered`: его регистрация нормативно предписана
 > AYLA-DEC-0022 п. 9 (accepted), что закрывает вопрос статуса этого
-> события для MVP-состава.
+> события для MVP-состава. В v0.6 добавлены записи этапа C —
+> `goal.*`, `plan.*`, `diary.day.*`, `food.entry.*`,
+> `water.entry.recorded`, `decision.evaluated`, `memory.allergy.*`
+> (§6.4, §6.7–§6.10) — все со статусом `registration_status: proposed`.
 
 ## 1. Назначение
 
@@ -300,7 +304,14 @@ The canonical wire envelope is defined in §5. The following mapping keeps the p
 > реестра), кроме `appointment.rescheduled` (§6.3) — `registered` по
 > AYLA-DEC-0022 п. 9. Записи §6.5–§6.6: `registration_status: registered`
 > (семантика утверждена [[Ayla MVP Recommendation Contract]] v0.3,
-> architecture review APPROVED + owner rulings OQ-R).
+> architecture review APPROVED + owner rulings OQ-R). Записи v0.6
+> (`memory.allergy.*` в §6.4, §6.7–§6.10): `registration_status:
+> proposed`, `semantic_status: candidate` — семантика задана контрактами
+> этапа C в статусе review / candidate; payload перенесён из контрактов
+> без дополнений, открытые поля — OQ-E8. Исключение — `memory.allergy.*`:
+> источник (CSR §9.1) полей не называет, идентификаторы `memory_id` /
+> `subject_id` взяты по образцу существующих `memory.*` §6.4, без
+> содержания аллергии.
 
 ### 6.1 Intent
 
@@ -954,6 +965,171 @@ notes: >
 
 Кандидат: `memory.proposal_expired` (TTL proposal — AYLA-DEC-0024 п. 2).
 
+#### Аллергии — красная зона (v0.6, AYLA-DEC-0100)
+
+Четыре события `memory.allergy.*` названы решением AYLA-DEC-0100
+(`accessed`, `access_denied`) и [[Consent Scope Registry]] v1.5 §9.1 /
+§5.9 (`recorded`, `forgotten`), где объявлены «предлагается к регистрации
+в Domain Event Registry (KB-E, DRF-2263)». Общие правила для всех
+четырёх (CSR §5.9, [[Ayla Memory Domain Contract]] §12):
+
+- **содержание аллергии в событие не пишется** — ни формулировка, ни
+  аллерген, ни дата рождения; `contains_sensitive_values: false`;
+- читатели записи `allergy` — только фильтр рекомендаций (`recommendations`)
+  и сканер (`scanner`), плюс доступ самого субъекта (показ, экспорт);
+- запись аллергий не активируется, пока не выполнены условия
+  [[Ayla Memory Domain Contract]] §12.1 (на 21.09.2026 — 4 из 24) либо
+  владелец явно не примет предел; регистрация имён этого не меняет;
+- идентификаторы в payload — по образцу существующих `memory.*` (§6.4):
+  `memory_id`, `subject_id` (псевдонимные, §4 п. 3); содержание аллергии
+  «без содержания» CSR §9.1 исключает, идентификаторы — нет;
+- словесные поля `accessed` / `access_denied` (кто читает, purpose,
+  причина отказа) описаны словами CSR §9.1; фиксация их имён — OQ-E8.
+
+```yaml
+event_name: memory.allergy.recorded
+event_version: 1
+registration_status: proposed
+semantic_status: candidate
+semantic_class: domain_fact
+publication_scope: internal
+authoritative_owner: Memory Service (W3)
+authorized_producer: {bounded_context: User Context, component: Memory Service}
+consumers: [Audit]
+trigger: >
+  Запись `allergy` создана после отдельного явного согласия и гейта
+  возраста (CSR §5.9; AYLA-DEC-0100).
+payload:
+  required: [memory_id, subject_id]   # только псевдонимные идентификаторы (§4 п. 3); без содержания (CSR §9.1)
+  optional: []
+idempotency: {key: memory_id}
+ordering: {scope: subject_id}
+privacy:
+  contains_personal_data: true
+  data_mode: pseudonymous_identifiers_only
+  contains_sensitive_values: false
+  subject_linkability: internal
+retention: {policy_ref: TBD}
+source_of_truth: {aggregate: MemoryEntry}
+legacy_names: []
+notes: >
+  Источник — CSR v1.5 §9.1, §5.9 («Audit events»). Содержание аллергии и
+  дата рождения в событие не попадают. Payload — по образцу memory.* §6.4
+  (memory_id, subject_id — псевдонимные идентификаторы, §4 п. 3);
+  «без содержания» CSR §9.1 запрещает содержание аллергии, а не
+  идентификаторы. Одна запись — одно событие: idempotency по memory_id.
+```
+
+```yaml
+event_name: memory.allergy.forgotten
+event_version: 1
+registration_status: proposed
+semantic_status: candidate
+semantic_class: domain_fact
+publication_scope: internal
+authoritative_owner: Memory Service (W3)
+authorized_producer: {bounded_context: User Context, component: Memory Service}
+consumers: [Audit]
+trigger: >
+  Запись `allergy` удалена командой «Забудь аллергии» или «Забудь всё»
+  (AYLA-DEC-0100; CSR §9.1).
+payload:
+  required: [memory_id, subject_id]   # только псевдонимные идентификаторы (§4 п. 3); без содержания (CSR §9.1)
+  optional: []
+idempotency: {key: memory_id}
+ordering: {scope: subject_id}
+privacy:
+  contains_personal_data: true
+  data_mode: pseudonymous_identifiers_only
+  contains_sensitive_values: false
+  subject_linkability: internal
+retention: {policy_ref: TBD}
+source_of_truth: {aggregate: MemoryEntry}
+legacy_names: []
+notes: >
+  Payload — по образцу memory.* §6.4 (memory_id, subject_id; без
+  содержания). Отличается от memory.entry_revoked (§6.4): то — только следствие
+  consent.revoked; это — удаление по команде человека. Экспорт и forget —
+  [[AMD-001 C5 Pilot Personal Context Export-Forget Contract]].
+```
+
+```yaml
+event_name: memory.allergy.accessed
+event_version: 1
+registration_status: proposed
+semantic_status: candidate
+semantic_class: domain_fact
+publication_scope: internal
+authoritative_owner: Memory Service (W3)
+authorized_producer: {bounded_context: User Context, component: Memory Service}
+consumers: [Audit]
+trigger: >
+  Каждое чтение записи `allergy` (AYLA-DEC-0100: «каждый доступ …
+  журналируется»).
+payload:
+  required:
+    - memory_id
+    - subject_id
+    - "кто читает: recommendations | scanner | субъект (показ, экспорт)"
+    - "purpose"
+  optional: []
+idempotency: {key: event_id}
+ordering: {scope: subject_id}
+privacy:
+  contains_personal_data: true
+  data_mode: pseudonymous_identifiers_only
+  contains_sensitive_values: false
+  subject_linkability: internal
+retention: {policy_ref: TBD}
+source_of_truth: {aggregate: null, runtime_component: Memory Service}
+legacy_names: []
+notes: >
+  Поля — словами CSR §9.1 («кто читает, purpose, время»); время — это
+  occurred_at envelope (§4 п. 4). Для доступа субъекта пишется с purpose
+  субъекта (CSR §5.9). memory_id и subject_id — по образцу memory.* §6.4
+  (псевдонимные идентификаторы, §4 п. 3). Каждое чтение — отдельный
+  факт без бизнес-ключа, поэтому idempotency по event_id. Runtime-носитель
+  журнала — RedZoneAccessLog
+  ([[Ayla Memory Domain Contract]] §12.1).
+```
+
+```yaml
+event_name: memory.allergy.access_denied
+event_version: 1
+registration_status: proposed
+semantic_status: candidate
+semantic_class: domain_fact
+publication_scope: internal
+authoritative_owner: Memory Service (W3)
+authorized_producer: {bounded_context: User Context, component: Memory Service}
+consumers: [Audit]
+trigger: >
+  Каждый отказ в доступе к записи `allergy` (AYLA-DEC-0100: «каждый отказ
+  в доступе журналируется»).
+payload:
+  required:
+    - subject_id
+    - "причина отказа: нет согласия | возраст | чужой purpose | «забыто»"
+  optional: [memory_id]   # есть, когда запись существует; при «забыто» записи нет
+idempotency: {key: event_id}
+ordering: {scope: subject_id}
+privacy:
+  contains_personal_data: true
+  data_mode: pseudonymous_identifiers_only
+  contains_sensitive_values: false
+  subject_linkability: internal
+retention: {policy_ref: TBD}
+source_of_truth: {aggregate: null, runtime_component: Memory Service}
+legacy_names: []
+notes: >
+  Причины — словами CSR §9.1. subject_id — по образцу memory.* §6.4;
+  memory_id — только когда запись существует (при «забыто» её нет).
+  Каждый отказ — отдельный факт, idempotency по event_id. Сегодня отказ в RedZoneReader.read
+  откатывает транзакцию без строки аудита ([[Ayla Memory Domain Contract]]
+  §12.1, условие 12) — событие обязательно по решению, runtime его пока
+  не пишет.
+```
+
 ### 6.5 Recommendation
 
 Семантика утверждена [[Ayla MVP Recommendation Contract]] v0.3
@@ -1267,6 +1443,472 @@ notes: >
   recommendation не атрибутируется.
 ```
 
+### 6.7 Goal (v0.6)
+
+Источник — [[Ayla Goal and Desired Outcome Contract]] §«События»
+(«предлагаются к регистрации в Domain Event Registry (KB-E)»); решения
+AYLA-DEC-0087, AYLA-DEC-0090. Общие нормы контракта: события — факты в
+прошедшем времени; **ни одно событие цели не несёт дословный `goal_text`
+и ответы анкеты**; Desired Outcome событий в первом релизе не имеет
+(AYLA-DEC-0094). Хранилище `ClientGoal` — каталог (`goals`); отображение
+на репозиторий не задано (GOAL OQ-10). Время в payload не дублируется —
+это `occurred_at` envelope (§4 п. 4).
+
+```yaml
+event_name: goal.selected
+event_version: 1
+registration_status: proposed
+semantic_status: candidate
+semantic_class: domain_fact
+publication_scope: internal
+authoritative_owner: Goal (User Context)
+authorized_producer: {bounded_context: User Context, component: ClientGoal lifecycle (каталог, goals)}
+consumers: [Analytics, Decision Policy]
+trigger: >
+  Создана новая ACTIVE цель (SelectGoal или шаг `goal` анкеты).
+payload:
+  required:
+    - "идентификатор цели"
+    - goal_key            # или его отсутствие
+    - has_text            # признак наличия текста
+    - source_channel
+  optional: []
+idempotency: {key: event_id}
+ordering: {scope: subject_id}
+privacy:
+  contains_personal_data: true
+  data_mode: pseudonymous_identifiers_only
+  contains_sensitive_values: false
+  subject_linkability: internal
+retention: {policy_ref: TBD}
+source_of_truth: {aggregate: ClientGoal}
+legacy_names: []
+notes: >
+  Без goal_text — как у текущего AnalyticsEvent goal_selected. goal_selected
+  — кандидат в legacy alias (§12); alias или отдельное аналитическое
+  событие — GOAL OQ-6.
+```
+
+```yaml
+event_name: goal.state_changed
+event_version: 1
+registration_status: proposed
+semantic_status: candidate
+semantic_class: domain_fact
+publication_scope: internal
+authoritative_owner: Goal (User Context)
+authorized_producer: {bounded_context: User Context, component: ClientGoal lifecycle (каталог, goals)}
+consumers: [Analytics, Personal Plan (не потребляет до GOAL OQ-9)]
+trigger: >
+  Переход по ChangeGoalState (PAUSED, ACHIEVED, ARCHIVED, снятие с паузы).
+payload:
+  required:
+    - "идентификатор цели"
+    - from_state
+    - to_state
+  optional: []
+idempotency: {key: event_id}
+ordering: {scope: "идентификатор цели"}
+privacy:
+  contains_personal_data: true
+  data_mode: pseudonymous_identifiers_only
+  contains_sensitive_values: false
+  subject_linkability: internal
+retention: {policy_ref: TBD}
+source_of_truth: {aggregate: ClientGoal}
+legacy_names: []
+notes: >
+  Потребитель по контракту — Personal Plan Contract, но план это событие
+  не потребляет до решения GOAL OQ-9 (что делать с планом при паузе,
+  архиве, «достигнута»).
+```
+
+```yaml
+event_name: goal.superseded
+event_version: 1
+registration_status: proposed
+semantic_status: candidate
+semantic_class: domain_fact
+publication_scope: internal
+authoritative_owner: Goal (User Context)
+authorized_producer: {bounded_context: User Context, component: ClientGoal lifecycle (каталог, goals)}
+consumers: [Personal Plan]
+trigger: >
+  Прежняя ACTIVE цель закрыта выбором новой.
+payload:
+  required:
+    - "идентификатор закрытой цели"
+    - "идентификатор новой цели"
+  optional: []
+idempotency: {key: event_id}
+ordering: {scope: subject_id}
+privacy:
+  contains_personal_data: true
+  data_mode: pseudonymous_identifiers_only
+  contains_sensitive_values: false
+  subject_linkability: internal
+retention: {policy_ref: TBD}
+source_of_truth: {aggregate: ClientGoal}
+legacy_names: []
+notes: >
+  При активном плане обязано привести к вопросу человеку «Обновить план /
+  Оставить текущий» (AYLA-DEC-0090); само событие план не меняет. Хранить
+  ли ссылку «старая → новая» в ClientGoal или только в событии — GOAL OQ-6.
+```
+
+### 6.8 Plan (v0.6)
+
+Источник — [[Ayla Personal Plan Contract]] §«События» («предлагаются к
+регистрации (KB-E) … со статусом `registration_status: proposed`»);
+решения AYLA-DEC-0088, 0090, 0091, 0092. Хранилище и писатель —
+каталог, приложение `wellness`. **В событиях нет `goal_text`, фактов
+дневника, калорий и текста «почему».** В runtime этих событий нет.
+
+```yaml
+event_name: plan.created
+event_version: 1
+registration_status: proposed
+semantic_status: candidate
+semantic_class: domain_fact
+publication_scope: internal
+authoritative_owner: Personal Plan
+authorized_producer: {bounded_context: Wellness, component: Plan Lite (каталог, wellness)}
+consumers: [Dietitian (только чтение состояния плана)]
+trigger: План стал active.
+payload:
+  required: [plan_id, source, template_version, has_goal, "число действий"]
+  optional: []
+idempotency: {key: plan_id}
+ordering: {scope: plan_id}
+privacy:
+  contains_personal_data: true
+  data_mode: pseudonymous_identifiers_only
+  contains_sensitive_values: false
+  subject_linkability: internal
+retention: {policy_ref: TBD}
+source_of_truth: {aggregate: PersonalPlan}
+legacy_names: []
+notes: >
+  source: manual | template; template_version — null у manual. План без
+  цели — только source=manual, собранный человеком (AYLA-DEC-0091).
+```
+
+```yaml
+event_name: plan.closed
+event_version: 1
+registration_status: proposed
+semantic_status: candidate
+semantic_class: domain_fact
+publication_scope: internal
+authoritative_owner: Personal Plan
+authorized_producer: {bounded_context: Wellness, component: Plan Lite (каталог, wellness)}
+consumers: [Dietitian (только чтение состояния плана)]
+trigger: Переход active → closed_by_user.
+payload:
+  required: [plan_id]
+  optional: []
+idempotency: {key: plan_id}
+ordering: {scope: plan_id}
+privacy:
+  contains_personal_data: true
+  data_mode: pseudonymous_identifiers_only
+  contains_sensitive_values: false
+  subject_linkability: internal
+retention: {policy_ref: TBD}
+source_of_truth: {aggregate: PersonalPlan}
+legacy_names: []
+notes: Закрытие — только действием человека.
+```
+
+```yaml
+event_name: plan.superseded
+event_version: 1
+registration_status: proposed
+semantic_status: candidate
+semantic_class: domain_fact
+publication_scope: internal
+authoritative_owner: Personal Plan
+authorized_producer: {bounded_context: Wellness, component: Plan Lite (каталог, wellness)}
+consumers: [Dietitian (только чтение состояния плана)]
+trigger: Переход active → superseded.
+payload:
+  required: [plan_id, superseded_by]
+  optional: []
+idempotency: {key: plan_id}
+ordering: {scope: plan_id}
+privacy:
+  contains_personal_data: true
+  data_mode: pseudonymous_identifiers_only
+  contains_sensitive_values: false
+  subject_linkability: internal
+retention: {policy_ref: TBD}
+source_of_truth: {aggregate: PersonalPlan}
+legacy_names: []
+notes: >
+  AYLA-DEC-0090: старый план становится superseded только после явного
+  подтверждения нового кнопкой; до того старый остаётся active.
+```
+
+```yaml
+event_name: plan.action.revised
+event_version: 1
+registration_status: proposed
+semantic_status: candidate
+semantic_class: domain_fact
+publication_scope: internal
+authoritative_owner: Personal Plan
+authorized_producer: {bounded_context: Wellness, component: Plan Lite (каталог, wellness)}
+consumers: [Dietitian (только чтение состояния плана)]
+trigger: Создана версия действия плана, кроме initial.
+payload:
+  required: [plan_id, action_id, supersedes_action_id, action_type,
+             reason_code, changed_by, status]
+  optional: []
+idempotency: {key: action_id}
+ordering: {scope: plan_id}
+privacy:
+  contains_personal_data: true
+  data_mode: pseudonymous_identifiers_only
+  contains_sensitive_values: false
+  subject_linkability: internal
+retention: {policy_ref: TBD}
+source_of_truth: {aggregate: PlanAction}
+legacy_names: []
+notes: >
+  AYLA-DEC-0092: изменение действия — новая версия, старая сохраняется;
+  удаление — версия со статусом «удалено». Форма версии —
+  `03 AI System/Contracts/plan-action.schema.json`.
+```
+
+### 6.9 Diary, Food, Water (v0.6)
+
+Источник — [[Ayla Diary and Water Contract]] §«События» («Предлагается к
+регистрации (KB-E, Domain Event Registry)»); решения AYLA-DEC-0095,
+0099, 0101. Писатель — каталог, приложение `nutrition`. **В событиях
+запрещены: название блюда, свободный текст, фото, ингредиенты.**
+Имена `food.*` и `water.*` — как в контракте: `food.entry.recorded`,
+`food.entry.corrected`, `food.entry.deleted`, `water.entry.recorded`.
+
+```yaml
+event_name: diary.day.closed
+event_version: 1
+registration_status: proposed
+semantic_status: candidate
+semantic_class: domain_fact
+publication_scope: internal
+authoritative_owner: Nutrition Diary
+authorized_producer: {bounded_context: Nutrition, component: DiaryDay (каталог, nutrition)}
+consumers: [Dietitian]
+trigger: CloseDay (кнопка «Завершить день») или AutoCloseDay (04:00).
+payload:
+  required: [user_ref, local_date, timezone_source, closed_by]
+  optional: []
+idempotency: {key: "user_ref + local_date"}
+ordering: {scope: user_ref}
+privacy:
+  contains_personal_data: true
+  data_mode: pseudonymous_identifiers_only
+  contains_sensitive_values: false
+  subject_linkability: internal
+retention: {policy_ref: TBD}
+source_of_truth: {aggregate: DiaryDay}
+legacy_names: []
+notes: >
+  AYLA-DEC-0095: оценка дня, «в ориентире» плана и серии считаются только
+  по завершённым дням. Форма дня — `diary-day.schema.json`.
+```
+
+```yaml
+event_name: diary.day.corrected
+event_version: 1
+registration_status: proposed
+semantic_status: candidate
+semantic_class: domain_fact
+publication_scope: internal
+authoritative_owner: Nutrition Diary
+authorized_producer: {bounded_context: Nutrition, component: DiaryDay (каталог, nutrition)}
+consumers: [Dietitian]
+trigger: Правка или удаление записи в завершённом дне.
+payload:
+  required: [user_ref, local_date, "признак «в окне 7 суток»"]
+  optional: []
+idempotency: {key: event_id}
+ordering: {scope: user_ref}
+privacy:
+  contains_personal_data: true
+  data_mode: pseudonymous_identifiers_only
+  contains_sensitive_values: false
+  subject_linkability: internal
+retention: {policy_ref: TBD}
+source_of_truth: {aggregate: DiaryDay}
+legacy_names: []
+notes: >
+  AYLA-DEC-0095: день остаётся завершённым и помечается «исправлен»; за
+  7 суток пересчитываются оперативные отчёты и прогресс; уже отправленные
+  сообщения не переотправляются.
+```
+
+```yaml
+event_name: food.entry.recorded
+event_version: 1
+registration_status: proposed
+semantic_status: candidate
+semantic_class: domain_fact
+publication_scope: internal
+authoritative_owner: Nutrition Diary
+authorized_producer: {bounded_context: Nutrition, component: FoodLog (каталог, nutrition)}
+consumers: []   # контрактом не названы; регистрация consumer — OQ-E6
+trigger: RecordFood.
+payload:
+  required: [user_ref, entry_id, local_date, entry_origin]
+  optional: []
+idempotency: {key: entry_id}
+ordering: {scope: user_ref}
+privacy:
+  contains_personal_data: true
+  data_mode: pseudonymous_identifiers_only
+  contains_sensitive_values: false
+  subject_linkability: internal
+retention: {policy_ref: TBD}
+source_of_truth: {aggregate: FoodLog}
+legacy_names: []
+notes: Сегодня событий на создание еды в runtime нет.
+```
+
+```yaml
+event_name: food.entry.corrected
+event_version: 1
+registration_status: proposed
+semantic_status: candidate
+semantic_class: domain_fact
+publication_scope: internal
+authoritative_owner: Nutrition Diary
+authorized_producer: {bounded_context: Nutrition, component: FoodLog (каталог, nutrition)}
+consumers: []   # контрактом не названы; регистрация consumer — OQ-E6
+trigger: CorrectFood.
+payload:
+  required: [user_ref, entry_id, local_date, "изменённые поля (имена)"]
+  optional: []
+idempotency: {key: event_id}
+ordering: {scope: user_ref}
+privacy:
+  contains_personal_data: true
+  data_mode: pseudonymous_identifiers_only
+  contains_sensitive_values: false
+  subject_linkability: internal
+retention: {policy_ref: TBD}
+source_of_truth: {aggregate: FoodLog}
+legacy_names: []
+notes: >
+  Только имена изменённых полей, не значения. Сегодня правка пишет только
+  строку лога nutrition.food_log.updated.
+```
+
+```yaml
+event_name: food.entry.deleted
+event_version: 1
+registration_status: proposed
+semantic_status: candidate
+semantic_class: domain_fact
+publication_scope: internal
+authoritative_owner: Nutrition Diary
+authorized_producer: {bounded_context: Nutrition, component: FoodLog (каталог, nutrition)}
+consumers: []   # контрактом не названы; регистрация consumer — OQ-E6
+trigger: DeleteFood.
+payload:
+  required: [user_ref, entry_id, local_date]
+  optional: []
+idempotency: {key: entry_id}
+ordering: {scope: user_ref}
+privacy:
+  contains_personal_data: true
+  data_mode: pseudonymous_identifiers_only
+  contains_sensitive_values: false
+  subject_linkability: internal
+retention: {policy_ref: TBD}
+source_of_truth: {aggregate: FoodLog}
+legacy_names: []
+notes: >
+  Удаление человеком одной записи. «Забудь всё» стирает дневник
+  (AYLA-DEC-0101) — это путь export/forget, не поток food.entry.deleted.
+```
+
+```yaml
+event_name: water.entry.recorded
+event_version: 1
+registration_status: proposed
+semantic_status: candidate
+semantic_class: domain_fact
+publication_scope: internal
+authoritative_owner: Nutrition Diary
+authorized_producer: {bounded_context: Nutrition, component: WaterEntryService (каталог, nutrition)}
+consumers: []   # контрактом не названы; регистрация consumer — OQ-E6
+trigger: RecordWater.
+payload:
+  required: [user_ref, entry_id, local_date, ml]
+  optional: []
+idempotency: {key: entry_id}
+ordering: {scope: user_ref}
+privacy:
+  contains_personal_data: true
+  data_mode: pseudonymous_identifiers_only
+  contains_sensitive_values: false
+  subject_linkability: internal
+retention: {policy_ref: TBD}
+source_of_truth: {aggregate: WaterEntry}
+legacy_names: []
+notes: >
+  Вода — в миллилитрах; размер стакана — удобство интерфейса, не норма
+  (AYLA-DEC-0099). Отношение к runtime-теме outbox `water_logged`
+  (переименование или сосуществование) не решено — OQ-E9.
+```
+
+### 6.10 Decision (v0.6)
+
+Источник — [[Ayla Decision Policy Contract]] §«События»; решение
+AYLA-DEC-0097 (N-2). Контракт сам событие не регистрирует и отсылает
+регистрацию сюда.
+
+```yaml
+event_name: decision.evaluated
+event_version: 1
+registration_status: proposed
+semantic_status: candidate
+semantic_class: domain_fact
+publication_scope: internal
+authoritative_owner: Decision Policy
+authorized_producer: {bounded_context: Conversation Orchestration, component: модуль выбора следующего шага (ai-bot-platform)}
+consumers: [Dietitian]   # единственный названный потребитель — Dietitian Capability Contract §7.2; DP-контракт своих consumers не называет
+trigger: >
+  Рассчитан один DecisionOutcome — исход выбора следующего шага
+  (ACT / CLARIFY / NO_ACTION / BLOCKED / HANDOFF).
+payload:
+  required: [contract_version, decision_outcome, reason_code, evidence_refs,
+             provenance, blocked_capabilities, calculated_at, policy_version]
+  optional: [clarify_question_ref, handoff_reason]
+idempotency: {key: event_id}
+ordering: {scope: subject_id}
+privacy:
+  contains_personal_data: true
+  data_mode: pseudonymous_identifiers_only
+  contains_sensitive_values: false
+  subject_linkability: internal
+retention: {policy_ref: TBD}
+source_of_truth: {aggregate: DecisionOutcome}
+legacy_names: []
+notes: >
+  Payload — поля DecisionOutcome по `03 AI System/Contracts/
+  decision-outcome.schema.json` (обязательные и условные поля схемы, без
+  дополнений). Без текста сообщения и значений персональных данных.
+  Место журнала решений — DP ОВ-1. Пространство decision.* здесь занимает
+  только выбор DEC-0097; события DecisionReadiness канона v1.1 (например,
+  decision.question_presented) не регистрируются — теневой движок не
+  является источником истины (DP §«Источник истины»). calculated_at —
+  поле DecisionOutcome по DEC-0097; совпадает с occurred_at, оставлено
+  ради схемы (исключение из §4 п. 4). Журнал решений (DP «Наблюдаемость»,
+  ОВ-1) — не consumer этого события.
+```
+
 ## 7. Pending Semantic Definition
 
 **Resolved в v0.3.** Семейства `recommendation.*` и
@@ -1283,7 +1925,7 @@ attribution, владение `recommendation_id` и attribution-событие�
 `recommendation.replaced`, `recommendation.action_attributed`.
 
 На 2026-08-18 событий со статусом `pending-semantic-definition` в
-реестре нет. `appointment.completed` зарегистрирован v0.5
+реестре нет (в v0.6 тоже: записи этапа C — `candidate`, §6). `appointment.completed` зарегистрирован v0.5
 (`semantic_status: defined` — normal completion path по
 [[Ayla MVP Appointment Contract]] §5B, AYLA-DEC-0080); exception-path
 evidence/correction authority остаётся pending с OQ-AC-3/OQ-AC-7
@@ -1301,6 +1943,11 @@ mappings семейства `memory.*` (§6.4, §11).
 | `recommendation.*` — domain (created, superseded, expired, invalidated) | Recommendation | Recommendation Engine | active (v0.3, registered) |
 | `recommendation.*` — interaction (presented, accepted, declined) | Channel Delivery / Interaction | Channel Adapter (MAX) | active (v0.3, registered) |
 | `qualified_action.*` | Attribution / Measurement | Attribution Service | active (v0.3, registered) |
+| `memory.allergy.*` | Memory Service (W3) | Memory Service | proposed (v0.6, AYLA-DEC-0100) |
+| `goal.*` | Goal (User Context) | ClientGoal lifecycle (каталог, `goals`) | proposed (v0.6, AYLA-DEC-0087, 0090) |
+| `plan.*` | Personal Plan | Plan Lite (каталог, `wellness`) | proposed (v0.6, AYLA-DEC-0088, 0090–0092) |
+| `diary.day.*`, `food.entry.*`, `water.entry.*` | Nutrition Diary | каталог, `nutrition` | proposed (v0.6, AYLA-DEC-0095, 0099) |
+| `decision.*` | Decision Policy | модуль выбора следующего шага (`ai-bot-platform`) | proposed (v0.6, AYLA-DEC-0097; только `decision.evaluated`) |
 
 Инвариант (факт — AYLA-DEC-0025 п. 4): у события ровно один
 authoritative owner. Consumers множественны, publishers — нет. Transport
@@ -1322,6 +1969,11 @@ The matrix is intentionally expressed as roles until stable runtime `consumer_id
 | `memory.*` | Memory Service | Conversation, Recommendation read gate, Audit, Analytics | Carry memory lifecycle facts under consent controls |
 | `recommendation.*` | Recommendation Engine or Channel Adapter, according to event entry | Journey Projection, Booking, Attribution, Analytics, Audit | Track recommendation lifecycle and explicit interaction |
 | `qualified_action.attributed` | Attribution Service | Analytics, Product Thesis Validation, Audit | Record measurement attribution |
+| `memory.allergy.*` | Memory Service | Audit | Журнал записи, удаления, доступа и отказа (AYLA-DEC-0100) |
+| `goal.*` | ClientGoal lifecycle | Analytics, Decision Policy, Personal Plan | Факт выбора, смены состояния и замены цели |
+| `plan.*` | Plan Lite | Dietitian | Состояние плана и версии действий |
+| `diary.day.*`, `food.entry.*`, `water.entry.*` | Nutrition (каталог) | Dietitian (`diary.day.*`); прочие — OQ-E6 | Завершение и исправление дня; записи еды и воды |
+| `decision.evaluated` | модуль выбора следующего шага | Dietitian | Наблюдаемый исход выбора DEC-0097 |
 
 Consumers may build projections, retries, notifications, analytics, or audit records. They may not republish the consumed fact as if they owned it or write the source aggregate directly.
 
@@ -1401,6 +2053,8 @@ Legacy-имена — только compatibility mapping, не допустим�
 | `FeedbackSubmitted` | CDM §11 (deferred) | TBD | deferred |
 | `booking.rescheduled` | runtime legacy | `appointment.rescheduled` | legacy alias (compatibility adapter; canonical зарегистрирован v0.4, AYLA-DEC-0022) |
 | `booking.*` | runtime legacy | `appointment.*` | legacy alias (compatibility adapter) |
+| `goal_selected` (AnalyticsEvent) | runtime (каталог, `goals`) | `goal.selected` | candidate — alias или отдельное аналитическое событие, GOAL OQ-6 (v0.6) |
+| `water_logged` (тема `NutritionOutboxEvent`) | runtime (каталог, `nutrition`) | `water.entry.recorded` | open — переименование или сосуществование, OQ-E9 (v0.6) |
 
 ## 13. Open Questions
 
@@ -1427,7 +2081,9 @@ Legacy-имена — только compatibility mapping, не допустим�
   `OutcomeRecorded`.
 - **OQ-E4.** Какие события — integration (cross_context+), а какие
   остаются domain-only (internal): критерий — зарегистрированные
-  consumers; кандидаты на пересмотр — семейство `memory.*`,
+  consumers; кандидаты на пересмотр — семейство `memory.*`, а также
+  `plan.*` и `diary.day.*` (v0.6: consumer Dietitian — бот, события —
+  каталога, то есть cross_repository по §5),
   `memory.entry_deleted` и lifecycle деактивации записи вне consent
   revocation (user_deleted, policy_changed, legal_erasure,
   tenant_deleted).
@@ -1437,6 +2093,30 @@ Legacy-имена — только compatibility mapping, не допустим�
   (стабильный `consumer_id`, регистрация consumer, review).
 - **OQ-E7.** Является ли transactional outbox обязательным runtime
   pattern для publication_scope ≥ cross_context.
+- **OQ-E8 (v0.6).** Точные имена полей payload там, где контракт этапа C
+  описал их словами: `memory.allergy.accessed` / `.access_denied` (CSR
+  §9.1 — «кто читает, purpose», «причина отказа»; идентификаторы
+  `memory_id` / `subject_id` — по образцу §6.4), «идентификатор цели» в
+  `goal.*`, «число действий» в `plan.created`, «признак в окне 7 суток» в
+  `diary.day.corrected`, «изменённые поля» в `food.entry.corrected`.
+  Реестр имён не выдумывает; фиксирует их профильный контракт.
+- **OQ-E9 (v0.6).** `water_logged` (runtime-тема outbox) ↔
+  `water.entry.recorded`: переименование или сосуществование (Diary and
+  Water Contract §«События» передал вопрос в KB-E; решение не принято).
+- **OQ-E10 (v0.6).** Событие журнала доступа к `health_flags`
+  ([[Ayla Dietitian Capability Contract]] 7.4, ОВ-4): журнал обязателен,
+  имени нет. В v0.6 не регистрируется — имя в решениях владельца не
+  названо.
+- **OQ-E11 (v0.6).** `system.*` (CD §64): событие
+  `system.module.health.degraded` описано в контракте событий бота
+  (`ai-bot-platform` `docs/architecture/event-contract.md`, слито
+  ai-bot-platform #1946). Регистрация в этом реестре — отдельным шагом;
+  в v0.6 записи нет.
+- **OQ-E12 (v0.6).** Метки `bounded_context` / `authoritative_owner` новых
+  семейств (`Wellness`, `Nutrition`, `Conversation Orchestration`;
+  `Goal (User Context)`, `Personal Plan`, `Nutrition Diary`,
+  `Decision Policy`) — рабочие; сверка с [[Ayla Core Domain Model Specification]]
+  и владением по контрактам не выполнена.
 
 ## 14. Event vs Timeline
 
@@ -1471,6 +2151,52 @@ A timeline is a consumer projection with its own visibility, freshness, and priv
 - [ ] Provider-specific signals do not create a second Ayla Appointment truth.
 
 ## 17. Change Log
+
+### v0.6 (2026-09-21) — События этапа C (goal / plan / diary / food / water / decision / memory.allergy); выравнивание версии (DRF-2263)
+
+- **Версия.** Было: frontmatter `1.0-draft`, шапка «Draft v0.4», последняя
+  запись Change Log — v0.5 (расхождение отмечено аудитом KB 2026-08-19).
+  Выбрана цепочка Change Log: `0.6` во frontmatter и в шапке. Причина:
+  реальная история правок идёт v0.1…v0.5, а `1.0-draft` не соответствует
+  ни одной редакции и читается как «почти 1.0», хотя реестр не утверждён.
+  Номер v0.6 из ayla-knowledge PR #21 (там он оставлял frontmatter
+  `1.0-draft`) не переносится: #21 не слит, номер занят этой записью.
+- **§6.4:** `memory.allergy.recorded`, `.forgotten`, `.accessed`,
+  `.access_denied` (AYLA-DEC-0100; CSR v1.5 §9.1, §5.9).
+- **§6.7 Goal:** `goal.selected`, `goal.state_changed`, `goal.superseded`
+  ([[Ayla Goal and Desired Outcome Contract]]; AYLA-DEC-0087, 0090).
+- **§6.8 Plan:** `plan.created`, `plan.closed`, `plan.superseded`,
+  `plan.action.revised` ([[Ayla Personal Plan Contract]]; AYLA-DEC-0088,
+  0090, 0091, 0092).
+- **§6.9 Diary, Food, Water:** `diary.day.closed`, `diary.day.corrected`,
+  `food.entry.recorded`, `food.entry.corrected`, `food.entry.deleted`,
+  `water.entry.recorded` ([[Ayla Diary and Water Contract]];
+  AYLA-DEC-0095, 0099).
+- **§6.10 Decision:** `decision.evaluated`
+  ([[Ayla Decision Policy Contract]]; AYLA-DEC-0097); payload — поля
+  `decision-outcome.schema.json`.
+- Все 18 новых записей: `registration_status: proposed`,
+  `semantic_status: candidate`, `publication_scope: internal` (перевод в
+  integration — только при зарегистрированных consumers, OQ-E4). Payload
+  перенесён из контрактов без дополнений; поля, описанные словами, —
+  OQ-E8. Исключение — `memory.allergy.*`: `memory_id`, `subject_id` по
+  образцу `memory.*` §6.4 (без содержания аллергии); у `recorded` /
+  `forgotten` idempotency — по `memory_id`. Consumers — только названные в
+  контрактах: у `decision.evaluated` — только Dietitian (Dietitian §7.2),
+  Audit в §9 снят.
+- **`system.*` (CD §64)** описан в контракте событий бота (#1946);
+  регистрация в DER — отдельным шагом, OQ-E11. Бриф Итог 3 п.11 его
+  называл; в v0.6 записи нет.
+- Метки bounded_context / owner новых семейств — рабочие, OQ-E12.
+- **§8, §9, §12, §13:** строки новых семейств; mapping `goal_selected`,
+  `water_logged`; OQ-E8…E12; OQ-E4 дополнен.
+- **Из ayla-knowledge PR #21 не перенесено:** `recommendation.accepted` /
+  `.declined` → `deprecated`, новые `recommendation.explanation_requested`,
+  `.alternative_requested`, `.engaged`, `booking_intent.created`,
+  перепривязка `RecommendationAccepted`, OQ-E1 — вне предмета K-1…M-1,
+  отдельный PR (решение владельца 21.09, журнал главного окна CD §71 п.1,
+  вне git). Таблица — `docs/audits/2026-09-21-pr21-transfer-kb-e.md`.
+- Статус документа не изменён: draft / proposed.
 
 ### v0.5 (2026-08-18) — Регистрация appointment.completed (OQ-E3 частично)
 

@@ -5,7 +5,7 @@ type: user-journey-specification
 status: approved
 decision_status: accepted
 canonical_status: approved
-version: "1.2"
+version: "1.3"
 owner: Product Owner
 priority: P0
 knowledge_area:
@@ -27,7 +27,7 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-27
-updated: 2026-08-08
+updated: 2026-09-21
 review_cycle: monthly
 depends_on:
   - "[[Ayla Constitution]]"
@@ -58,6 +58,17 @@ related:
 > имеют нормативную силу в границах MVP. OD-1…OD-18 зарегистрированы как
 > AYLA-DEC-0037…AYLA-DEC-0054; OD-MVP-1…OD-MVP-4 зарегистрированы как
 > AYLA-DEC-0063…AYLA-DEC-0066 в [[OWNER_DECISION_REGISTER]].
+>
+> **Поправка v1.3 (2026-09-21).** Точечная поправка по решениям владельца
+> AYLA-DEC-0087 (K-1: цель необязательна; состав продукта; proactive по
+> opt-in), AYLA-DEC-0088 (Plan Lite), AYLA-DEC-0091 (план без цели),
+> AYLA-DEC-0095 (завершение дня дневника) и AYLA-DEC-0096 (N-1: порядок
+> safety и consent). Затронуты только: «Сквозные концепции», этап 1
+> (строка о Food Scanner), этап 13 (фраза «Проактивные уведомления вне
+> транзакционного контура записи в MVP не выполняются…» — получила
+> оговорку об уведомлениях по opt-in), «Recommendation and Proactivity
+> Gates», «Scope and Deferred» (перечень — Change Log v1.3). Статус
+> документа не изменён; остальной текст v1.2 действует.
 >
 > **Canon Lineage.** v1.2 — Active Canon revision Knowledge Node
 > `ayla.product.mvp-user-journey`, основанная на owner-approved MVP Journey
@@ -342,6 +353,10 @@ Transformation Goal, Living Digital Twin и Progress **не являются
 - отсутствие готовой цели не блокирует безопасное продолжение journey:
   Ayla может помочь уточнить цель или продолжить с минимальным рабочим
   намерением (см. Negative Scenarios, N1.4);
+- **цель необязательна (v1.3, AYLA-DEC-0087):** ни дневник, ни вода, ни
+  вопрос, ни запись, ни явно выбранное действие не требуют цели; цель не
+  является обязательным этапом ни одного сценария и не создаётся ради
+  рекомендации (AYLA-DEC-0087; бриф Итог 3 п.14);
 - Transformation Goal ≠ текущий intent: intent — текущее структурированное
   намерение; связь intent с целью может быть `unknown/not_established` и
   не выдумывается (owner decision OD-7; Intent Model v1.0, candidate);
@@ -402,6 +417,25 @@ Scope v0.3 §4 шаг 10; owner decision OD-1):
   Manifesto §10);
 - прогресс и next state доступны независимо от того, произошёл ли booking
   (owner decision, план v1.2 п. 5).
+
+**План (Plan Lite) и Дневник — сквозные необязательные концепции (v1.3).**
+Как и цель, это не линейные стадии journey и не обязательные остановки
+сценария; человек пользуется ими или нет. Детали — в
+[[Ayla Personal Plan Contract]] и [[Ayla Diary and Water Contract]].
+
+- **План (Plan Lite)** — 1–3 действия трёх типов (записаться на услугу,
+  дневник, вода); прогресс — только «N из M действий», без процентов
+  результата и без наблюдений тела (AYLA-DEC-0088). План может
+  существовать без цели; такой план собирает только сам человек, Ayla без
+  цели план не предлагает (AYLA-DEC-0091). План возникает только из явного
+  подтверждения человека ([[Ayla Personal Plan Contract]], I-4).
+- **Дневник** (еда и вода) — необязателен и не требует цели
+  (AYLA-DEC-0087). День дневника завершается кнопкой «Завершить день» или
+  автоматически в 04:00 по поясу человека (автозакрытие предыдущего дня;
+  дата записи — локальная календарная дата человека, записи после 00:00
+  уже относятся к новой дате); до завершения показываются только текущие
+  числа без оценки; оценка дня считается только по завершённым дням;
+  исправлять свои записи можно всегда (AYLA-DEC-0095).
 
 ## Journey Overview
 
@@ -554,8 +588,12 @@ Mapping — только compatibility mapping). «Canonical event» не
 Ограничения (факт — полная UJS, Stage 1 Forbidden Behavior): не запрашивать
 имя, возраст, вес при первом контакте; не начинать с анкеты; не продавать.
 Trigger model: четыре равнозначных trigger-сценария — входы в путь, а не
-отдельные продукты (факт — AYLA-DEC-0028; Vision §10); Food Scanner —
-CONDITIONAL trigger, не центр пути.
+отдельные продукты (факт — AYLA-DEC-0028; Vision §10); Food Scanner
+входит в продукт — IN_SCOPE (поправка v1.3, AYLA-DEC-0087), как вход в
+путь остаётся одним из trigger-сценариев, а не центром пути. Ограничения —
+по контрактам: скан запись дневника не создаёт, запись появляется только
+после подтверждения человеком ([[Ayla Diary and Water Contract]], I-16);
+лимиты и бюджет сканера — CD §55, DRF-2145, DRF-2218.
 
 ### Этап 2. First interaction
 
@@ -787,6 +825,12 @@ side effect (owner decision OD-7; Intent Model v1.0, candidate).
 выполняются: Phase 1 работает в режиме no proactive recommendations
 (факт — CSR §10); persistent memory сама по себе не открывает proactive
 behavior (owner decision OD-10).
+
+**Оговорка (поправка v1.3, AYLA-DEC-0087).** Транзакционные уведомления по
+записи — как описано выше, без изменений. Кроме них в продукт входят
+proactive-уведомления по opt-in — отчёты, вода, возврат к плану; они вне
+этапа 13 и не являются рекомендациями услуг (см. Recommendation and
+Proactivity Gates).
 
 ### Этап 14. Outcome or feedback prompt
 
@@ -1452,10 +1496,30 @@ OD-10).
   любые proactive recommendations требуют отдельного Product/Privacy owner
   decision (owner decision OD-10; факт — CSR §5.3/§5.4: `MVP status:
   blocked`, требуется отдельное Privacy/Legal approval CSR-OD-3).**
-  Этап 13 допускает только транзакционные уведомления по записи.
+  Этап 13 допускает только транзакционные уведомления по записи
+  (proactive-уведомления по opt-in — вне этапа 13, см. следующий пункт и
+  оговорку этапа 13, v1.3).
+- **Proactive-уведомления по opt-in (поправка v1.3, AYLA-DEC-0087).**
+  Отчёты, вода и возврат к плану входят в продукт как уведомления, которые
+  человек включает сам (opt-in; scope `proactive_wellness_notification`,
+  [[Consent Scope Registry]] §5.8). Это и есть отдельное owner decision,
+  которого требовал OD-10 / AYLA-DEC-0046, — в части proactive-уведомлений
+  DEC-0046 заменён. **Рекомендации услуг остаются только
+  user-initiated:** Proactive Readiness Gate для рекомендаций по-прежнему
+  неактивен, проактивных рекомендаций услуг нет.
 - **Обязательный порядок gates** для любой рекомендации (Killer PRD §5.1):
   consent/privacy → safety → eligibility/availability → relevance →
   preference boost → economic-neutrality → primary output.
+  **Область порядка (поправка v1.3, AYLA-DEC-0096):** порядок
+  «consent/privacy → safety» относится к составлению рекомендаций из
+  персонального контекста. Входной путь каждого сообщения начинается
+  раньше: (1) минимальный входной детектор опасности — только по тексту
+  текущего сообщения, без памяти и профиля; кризис и неотложка получают
+  детерминированный ответ всегда, в том числе при согласии, не данном или
+  отозванном, и при работе оператора; (2) проверка согласий и того, какой
+  контекст разрешено читать; (3) расширенная оценка безопасности с
+  разрешённым контекстом; (4) обычные функции. Порядок gates выше действует
+  внутри ступеней 2–4 ([[Ayla Decision Policy Contract]]).
 - **Recommendation никогда не выполняет side effect автоматически;** любое
   действие с внешним эффектом требует явного подтверждения пользователя
   (owner decision OD-10; факт — Конституция; MVP Scope v0.3 §6.5).
@@ -1699,8 +1763,9 @@ rollout-подробности, не влияющие непосредствен
 
 **IN_SCOPE (MVP, Phase 1):**
 
-- сквозной путь: Transformation Goal → понимание → объяснимая рекомендация
-  → next action → progress / next state;
+- сквозной путь: (Transformation Goal — необязательна, v1.3,
+  AYLA-DEC-0087) → понимание → объяснимая рекомендация → next action →
+  progress / next state;
 - три required channels (Mobile App, MAX Mini App, MAX Bot) as MVP
   journey surfaces — трёхканальная Journey является частью MVP (owner
   decision OD-14; факт — AYLA-DEC-0027); это не означает одинаковую
@@ -1720,7 +1785,15 @@ rollout-подробности, не влияющие непосредствен
   (owner decision OD-14; факт — AYLA-DEC-0022 п. 1, п. 9; AYLA-DEC-0036;
   `appointment.rescheduled` — `registered`, Domain Event Registry v0.4);
 - Session Learning, Outcome Learning, Recommendation Analytics (owner
-  decision OD-12).
+  decision OD-12);
+- **(v1.3, AYLA-DEC-0087)** состав продукта по решению полностью: План
+  (Plan Lite); дневник питания; ориентиры питания — с происхождением
+  (источник ориентира; правила — [[Ayla Dietitian Capability Contract]]);
+  вода; фуд-сканер (подтверждение человеком до записи в дневник, лимиты и
+  бюджет — см. этап 1); Диетолог-отчёты; proactive-уведомления по opt-in
+  (отчёты, вода, возврат к плану) — все необязательны и не требуют цели
+  (см. «Сквозные концепции»; релизный состав —
+  [[Ayla MVP Scope and Release Contract]]).
 
 **PHASED (Phase 2):**
 
@@ -1764,9 +1837,11 @@ rollout-подробности, не влияющие непосредствен
 - advanced Outcome Learning (CAP-007 — факт, MVP Scope v0.3 §7);
 - полная proactive architecture: proactive recommendations и cross-domain
   personalization — `blocked`, отдельное Product/Privacy owner decision
-  (owner decision OD-10/OD-14; факт — CSR §5.3/§5.4);
-- dedicated wellness-трекеры (food/water/sleep/activity — факт, MVP Scope
-  v0.3 §6.1);
+  (owner decision OD-10/OD-14; факт — CSR §5.3/§5.4); proactive-уведомления
+  по opt-in из этого пункта выведены в IN_SCOPE (v1.3, AYLA-DEC-0087);
+- dedicated wellness-трекеры sleep/activity (факт — MVP Scope v0.3 §6.1);
+  food и water из DEFERRED исключены поправкой v1.3 (AYLA-DEC-0087) и
+  перенесены в IN_SCOPE;
 - видео для Twin — CONDITIONAL, только при подтверждённой необходимости
   (факт — MVP Scope v0.3 §6.4).
 
@@ -1950,6 +2025,47 @@ CSR §2, полная UJS Memory Proposal; остальное — **proposal**, 
 
 Historical Change Log не переписывается (Canon Preservation Rules).
 Записи v0.1…v1.1 сохранены как точная история.
+
+### v1.3 (2026-09-21) — Поправка по AYLA-DEC-0087, 0088, 0091, 0095, 0096 (K-1, N-1; DRF-2263)
+
+- **Шапка:** версия 1.3 и абзац «Поправка v1.3»; статус не изменён
+  (approved / accepted / approved).
+- **Сквозные концепции:** цель необязательна во всех сценариях
+  (AYLA-DEC-0087; «не создаётся ради рекомендации» — бриф Итог 3 п.14);
+  добавлены План (Plan Lite) и Дневник как сквозные необязательные
+  концепции (AYLA-DEC-0088, 0091, 0095). Дневнику не требуется цель
+  (AYLA-DEC-0087); план возникает только из явного подтверждения человека
+  ([[Ayla Personal Plan Contract]] I-4); нормы «отсутствие плана ничего не
+  блокирует» ни в DEC, ни в брифе нет — в текст не внесена. 04:00 —
+  автозакрытие предыдущего дня по поясу человека, не граница
+  принадлежности записей (AYLA-DEC-0095).
+- **Этап 1:** Food Scanner — IN_SCOPE (AYLA-DEC-0087), вход в путь, а не
+  центр; ограничения — подтверждение до записи (Diary and Water I-16),
+  лимиты и бюджет (CD §55, DRF-2145, DRF-2218).
+- **Этап 13:** к фразе «Проактивные уведомления вне транзакционного
+  контура записи в MVP не выполняются…» добавлена оговорка:
+  транзакционные уведомления по записи — без изменений; proactive-
+  уведомления по opt-in (отчёты, вода, возврат к плану) — вне этапа 13
+  (AYLA-DEC-0087).
+- **Recommendation and Proactivity Gates:** proactive-уведомления по opt-in
+  (отчёты, вода, возврат к плану) — AYLA-DEC-0087, заменяет DEC-0046 в
+  части proactive; рекомендации услуг остаются user-initiated. Область
+  порядка «consent/privacy → safety» — составление рекомендаций из
+  персонального контекста; входной путь сообщения начинается с
+  минимального детектора опасности без памяти (AYLA-DEC-0096).
+- **Scope and Deferred:** food и water убраны из DEFERRED, sleep и activity
+  остаются; в IN_SCOPE — полный состав продукта по AYLA-DEC-0087: Plan
+  Lite, дневник питания, ориентиры питания с происхождением, вода,
+  фуд-сканер, Диетолог-отчёты, proactive-уведомления по opt-in. Первый
+  пункт IN_SCOPE («сквозной путь») помечен: цель необязательна.
+- **Из ayla-knowledge PR #21 в этот файл ничего не перенесено:** его
+  единственная правка здесь (путь `approved_v1_1.md` → `history/`, B14) —
+  вне предмета K-1…M-1 и уходит в отдельный PR (решение владельца
+  21.09, журнал главного окна CD §71 п.1, вне git). Таблица переноса —
+  `docs/audits/2026-09-21-pr21-transfer-kb-e.md`.
+- Остальные разделы v1.2 не изменены. Ссылки на версии других документов в
+  тексте v1.2 (например, Domain Event Registry v0.4) — история на дату
+  v1.2, не переписываются.
 
 ### v1.2 (2026-08-04) — Эволюция approved v1.1 по итогам Owner Decision Session (OD-1…OD-18)
 
