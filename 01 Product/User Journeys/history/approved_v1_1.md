@@ -43,6 +43,23 @@ related:
   - "[[Ayla MVP Recommendation Contract]]"
 ---
 
+> **История (B14, PROPOSED 2026-09-12 — awaiting owner approval).** Это
+> **superseded** редакция v1.1 «Ayla MVP User Journey Specification»
+> (`status: superseded`, `canonical_status: deprecated`), перенесённая из
+> корня репозитория в `01 Product/User Journeys/history/`, чтобы имя файла
+> `approved_v1_1.md` не читалось как «канон v1.1» (пакет 2 B14; Final
+> Reconciliation v1.0 §6.3). Действующая редакция —
+> [[Ayla MVP User Journey Specification]] v1.3 в `01 Product/User Journeys/`.
+> «Канон v1.1» в документах Recommendation — это
+> `docs/ayla-conversation-state-v1.1-reconciled.md` (Working Canon, B1), а
+> не этот файл. Содержимое ниже не менялось.
+>
+> **KB-F (DRF-2270, из PR #21, на отдельное утверждение).** Перенос файла
+> из корня сюда — дельта PR #21 (10.1), вынесенная владельцем в отдельное
+> утверждение (журнал главного окна CD §71 п.1, вне git). Номер действующей
+> редакции Journey поправлен: v1.2 → v1.3 (KB-E, AYLA-DEC-0087).
+
+
 # Ayla MVP User Journey Specification
 
 > **Статус:** Superseded v1.1 (2026-08-08). Был approved 2026-07-29

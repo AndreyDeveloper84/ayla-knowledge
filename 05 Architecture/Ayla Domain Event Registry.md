@@ -4,7 +4,7 @@ title: Ayla Domain Event Registry
 type: specification
 status: draft
 decision_status: proposed
-version: "0.6"
+version: "0.7"
 owner: Product Architecture / Event Governance
 priority: P0
 knowledge_area:
@@ -27,7 +27,7 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-28
-updated: 2026-09-21
+updated: 2026-09-22
 review_cycle: monthly
 depends_on:
   - "[[Ayla Constitution]]"
@@ -46,8 +46,8 @@ related:
 
 # Ayla Domain Event Registry
 
-> **Статус:** Draft v0.6 — proposed (версия во frontmatter и здесь
-> совпадает; см. Change Log v0.6). Создан по мандату AYLA-DEC-0025 п. 1
+> **Статус:** Draft v0.7 — proposed (версия во frontmatter и здесь
+> совпадает; см. Change Log v0.7). Создан по мандату AYLA-DEC-0025 п. 1
 > ([[Ayla Decision Log]]). Нормативную силу получает после approval
 > Product Architecture / Event Governance. **До approval реестра записи
 > имеют `registration_status: proposed`** — кроме семейств
@@ -62,6 +62,12 @@ related:
 > `goal.*`, `plan.*`, `diary.day.*`, `food.entry.*`,
 > `water.entry.recorded`, `decision.evaluated`, `memory.allergy.*`
 > (§6.4, §6.7–§6.10) — все со статусом `registration_status: proposed`.
+> **v0.7 (KB-F, DRF-2270) — из ayla-knowledge PR #21, на отдельное
+> утверждение владельца** (журнал главного окна CD §71 п.1, вне git):
+> `recommendation.accepted` / `.declined` → `deprecated`; новые
+> `recommendation.explanation_requested`, `.alternative_requested`,
+> `.engaged`, `booking_intent.created` — `proposed` (§6.5). При отказе
+> владельца эти правки снимаются, реестр возвращается к v0.6.
 
 ## 1. Назначение
 
@@ -1134,7 +1140,21 @@ notes: >
 
 Семантика утверждена [[Ayla MVP Recommendation Contract]] v0.3
 (architecture review — APPROVED; owner rulings OQ-R1, R2/R10, R3, R4,
-R5, R6). Все записи подраздела: `registration_status: registered`.
+R5, R6). Записи v0.3: `registration_status: registered`.
+
+> **v0.7 (KB-F, из PR #21; B8; канон v1.1 §17.3, §17.5; контракт v0.6
+> §15, §17) — PROPOSED, на отдельное утверждение.** Таксономия событий
+> Recommendation — **одна**, product event backbone канона v1.1 §17.3.
+> `recommendation.accepted` и `recommendation.declined` — **deprecated**
+> (B8: «ENGAGED доказывает взаимодействие, `booking_intent.created` —
+> переход к исполнению; generic accepted интерпретируется сильнее
+> доказанного»; явный отказ — reaction `REJECTED` interaction-слоя, не
+> отдельное domain-событие). Добавлены `proposed`:
+> `recommendation.explanation_requested`,
+> `recommendation.alternative_requested`, `recommendation.engaged`,
+> `booking_intent.created` — регистрация после утверждения владельцем.
+> Payload — минимальный по контракту §15/§17 и канону v1.1 §16.4; поля,
+> которых источники не называют, помечены TBD.
 
 ```yaml
 event_name: recommendation.created
@@ -1327,7 +1347,7 @@ notes: >
 ```yaml
 event_name: recommendation.accepted
 event_version: 1
-registration_status: registered
+registration_status: deprecated        # v0.7 PROPOSED (KB-F) — снято B8 (контракт v0.6 §15, §17)
 semantic_status: defined
 semantic_class: domain_fact
 publication_scope: cross_context
@@ -1357,12 +1377,16 @@ notes: >
   уровни намерения. При выборе alternative recommendation_id указывает
   на запись выбранного варианта (каждая alternative атрибутируется по
   собственному recommendation_id, Killer PRD §5.1/§6.2).
+  v0.7 (KB-F, B8): событие снято — generic acceptance интерпретируется
+  сильнее доказанного; взаимодействие = recommendation.engaged, переход к
+  исполнению = booking_intent.created. Не публикуется после утверждения
+  владельцем; consumers переключаются на engaged/booking_intent.created.
 ```
 
 ```yaml
 event_name: recommendation.declined
 event_version: 1
-registration_status: registered
+registration_status: deprecated        # v0.7 PROPOSED (KB-F) — снято B8 (контракт v0.6 §15, §17)
 semantic_status: defined
 semantic_class: domain_fact
 publication_scope: cross_context
@@ -1388,6 +1412,151 @@ notes: >
   Только явный отказ: бездействие НЕ равно decline (RC §17).
   `recommendation.rejected` — rejected alternative name. Отклонённая
   recommendation не атрибутируется (RC §18).
+  v0.7 (KB-F, B8): событие снято; явный отказ фиксируется как reaction
+  REJECTED (канон v1.1 §10.3) в interaction-слое, не как отдельное
+  domain-событие.
+```
+
+```yaml
+event_name: recommendation.explanation_requested
+event_version: 1
+registration_status: proposed          # v0.7 (KB-F) — B8; регистрация после утверждения владельцем
+semantic_status: defined
+semantic_class: domain_fact
+publication_scope: cross_context
+authoritative_owner: Channel Delivery / Interaction
+authorized_producer: {bounded_context: Channel Delivery / Interaction, component: Channel Adapter (MAX)}
+consumers: [Recommendation, Analytics, Audit]
+trigger: >
+  Пользователь запросил объяснение показанной Recommendation
+  (действие «Почему», C04.2; reaction WHY_REQUESTED — канон v1.1 §10.3;
+  контракт v0.6 §15, §17).
+payload:
+  required: [recommendation_id, recommendation_set_id]
+  optional: [channel, channel_message_id]
+idempotency: {key: recommendation_id + channel_message_id}
+ordering: {scope: recommendation_id}
+privacy:
+  contains_personal_data: true
+  data_mode: pseudonymous_identifiers_only
+  contains_sensitive_values: false
+  subject_linkability: internal
+retention: {policy_ref: TBD}
+source_of_truth: {aggregate: null, runtime_component: Channel Adapter (MAX)}
+legacy_names: []
+notes: >
+  Interaction fact. Не acceptance и не decline. Текст объяснения в
+  payload не входит — только идентификаторы (RC §13: displayable WHY
+  рендерится из записи).
+```
+
+```yaml
+event_name: recommendation.alternative_requested
+event_version: 1
+registration_status: proposed          # v0.7 (KB-F) — B8
+semantic_status: defined
+semantic_class: domain_fact
+publication_scope: cross_context
+authoritative_owner: Channel Delivery / Interaction
+authorized_producer: {bounded_context: Channel Delivery / Interaction, component: Channel Adapter (MAX)}
+consumers: [Recommendation, Analytics, Audit]
+trigger: >
+  Пользователь запросил другой вариант («Другой вариант» / «Что ещё?»,
+  C04.3; reaction ALTERNATIVE_REQUESTED). Новая Recommendation с
+  parent_recommendation_id создаётся Recommendation context и
+  публикуется отдельным recommendation.created (канон v1.1 §10.2;
+  контракт v0.6 §10).
+payload:
+  required: [recommendation_id, recommendation_set_id]
+  optional: [channel, channel_message_id]
+idempotency: {key: recommendation_id + channel_message_id}
+ordering: {scope: recommendation_id}
+privacy:
+  contains_personal_data: true
+  data_mode: pseudonymous_identifiers_only
+  contains_sensitive_values: false
+  subject_linkability: internal
+retention: {policy_ref: TBD}
+source_of_truth: {aggregate: null, runtime_component: Channel Adapter (MAX)}
+legacy_names: []
+notes: >
+  «Что ещё?» = alternative_requested, не automatic rejection и не
+  durable dislike (канон v1.1 §10.3, §17.5). recommendation_id — та
+  запись, от которой запрошена альтернатива (R1); R2 несёт
+  parent_recommendation_id = R1.
+```
+
+```yaml
+event_name: recommendation.engaged
+event_version: 1
+registration_status: proposed          # v0.7 (KB-F) — B8
+semantic_status: defined
+semantic_class: domain_fact
+publication_scope: cross_context
+authoritative_owner: Channel Delivery / Interaction
+authorized_producer: {bounded_context: Channel Delivery / Interaction, component: Channel Adapter (MAX)}
+consumers: [Recommendation, Attribution / Measurement, Booking, Analytics]
+trigger: >
+  Пользователь перешёл от карточки направления к вариантам исполнения
+  («Подобрать вариант» / «Посмотреть варианты», C04 → C05; reaction
+  ENGAGED — канон v1.1 §10.3). Доказывает взаимодействие, НЕ принятие.
+payload:
+  required: [recommendation_id, recommendation_set_id]
+  optional: [parent_recommendation_id, channel, channel_message_id]
+idempotency: {key: recommendation_id + channel_message_id}
+ordering: {scope: recommendation_id}
+privacy:
+  contains_personal_data: true
+  data_mode: pseudonymous_identifiers_only
+  contains_sensitive_values: false
+  subject_linkability: internal
+retention: {policy_ref: TBD}
+source_of_truth: {aggregate: null, runtime_component: Channel Adapter (MAX)}
+legacy_names: []
+notes: >
+  Заменяет recommendation.accepted как факт взаимодействия (B8).
+  Инвариант канона v1.1 §10.3: shown ≠ engaged ≠ booked ≠ completed ≠
+  liked. Переход к исполнению доказывается только booking_intent.created.
+```
+
+```yaml
+event_name: booking_intent.created
+event_version: 1
+registration_status: proposed          # v0.7 (KB-F) — B8, D4
+semantic_status: defined
+semantic_class: domain_fact
+publication_scope: cross_context
+authoritative_owner: Booking / Handoff (Ayla backend — канон v1.1 §16.1)
+authorized_producer: {bounded_context: Booking / Handoff, component: Ayla backend (PendingBookingIntent) — канон v1.1 §16.1; создаётся по запросу ai-bot-platform}
+consumers: [Recommendation, Attribution / Measurement, Booking, Analytics, Audit]
+trigger: >
+  Создан PendingBookingIntent — переход от Recommendation к исполнению
+  (контракт v0.6 §17; канон v1.1 §16.1, §16.4). Несёт именно ту
+  execution option, которую клиент видел и подтвердил (D4).
+payload:
+  required: [booking_intent_id, entry_point, execution_option_ref]
+  optional: [recommendation_id, recommendation_set_id, parent_recommendation_id,
+             constraint_sources]
+  # recommendation_id — только при реальной provenance chain (канон v1.1 §16.4);
+  # entry_point ∈ {DIRECT_BOOKING, RECOMMENDATION, REPEAT_BOOKING, DEEP_LINK, PLAN_STEP};
+  # execution_option_ref → Execution Mapping Snapshot (контракт v0.6 §7): состав — TBD при регистрации
+idempotency: {key: booking_intent_id}
+ordering: {scope: booking_intent_id}
+privacy:
+  contains_personal_data: true
+  data_mode: pseudonymous_identifiers_only
+  contains_sensitive_values: false
+  subject_linkability: internal
+retention: {policy_ref: TBD}
+source_of_truth: {aggregate: PendingBookingIntent, runtime_component: Ayla backend}
+legacy_names: []
+notes: >
+  Единственное основание direct attribution — provenance chain
+  Recommendation → PendingBookingIntent(recommendation_id) → Booking
+  (канон v1.1 §17.6); без recommendation_id атрибуции нет. Соседние
+  события backbone (booking_intent.handoff_opened / validation_result /
+  expired — канон v1.1 §17.3) в v0.7 не регистрируются: контракт v0.6
+  их не описывает.
 ```
 
 ### 6.6 Attribution
@@ -1941,7 +2110,8 @@ mappings семейства `memory.*` (§6.4, §11).
 | `appointment.*` | Appointment | Appointment Service (CAP-011) | active (`appointment.rescheduled` — registered v0.4, AYLA-DEC-0022; `appointment.completed` — registered v0.5, AYLA-DEC-0080) |
 | `memory.*` | Memory Service (W3) | Memory Service | active |
 | `recommendation.*` — domain (created, superseded, expired, invalidated) | Recommendation | Recommendation Engine | active (v0.3, registered) |
-| `recommendation.*` — interaction (presented, accepted, declined) | Channel Delivery / Interaction | Channel Adapter (MAX) | active (v0.3, registered) |
+| `recommendation.*` — interaction (presented; v0.7 PROPOSED: explanation_requested, alternative_requested, engaged; accepted/declined — deprecated, B8) | Channel Delivery / Interaction | Channel Adapter (MAX) | active (v0.3, registered; v0.7 — proposed) |
+| `booking_intent.created` (v0.7 PROPOSED, B8/D4) | Booking / Handoff | Ayla backend (PendingBookingIntent) | proposed (v0.7, KB-F) |
 | `qualified_action.*` | Attribution / Measurement | Attribution Service | active (v0.3, registered) |
 | `memory.allergy.*` | Memory Service (W3) | Memory Service | proposed (v0.6, AYLA-DEC-0100) |
 | `goal.*` | Goal (User Context) | ClientGoal lifecycle (каталог, `goals`) | proposed (v0.6, AYLA-DEC-0087, 0090) |
@@ -2046,7 +2216,7 @@ Legacy-имена — только compatibility mapping, не допустим�
 | `ContextFactCorrected` | Roadmap §6.4, CDM §11 | `memory.entry_superseded` | resolved mapping (AYLA-DEC-0024 п. 4) |
 | `ContextFactDeleted` | CDM §11 | `memory.entry_revoked` / deletion pipeline | candidate — OQ-E4 |
 | `RecommendationShown` | Roadmap §6.4 | `recommendation.presented` | mapped (v0.3, §6.5) |
-| `RecommendationAccepted` | Roadmap §6.4 | `recommendation.accepted` | mapped (v0.3, §6.5) |
+| `RecommendationAccepted` | Roadmap §6.4 | ~~`recommendation.accepted`~~ → `recommendation.engaged` (взаимодействие) / `booking_intent.created` (переход к исполнению) | re-mapped (v0.7 PROPOSED, B8) |
 | `RecommendationCreated`…`RecommendationActedUpon` | CDM §11 | `recommendation.created` / `.presented` / `.accepted` / `.declined` / `.superseded` / `.expired` / `.invalidated`; `…ActedUpon` → `qualified_action.attributed` | mapped (v0.3, §6.5/§6.6) |
 | `QualifiedActionAttributed` | Roadmap §6.4, CDM §11 | `qualified_action.attributed` | mapped (v0.3, §6.6) |
 | `OutcomeRecorded` | CDM §11 | TBD | blocked by OQ-E3 (Stage 14) |
@@ -2067,6 +2237,9 @@ Legacy-имена — только compatibility mapping, не допустим�
   — interaction, cross_context, owner Channel Delivery / Interaction;
   `qualified_action.attributed` — attribution, cross_context, owner
   Attribution / Measurement. Все восемь зарегистрированы (§6.5/§6.6).
+  **v0.7 (PROPOSED, KB-F, B8):** состав пересмотрен по контракту v0.6 §15 —
+  `.accepted` / `.declined` deprecated; `+ .explanation_requested`,
+  `.alternative_requested`, `.engaged`, `booking_intent.created` (proposed).
 - **OQ-E2.** Какой authoritative aggregate для Context Fact correction —
   подтвердить, что Context Fact полностью представлен MemoryEntry
   (AYLA-DEC-0024) и конкурирующая сущность не нужна.
@@ -2151,6 +2324,28 @@ A timeline is a consumer projection with its own visibility, freshness, and priv
 - [ ] Provider-specific signals do not create a second Ayla Appointment truth.
 
 ## 17. Change Log
+
+### v0.7 (2026-09-22) — KB-F, DRF-2270: таксономия Recommendation из PR #21 (B8), на отдельное утверждение
+
+- **§6.5:** `recommendation.accepted`, `recommendation.declined` →
+  `registration_status: deprecated` (пакет 2 B8; канон v1.1 §17.5 «Generic
+  `recommendation.accepted` is not introduced in P0»). Добавлены `proposed`:
+  `recommendation.explanation_requested`, `.alternative_requested`,
+  `.engaged` (owner Channel Delivery / Interaction), `booking_intent.created`
+  (owner Booking / Handoff, Ayla backend — канон v1.1 §16.1; payload по
+  §16.4 и D4, состав `execution_option_ref` — TBD). Записи — как в PR #21
+  (там — «v0.6»; номер v0.6 занят KB-E), ссылки «контракт v1.0» → «v0.6».
+- **§8, §12, §13 (OQ-E1):** таблица владельцев и migration mapping
+  приведены к новому составу; `RecommendationAccepted` re-mapped.
+- Не изменено: `recommendation.created / superseded / expired /
+  invalidated / presented`, `qualified_action.attributed` (v0.3); прочие
+  события backbone канона v1.1 §17.3 (`booking_intent.handoff_opened /
+  validation_result / expired`, `decision.question_presented`,
+  `interaction.*`, `feedback.submitted`) — контракт их не описывает.
+- Основание: решение владельца 21.09 (журнал главного окна CD §71 п.1, вне
+  git) — полезные изменения PR #21 на самостоятельное утверждение; таблица
+  — `docs/audits/2026-09-22-pr21-rest-kb-f.md`. Статус документа не
+  изменён: draft / proposed. При отказе — возврат к v0.6.
 
 ### v0.6 (2026-09-21) — События этапа C (goal / plan / diary / food / water / decision / memory.allergy); выравнивание версии (DRF-2263)
 

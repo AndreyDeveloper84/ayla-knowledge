@@ -2,10 +2,10 @@
 node_id: ayla.product.bot-003.discovery-recommendation
 title: BOT-003 Discovery and Recommendation Conversation Specification
 type: specification
-status: draft
+status: review
 decision_status: proposed
 canonical_status: candidate
-version: "0.1"
+version: "0.2"
 owner: Product Owner
 knowledge_area:
   - product
@@ -43,7 +43,7 @@ depends_on:
 
 # BOT-003 Discovery and Recommendation Conversation Specification
 
-**Status:** CANDIDATE FOR CANON REVIEW  
+**Status:** CANDIDATE FOR CANON REVIEW → **PROPOSED v1.0 — awaiting owner approval** (candidate → approved одним пакетом с контрактом v1.0; Final Reconciliation v1.0 §6.1 п.3; при утверждении `status`/`canonical_status` → `approved`)  
 **Scope:** BOT-003 Discovery and Recommendation Conversation  
 **Implementation:** FORBIDDEN in this document  
 **Authority:** Candidate prose from approved Product decisions; not Canonical
@@ -97,7 +97,7 @@ The product boundaries are distinct:
 | Question | Owner |
 |---|---|
 | Do we understand what the user means? | Intent Model: Intent sufficiency |
-| Do we know enough to responsibly recommend? | BOT-003: Recommendation sufficiency |
+| Do we know enough to responsibly recommend? | BOT-003: Recommendation sufficiency **= DecisionReadiness** (контракт v0.6 §30; канон v1.1 Decision 5: `READY / NEEDS_DISCRIMINATION / NEEDS_REQUIRED_CONTEXT / INSUFFICIENT_EVIDENCE / BLOCKED`) — v0.2, A2. До пилота DecisionReadiness считается в тени (C1) и ход разговора не выбирает: что Ayla делает дальше — исход `ACT / CLARIFY / NO_ACTION / BLOCKED / HANDOFF` (AYLA-DEC-0097; KB-F) |
 | Which eligible candidate should win? | Recommendation capability / formation layer |
 
 ## 6. Material Blocking Gap and Discovery Progression
@@ -278,6 +278,26 @@ No Q1–Q12 question is OPEN. The active approved decisions are exactly Q3, Q4, 
 The approved BOT-003 Product decisions are grounded in higher Canon, so this candidate is ready for independent review. Final BOT-003 canonicalization remains blocked until the normative downstream/domain dependencies required by BOT-003 have resolved their authority status.
 
 Classification: `CANONICALIZATION FOLLOW-UP / BLOCKER`.
+
+> **v0.2 (2026-09-12, PROPOSED — awaiting owner approval).** Блокер снимается
+> ходом §6.1 п.1 Final Reconciliation v1.0: `Ayla MVP Recommendation
+> Contract` v0.4 → v1.0 (proposed, вместе с A1/A2) утверждается **одним
+> пакетом** с этим документом (candidate → approved). Q3/Q4/Q6/Q8/Q9 уже
+> APPROVED владельцем. `Ayla MVP Appointment Contract` v0.2 этим пакетом
+> не затрагивается (v1.0 о нём молчит) — остаётся `draft / proposed`;
+> BOT-003 не зависит от него в части Recommendation.
+>
+> **KB-F (DRF-2270, из PR #21, на отдельное утверждение).** Правки v0.2
+> (строки 6.1–6.3 таблицы KB-E) вынесены владельцем в отдельное
+> утверждение (журнал главного окна CD §71 п.1, вне git). «Контракт v1.0»
+> в этом блоке и в шапке — редакция, которую PR #21 собирал как «v0.4 +
+> A1 + A2»; в KB-F она перенесена как **v0.6** без частей, противоречащих
+> AYLA-DEC-0087…0101 и CD §71 п.2–3 (перечень —
+> `docs/audits/2026-09-22-pr21-rest-kb-f.md`), статус контракта остаётся
+> `draft / proposed`. Блокер снимается только отдельным утверждением
+> контракта владельцем; сам KB-F статус BOT-003 и контракта не поднимает.
+> Строка §5 о DecisionReadiness дополнена оговоркой о тени (C1) и
+> AYLA-DEC-0097.
 
 ## Scenario Self-Check
 

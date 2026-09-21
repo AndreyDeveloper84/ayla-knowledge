@@ -77,7 +77,8 @@ related:
 > Approved v1.1 + явно принятые owner decisions + выборочные улучшения из
 > draft + синхронизация с актуальным каноном. С owner approval v1.2
 > предыдущая approved revision v1.1 переведена в статус `superseded`
-> (`approved_v1_1.md`, 2026-08-08); историческая редакция сохраняется в
+> (`01 Product/User Journeys/history/approved_v1_1.md` — перенесён из корня
+> по B14, KB-F; 2026-08-08); историческая редакция сохраняется в
 > Git history и snapshot-файле. Active Canon uniqueness по Variant C
 > соблюдена: только одна revision узла находится в active canonical
 > статусе.
@@ -2025,6 +2026,16 @@ CSR §2, полная UJS Memory Proposal; остальное — **proposal**, 
 
 Historical Change Log не переписывается (Canon Preservation Rules).
 Записи v0.1…v1.1 сохранены как точная история.
+
+### KB-F (2026-09-22) — без новой редакции; из PR #21, на отдельное утверждение (DRF-2270)
+
+- **Canon Lineage (шапка):** путь superseded-редакции v1.1 —
+  `01 Product/User Journeys/history/approved_v1_1.md` вместо корня
+  (ayla-knowledge PR #21, B14; строка 9.1 таблицы KB-E). Файл перенесён тем
+  же PR (строка 10.1). Версия, статус и остальной текст не изменены. Правка
+  вынесена владельцем в отдельное утверждение (журнал главного окна CD §71
+  п.1, вне git); при отказе шапка и файл возвращаются в прежнее место.
+  Таблица — `docs/audits/2026-09-22-pr21-rest-kb-f.md`.
 
 ### v1.3 (2026-09-21) — Поправка по AYLA-DEC-0087, 0088, 0091, 0095, 0096 (K-1, N-1; DRF-2263)
 

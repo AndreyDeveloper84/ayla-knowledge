@@ -7,12 +7,14 @@ aliases:
   - Recommendation Snapshot
 adr_id: ADR-0013
 type: adr
-status: draft
-decision_status: proposed
-revision: 0
-version: "0.1"
+status: review
+decision_status: superseded-proposed
+revision: 1
+version: "0.2"
 amendments: []
-superseded_by: null
+superseded_by:
+  - "[[Ayla MVP Recommendation Contract]]"
+  - "[[Recommendation Architecture Final Reconciliation]]"
 owner: Architecture + Recommendation
 priority: P0
 knowledge_area:
@@ -28,7 +30,7 @@ system_owner:
   - ayla-recommendation
 source_repository: ayla-knowledge
 created: 2026-07-29
-updated: 2026-07-29
+updated: 2026-09-12
 source_kind: canonical
 classification: internal
 data_sensitivity: none
@@ -58,10 +60,28 @@ review_cycle: event-driven
 
 ## Статус
 
-**Статус документа:** Draft
-**Статус решения:** Proposed — решение не принято; документ является
-предложением для owner (Architecture + Recommendation).
-**Версия:** 0.1 (2026-07-29)
+**Статус документа:** **PROPOSED v1.0 — awaiting owner approval:
+superseded** (пакет 2 от 12.09.2026, **B10 (а)**: «ADR-0013 superseded —
+смешивает decision, candidate/provider ranking и transaction state»).
+**Чем заменён:** [[Ayla MVP Recommendation Contract]] v0.6 §7 (три
+логических снимка) и §25 (replay) + канон v1.1 Decision 7 (immutable
+Recommendation object) — Final Reconciliation v1.0 §4 конфликт 4, §6.3.
+**Что сохраняется:** правило «UX рендерит из snapshot, не из live» — для
+каждого из трёх снимков: Decision Snapshot (в Recommendation record),
+Execution Mapping Snapshot (в ExecutionOption), Transaction Snapshot (в
+PendingBookingIntent / Booking). Open Questions 1–5 (§5) перенесены в
+контракт v0.6 §25 как открытые входы.
+**Версия:** 0.2 (2026-09-12); при утверждении владельцем `status` →
+`superseded`, `decision_status` → `superseded`. Решение ADR **не
+принималось** (v0.1 — proposed) и не принимается: текст ниже — история.
+
+> **KB-F (DRF-2270, из PR #21, на отдельное утверждение).** Пометка
+> «superseded» и перенос Open Questions в контракт — дельта PR #21 (строка
+> 4.1 таблицы KB-E), вынесенная владельцем в отдельное утверждение
+> (журнал главного окна CD §71 п.1, вне git). В PR #21 заменителем был
+> «контракт v1.0»; три снимка и replay перенесены в контракт v0.6 (KB-F),
+> поэтому ссылки выше указывают на v0.6. При отказе ADR возвращается к
+> v0.1 (`draft / proposed`, `superseded_by: null`).
 
 > **Владение.** UX не владеет recommendation-правилами. Этот ADR —
 > предложение, подготовленное по запросу Product Owner (task UX-ADR-001), и
