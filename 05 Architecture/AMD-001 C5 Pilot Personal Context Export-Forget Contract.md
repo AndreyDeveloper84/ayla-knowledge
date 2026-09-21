@@ -12,7 +12,7 @@ decision_status: proposed
 implementation_status: blocked
 enforcement_status: not_effective
 effective_from: null
-version: "0.8.1"
+version: "0.9"
 canonical_status: draft
 review_status: pending_technical_re_review
 owner: Chief Product Architect
@@ -35,13 +35,14 @@ system_owner:
   - ayla-knowledge
 source_repository: ayla-knowledge
 created: 2026-07-23
-updated: 2026-08-06
+updated: 2026-09-21
 source_kind: canonical
 source_kind_note: "source_kind=canonical identifies the document as originating in the ayla-knowledge canonical repository; maturity/approval is expressed by status, decision_status, and canonical_status."
 classification: internal
 data_sensitivity: high
 data_categories:
   - pii
+  - health
 security_sensitivity: high
 ai_indexing: metadata-only
 export_policy: sanitized
@@ -61,6 +62,8 @@ depends_on:
   - "[[Ayla Glossary]]"
   - "[[Ayla Knowledge Architecture Specification]]"
   - "[[Document Quality Bar (W7)]]"
+  - "[[OWNER_DECISION_REGISTER]]"
+  - "[[Data Inventory Matrix]]"
 related:
   - "[[AMD-001 C5 Implementation Amendment]]"
 review_cycle: event-driven
@@ -77,7 +80,7 @@ review_cycle: event-driven
 | Implementation status | Blocked |
 | Enforcement status | Not effective |
 | Effective from | null |
-| Version | 0.8.1 (2026-08-06) |
+| Version | 0.9 (2026-09-21) |
 | Review status | pending_technical_re_review |
 
 **Owner ruling:** Режим 2+ — двухступенчатая канонизация. Настоящий документ
@@ -96,6 +99,20 @@ activation до прохождения технического ревью за�
 - AMD-001 v0.6 не является удалением аккаунта.
 - AMD-001 v0.6 не является исчерпывающим удалением всех персональных данных Ayla.
 
+**Поправка v0.9 (AYLA-DEC-0101, AYLA-DEC-0100).** Pilot scope расширен решениями
+владельца 2026-09-21: «Забудь всё» (оба пути — бот и приложение) стирает
+`FoodLog`, `WaterEntry`, `SavedMeal`, `FoodScan` вместе с фотографиями в той же
+транзакции «всё или ничего», что цели, план и профиль питания; экспорт несёт
+дневник (AYLA-DEC-0101). Аллергии (red) и дата рождения входят в экспорт и
+удаляются «Забудь всё»; аллергии — также «Забудь аллергии» (AYLA-DEC-0100).
+Исключение wellness history (§1.2) снято в части дневника, воды, сканов, целей,
+плана и профиля питания; история сна остаётся исключённой. Основание экспорта:
+дневник, вода, сканы — AYLA-DEC-0101 (CD §66); цели, анкета, план, профиль
+питания — бриф T-6 («Полнота export/forget», инв. 21), а не AYLA-DEC-0101. Дисклеймеры выше не
+меняются: AYLA-DEC-0101 называет выгрузку «по ст. 14», а этот документ формальным
+ответом по ст. 14 себя не объявляет — расхождение терминов вынесено в §14.
+Статус документа не меняется.
+
 ---
 
 ## 1. Pilot Scope Registry
@@ -104,9 +121,39 @@ activation до прохождения технического ревью за�
 
 | Class | Authoritative system | Authoritative model | Owner | Export semantics | Forget/delete semantics | Physical stores | Derived representations | Current endpoint exists | Current basic behavior | AMD001 compliance status | Source evidence |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| UserPersonalContext (declared prefs) | W2 (Ayla) | `users.UserPersonalContext` | W2 | Verbatim payload from `GET /api/v1/internal/users/{id}/personal-data/export/` | Physical wipe via `DELETE /api/v1/internal/users/{id}/personal-data/` | Postgres `users_userpersonalcontext` | None in pilot scope | yes | physical DELETE on request | not compliant: lacks barrier, per-step result, subject_gone, retention manifest, backup tracking | `users/personal_data_api.py:105-118`, `users/personal_data_api.py:147-152`, `users/models.py:425-544` |
+| UserPersonalContext (declared prefs) | W2 (Ayla) | `users.UserPersonalContext` | W2 | Verbatim payload from `GET /api/v1/internal/users/{id}/personal-data/export/` | Physical wipe via `DELETE /api/v1/internal/users/{id}/personal-data/` (proposed norm, §14) | Postgres `users_userpersonalcontext` | None in pilot scope | yes | v0.9 runtime fact: live account — tombstone (all declared fields at defaults, `data_sources` = `erased`); soft-deleted account — row removed | not compliant: lacks barrier, per-step result, subject_gone, retention manifest, backup tracking; runtime semantics differ from the stated norm (§14) | `users/personal_data_api.py:223-227`, `users/personal_data_api.py:356-374`, `users/personal_context_erasure.py:110-154` |
 | Green `MemoryEntry` | W3 (bot) | `apps.identity.models.MemoryEntry` | W3 | Live green rows for the person (`read_green_entries`) | Soft-delete + `request_forget_all` UPC tombstone; async physical purge after retention | Postgres `identity_memoryentry`; encrypted at rest (Fernet) | In-memory prompt block via `build_concierge_memory_block`; no persistent snapshots or vector DB | yes | soft-delete on request; no explicit purge job | not compliant: lacks barrier, hard-delete SLA, derived-cleanup verification | `apps/identity/services/privacy.py:127-141`, `apps/identity/services/memory_deleter.py:33-101`, `apps/identity/services/memory_reader.py:84-106` |
 | `ConsentRecord` | W3 (bot) | `apps.consent.models.ConsentRecord` | W3 | History of consent events for the person | Cascade withdraw (records retained as audit trail, marked withdrawn; physical deletion governed by separate audit-retention policy) | Postgres `consent_consentrecord` | None | yes | withdraw stamps `withdrawn_at`; row retained | not compliant: retention/redaction/pseudonymization not finalized | `apps/identity/services/privacy.py:143-157`, `apps/identity/services/privacy.py:229-233`, `apps/consent/models.py:56-183` |
+| Goals and goal questionnaire (v0.9, AYLA-DEC-0101) | W2 (Ayla) | `goals.ClientGoal` (verbatim `goal_text`), `goals.GoalAnketaRun`, `goals.GoalAnketaAnswer` (verbatim `answer_text`) | W2 | Target: carried in the W2 export section (shape — §5.10) | Physical delete inside the W2 `ayla_delete` step, same transaction as `UserPersonalContext`; answers cascade with the run | Postgres `goals` tables | Plan snapshot `goal_key` (key, not text) | forget: yes; export: no | forget: physical delete in the C5.2 transaction for every identity of the subject; export: not carried | not compliant: export missing; C5.2 `deleted` scope and C5.3 readback do not report the class; no barrier | `users/forget_all_catalog.py:121-129`, `users/personal_data_api.py:356-366`, `users/personal_data_api.py:266-296` |
+| Personal Plan (v0.9, AYLA-DEC-0101) | W2 (Ayla) | `wellness.PersonalPlan`, `wellness.PlanAction` (all versions per AYLA-DEC-0092, target), immobilised `DesiredOutcome`, `PlanOutcomeLink`, `ProgressObservation` (AYLA-DEC-0094) | W2 | Target: carried (shape of action versions — §14) | Physical delete inside `ayla_delete`, same transaction; every action version, including versions with status «удалено» | Postgres `wellness` tables | Adherence «N из M» — computed on request | forget: yes; export: no | forget: physical delete in the C5.2 transaction; export: not carried; `PlanAction` has no version or provenance fields | not compliant: export missing; composition not reported; action versions not implemented | `users/forget_all_catalog.py:121-127`, `wellness/models.py:390-446` |
+| Nutrition Profile (v0.9, AYLA-DEC-0101) | W2 (Ayla) | `nutrition.NutritionProfile` (weight, height, age, `health_flags`, targets and their inputs); `nutrition.ProfileIdempotencyKey` | W2 | Target: carried; `age` is replaced by the age derived from the date of birth (AYLA-DEC-0100) | `erase_personal_calculation_inputs`, then the row, inside `ayla_delete`, same transaction | Postgres `nutrition` tables | Targets (derived, with provenance); daily profile response cache | forget: yes; export: no | forget: erased in the C5.2 transaction; export: not carried; `health_flags` accepts `allergies` / `allergies_vague` without separate consent or age status | not compliant: export missing; latent allergy input outside the red perimeter | `users/forget_all_catalog.py:131-135`, `users/forget_all_catalog.py:148`, `nutrition/serializers.py:503-509` |
+| Food diary and water (v0.9, AYLA-DEC-0101) | W2 (Ayla) | `nutrition.FoodLog`, `nutrition.DeletedFoodLog`, `nutrition.SavedMeal` (incl. soft-deleted), `nutrition.WaterEntry`, `nutrition.WaterLog` (legacy), `nutrition.CrossDomainShownRule` | W2 | Target: carried (AYLA-DEC-0101: «выгрузка несёт дневник») | Physical delete inside `ayla_delete`, same transaction | Postgres `nutrition` tables | Day summaries and reports — computed | forget: yes; export: no | forget: erased in the C5.2 transaction; export: not carried | not compliant: export missing; composition not reported | `users/forget_all_catalog.py:137-150`, `users/personal_data_api.py:266-296` |
+| Food scans with photos (v0.9, AYLA-DEC-0101) | W2 (Ayla) | `nutrition.FoodScan` + `image` file in object storage | W2 | Target: carried (whether the image file itself is carried — §14) | File removed from object storage before the rows, inside the transaction; a file that fails to be removed raises `IncompleteErasure` and rolls the whole transaction back; a missing file is not an error | Postgres `nutrition` tables + object storage | Recognition result on the scan row | forget: yes; export: no | forget: file then row in the C5.2 transaction; export: not carried; without forget, photos are purged after 30 days | not compliant: export missing; composition not reported | `users/forget_all_catalog.py:58-61`, `users/forget_all_catalog.py:139-142`, `nutrition/management/commands/purge_expired_food_photos.py:121` |
+| Diary Day (v0.9, AYLA-DEC-0095; target entity) | W2 (Ayla) | Target: persisted diary day (`closed` / `corrected`, timezone and its source) | W2 | Target: carried | Target: physical delete in the same transaction as the diary (derived from AYLA-DEC-0101, §14) | Target: Postgres | — | no | not persisted: computed on request | not applicable until the entity exists | `nutrition/services/diary_days_service.py:67-80` |
+| Allergy — red `MemoryEntry` `kind=allergy` (v0.9, AYLA-DEC-0100) | W3 (bot) | `apps.identity.models.MemoryEntry` (`sensitivity_zone=red`, `kind=allergy`) | W3 | Target: carried, read through the audited red-zone reader; content never in audit or events | «Забудь аллергии» and «Забудь всё»: soft-delete tombstone + one `RedZoneAccessLog` row per removed entry; purge per §3.4 | Postgres `identity_memoryentry` (red); `RedZoneAccessLog` | None; never in the LLM prompt | forget: yes (sweep of all zones); export: no; write: no | allergy clauses are dropped, nothing is stored; forget-all sweep removes red entries; export declares red as withheld | not compliant: write path absent (DRF-2132); export withheld against AYLA-DEC-0100; no barrier | `apps/persona/memory_extract.py:425-436`, `apps/identity/services/forget_all_sweep.py:48-72`, `apps/identity/services/forget_all_sweep.py:201-203`, `apps/identity/export_coverage.py:196-201` |
+| Date of birth (v0.9, AYLA-DEC-0100; target field) | W2 (Ayla) | Target: one field of the catalog profile — the single source of age | W2 | Target: carried to the subject; to other modules only age status and age in full years (`age-status.schema.json`) | Target: physical delete inside `ayla_delete`; afterwards age status is `age_unknown` and allergy writes are refused until a new declaration | Target: Postgres | Age status and age in years — computed on request | no | no W2 field; W3 holds a separate full date `identity.UserPreferences.birthday_date` — exported, RETAINED by forget-all, deleted by the C5 delete cascade | not compliant: field absent; second carrier in W3 conflicts with AYLA-DEC-0100 (§14) | `apps/identity/models.py:491-496`, `apps/identity/services/forget_all_sweep.py:80-88`, `apps/persona/memory_commands.py:66-78`, `apps/identity/services/privacy.py:346-364` |
+
+v0.9: восемь строк выше вводятся решениями AYLA-DEC-0101 и AYLA-DEC-0100. Все
+W2-классы v0.9 стираются внутри шага `ayla_delete` — одним вызовом C5.2 и одной
+транзакцией с `UserPersonalContext` (`users/personal_data_api.py:356-366`);
+красная аллергия — внутри шага `memory_delete` (свип всех зон). Поэтому состав
+шагов `per_step_results` не меняется; меняются состав `deleted[]`, экспорт и
+readback (§5.10, §12 #26–31).
+
+**Решения владельца CD §72 (21.09.2026, вечер; журнал главного окна вне git).**
+Исход «забудь всё» по классам, которых нет в строках выше. Для каждого — **исход
+по решению; runtime — не измерено**; носители — Data Inventory Matrix [N12]:
+
+- снимок переписки в задаче оператора (бот, `handoff.AdminTask.transcript_snapshot`)
+  стирается по «забудь всё», в том числе при открытой задаче (CD §72 п.2);
+- история уведомлений в приложении (`notifications.Notification`) — стирается;
+  настройки уведомлений остаются (CD §72 п.3);
+- избранные мастера (`users.FavoriteSpecialist`) остаются; в текст команды
+  дописывается, что избранное сохраняется (CD §72 п.3; см. §14);
+- ИИ-чат приложения (каталог, модуль `ai`) — стирается (CD §72 п.3);
+- `nutrition.NutritionOutboxEvent` — стирается и при «забудь всё», и при
+  удалении аккаунта (CD §72 п.3);
+- старые адреса журнала воды `WaterLog` — Sunset 31.10.2026 (CD §72 п.14).
 
 ### 1.2 Excluded
 
@@ -116,7 +163,7 @@ activation до прохождения технического ревью за�
 | Formal Article 14 response | post_pilot_inventory_required | Legal/Privacy | `owner_verdict_amd020_v01_2026-07-23.md` Part 2 | Export is data-portability, not formal subject-access response | Separate 152-ФЗ Chapter 2 response track | — |
 | Conversations / messages | post_pilot_inventory_required | W5 / Conversation Owner | `2026-05-17-conversations-handoff.md` §7; `2026-05-18-master-mobile-handoff.md` §13 E17; `2026-05-19-master-admin-internal-chat-handoff.md` §2.1, §8.5 | Conversation retention governed by separate ownership and statutory limits; ADR-0009 assigns conversations to bot, but Ayla also holds `ai.Conversation/Message` | Inventory + deletion owner per channel/tenant; resolve duplicated ownership | Handoffs assume conversations are hidden/exported on customer deletion; AMD-001 pilot does not cover them |
 | Bookings | post_pilot_inventory_required | W2 / Booking Owner | `2026-05-18-customer-first-time-handoff.md` §12 F3; `c5_revision_2026-07-21.md` §2 | Statutory/booking retention; dual ownership (`BookingRequest` local lifecycle) | Data Inventory Matrix row; complete Block D ownership migration | «My visits» shown in profile next to delete button; may imply bookings are deletable |
-| Wellness and sleep history | post_pilot_inventory_required | Wellness Owner | `2026-05-19-wellness-sleep-handoff.md` §11.4; `2026-05-19-master-offboarding-handoff.md` §2.4, §6.4; `2026-05-18-customer-first-time-handoff.md` §12 F4 (allergies/contraindications — ambiguous) | Out of pilot personal-context scope; special-category health data | Inventory + lawful basis review; resolve red-zone ownership | `wellness-sleep-handoff` states OP6 export/delete includes raw sleep history; directly contradicts AMD-001 exclusion |
+| Sleep history (wellness sleep) | post_pilot_inventory_required | Wellness Owner | `2026-05-19-wellness-sleep-handoff.md` §11.4; `2026-05-19-master-offboarding-handoff.md` §2.4, §6.4 | Out of pilot personal-context scope; special-category health data. v0.9: the diary, water, scans, goals, plan and nutrition profile are no longer excluded — moved to §1.1 by AYLA-DEC-0101; allergies — moved to §1.1 by AYLA-DEC-0100 | Inventory + lawful basis review | `wellness-sleep-handoff` states OP6 export/delete includes raw sleep history; contradicts this exclusion for sleep only |
 | Loyalty records | post_pilot_inventory_required | Loyalty Owner | `2026-05-18-loyalty-system-handoff.md` §14 | Separate loyalty system/retention | Inventory row | Handoff states account deletion erases loyalty data; AMD-001 is not account deletion |
 | Reviews | post_pilot_inventory_required | Gamma / Reviews Owner | `2026-05-19-master-reviews-feedback-handoff.md` §2.10, §7.1, §7.2 | Ayla canonical; mirror-only on bot | Inventory + deletion path | Handoff treats reviews as customer personal data with 30-day hard-delete window; outside AMD-001 pilot scope |
 | Support communications | post_pilot_inventory_required | Support Owner | `2026-05-19-master-admin-internal-chat-handoff.md` §2.1, §8.5 | Separate support/ticketing retention | Inventory row | Handoff grants master export/hard-delete of internal chat threads; outside AMD-001 pilot scope |
@@ -137,7 +184,7 @@ and in §14 for owner decision:
 
 | Conflict | Handoff source | AMD-001 position | Resolution authority |
 |---|---|---|---|
-| Wellness/sleep export and deletion cascades with OP6 | `2026-05-19-wellness-sleep-handoff.md` §11.4 | Excluded from pilot scope (§1.2) | Owner / Legal / Privacy / OP6 track |
+| Wellness/sleep export and deletion cascades with OP6 | `2026-05-19-wellness-sleep-handoff.md` §11.4 | v0.9: resolved for the diary, water, scans, goals, plan and nutrition profile by AYLA-DEC-0101 (included, §1.1); sleep history stays excluded (§1.2) | Owner / Legal / Privacy / OP6 track (sleep only) |
 | Loyalty data erased on account deletion | `2026-05-18-loyalty-system-handoff.md` §14 | Loyalty records excluded; AMD-001 not account deletion | Owner / OP6 track |
 | Reviews have 30-day customer hard-delete window | `2026-05-19-master-reviews-feedback-handoff.md` §2.10, §7.1, §7.2 | Reviews excluded from pilot scope | Owner / Gamma Reviews Owner |
 | Conversations hidden/exported on customer deletion | `2026-05-17-conversations-handoff.md` §7; `2026-05-18-master-mobile-handoff.md` §13 E17; `2026-05-19-master-admin-internal-chat-handoff.md` §8.5 | Conversations/messages excluded from pilot scope | Owner / W5 Conversation Owner |
@@ -175,6 +222,23 @@ in §1.2 and the conflicts table in §1.3.
 - `excluded_post_pilot_inventory` — personal-data class exists and needs a future export/forget owner, but is outside the AMD-001 pilot boundary.
 - `not_applicable_to_customer_pilot` — the file concerns tenant/master/operational data, not the customer personal-context pilot scope.
 
+### 1.5 Data Inventory Matrix and the forget-all matrix DRF-2134 (v0.9)
+
+- Перечень классов §1.1 обязан совпадать со строками [[Data Inventory Matrix]]
+  v1.1, у которых исход «забудь всё» — DELETE или ANONYMISE, а экспорт — «несёт».
+  Класс, добавленный в одно место без другого, нарушает этот документ.
+- Runtime-сторож W3 — `apps/identity/tests/test_forget_all_matrix.py` (DRF-2134):
+  состав W3-хранилищ выводится из `apps/identity/export_coverage.py`, исход по
+  каждому проверяется после свипа, дыры держатся `xfail(strict=True)`. W2-классы
+  §1.1 в него не входят (`apps/identity/tests/test_forget_all_matrix.py:47-53`);
+  их исход держат тесты каталога DRF-2214 (`users/tests/test_forget_all_catalog_2214.py`,
+  `users/tests/test_forget_all_diary_2214.py`). Эти тесты — не W6-свидетельство (§13)
+  и в рамках этой поправки не запускались.
+- Red `MemoryEntry`: DRF-2134 объявляет DELETE
+  (`apps/identity/tests/test_forget_all_matrix.py:146-151`), а `export_coverage`
+  объявляет red невыгружаемым (`apps/identity/export_coverage.py:196-201`) —
+  расхождение с AYLA-DEC-0100, §14.
+
 ---
 
 ## 2. Derived Boundary
@@ -186,6 +250,10 @@ in §1.2 and the conflicts table in §1.3.
 | UserPersonalContext (W2) | `users_userpersonalcontext` | none found | none found | none found | `AnalyticsEvent` via `emit_personal_data_deleted` | none found | none found | `user_id` in structured logs | Postgres backups | none found | SHA `f6e9572e`: `users/personal_context_events.py`, `users/models.py:425-544`; `personal_data_api.py` not present in this branch |
 | Green MemoryEntry (W3) | `identity_memoryentry` | none found | none found (ChromaDB only in `apps/kb/`) | none found | `write_audit("memory.forget_entry")`, `write_audit("memory.forget_all_requested")` | none found | none found | `user_id` in structured logs | Postgres backups | in-memory prompt block | SHA `fe6c1f87`: `apps/identity/models.py:621-838`, `apps/identity/services/memory_writer.py`; `memory_reader.py`/`memory_deleter.py`/`memory_block.py` not present in main branch |
 | ConsentRecord (W3) | `consent_consentrecord` | none found | none found | none found | `write_audit("privacy.personal_data_deleted")`; `ConsentRecord` itself is audit trail | none found | none found | `bot_user_id` in audit payload | Postgres backups | none found | SHA `fe6c1f87`: `apps/consent/models.py:56-183`, `apps/identity/services/privacy.py:143-157`, `apps/identity/services/privacy.py:229-233` |
+| W2 classes v0.9: goals, questionnaire, plan, nutrition profile, food diary, water (W2) | `goals`, `wellness`, `nutrition` tables | not measured | not measured | not measured | `AnalyticsEvent` via `emit_personal_data_deleted` (scope names `personal_context` only); log `forget_all.catalog.erased` with per-model counts, no values | not measured | not measured | `user.pk` in the log line | Postgres backups | adherence, targets, day summaries — computed | SHA `4dbff523`: `users/forget_all_catalog.py:77-158`, `users/personal_context_erasure.py:148-153` |
+| Food scan photos (W2) | `nutrition` tables (row) | not measured | not measured | not measured | as above | not measured | not measured | as above | object storage backups — not measured | none found | SHA `4dbff523`: `users/forget_all_catalog.py:139-142`, `nutrition/management/commands/purge_expired_food_photos.py:121` |
+| Red allergy MemoryEntry (W3) | `identity_memoryentry` (red) | not measured | not measured | forbidden by AYLA-DEC-0100 | `RedZoneAccessLog` per removed entry; `write_audit("memory.forget_all_swept")` | not measured | not measured | `user_id` in the sweep log | Postgres backups | none | SHA `0e2c0100`: `apps/identity/services/forget_all_sweep.py:201-203`, `apps/identity/services/forget_all_sweep.py:263-288` |
+| Date of birth (W2, target) | target field; W3 carrier today: `identity_userpreferences.birthday_date` | not measured | not measured | forbidden (AYLA-DEC-0100: not in prompts) | not measured | not measured | not measured | forbidden (brief rev. 2, M-1 «Минимизация», accepted by the owner: not in logs or events) | Postgres backups | age status, age in years | SHA `0e2c0100`: `apps/identity/models.py:491-496` |
 
 ### 2.2 Evidence statement
 
@@ -234,6 +302,10 @@ Deletion of included data must cover:
 2. Derived in-memory prompt block (covered by read-gate).
 3. Audit rows that are within their retention period (listed in `retained[]`).
 4. Backups after `backup_expiry`.
+5. (v0.9) Файлы фото сканера в объектном хранилище — снимаются раньше строк,
+   внутри той же транзакции; неснятый файл откатывает всю транзакцию.
+6. (v0.9) Строки `RedZoneAccessLog` о снятии красных записей — перечисляются в
+   `retained[]` (§7).
 
 If future implementations add embeddings, cache, or snapshots for any included
 class, those representations must be added to the deletion boundary before
@@ -356,6 +428,11 @@ safe_outcome ⇔ (
 | UserPersonalContext (W2) | `active` → `deleted` (immediate primary row removal) → `backup_expired` |
 | Green MemoryEntry (W3) | `active` → `soft_deleted` → `primary_purged` → `backup_expired` |
 | ConsentRecord (W3) | `active` → `withdrawn` → `retained_under_other_basis` (until legal retention expiry) |
+| W2 classes v0.9: goals, questionnaire, plan, nutrition profile, food diary, water, scans (W2) | `active` → `deleted` (physical, inside the C5.2 transaction) → `backup_expired` |
+| Food scan photo file (W2) | `active` → `deleted` (removed from object storage before the row; a failed removal rolls the transaction back) → `backup_expired` |
+| Diary Day (W2, target) | `active` → `deleted` → `backup_expired` |
+| Red allergy MemoryEntry (W3) | `active` → `soft_deleted` → `primary_purged` → `backup_expired` |
+| Date of birth (W2, target) | `active` → `deleted` → `backup_expired` |
 
 **Notes:**
 
@@ -367,6 +444,16 @@ safe_outcome ⇔ (
   therefore implicit in `deleted` for this class.
 - `retained_under_other_basis` — параллельное состояние для audit/consent
   history, а не последовательное состояние всей операции.
+- **v0.9 runtime fact (UserPersonalContext).** На каталоге `4dbff523` живой
+  аккаунт после удаления сохраняет строку-tombstone: объявленные поля — по
+  умолчанию, `data_sources` = `erased` для каждого поля; строка удаляется только
+  у удалённого аккаунта (`users/personal_context_erasure.py:110-154`). Строка
+  таблицы выше («immediate primary row removal») совпадает с кодом только для
+  удалённого аккаунта. Классификация остаётся
+  `proposed_norm_pending_owner_confirmation` (§14).
+- **v0.9 (W2-классы).** Мягкого удаления и окна восстановления у них под
+  «забудь всё» нет: снимок `DeletedFoodLog` и мягко удалённые `SavedMeal` /
+  `WaterEntry` стираются тем же шагом (`users/forget_all_catalog.py:143-149`).
 
 ### 3.3 Barrier requirements
 
@@ -374,6 +461,9 @@ Barrier устанавливается атомарно с созданием о
 заблокированы:
 
 - новые записи included-классов;
+  (с v0.9 — включая записи дневника, воды, сканов, целей, анкеты цели, плана,
+  профиля питания, красной аллергии и даты рождения; runtime-барьера сегодня нет
+  ни для одного класса — gate §12 #1–3);
 - фоновые inference jobs, создающие green MemoryEntry;
 - повторное создание derived representations;
 - конкурентный delete с другим `idempotency_key`, но совпадающим `scope_hash`,
@@ -2687,6 +2777,31 @@ source of truth after a timeout, crash, or lost HTTP response.
 machine-readable `code`, и запрещено раскрытие внешнему клиенту деталей
 внутренних security-инцидентов.
 
+### 5.10 Schema impact of v0.9 (not applied)
+
+Схемы §5.3–§5.8 и §6 в v0.9 **не меняются** и остаются `format_version: "1.0"`.
+Расширение §1.1 делает их неполными; по §5.1 добавление полей требует
+MINOR-инкремента `format_version`. Необходимые изменения — отдельным шагом:
+
+| Schema | Required change | Fixtures to update |
+|---|---|---|
+| `export-success/1.0` | Раздел `ayla` закрыт (`user_id`, `exported_at`, `personal_context`) и не принимает целей, анкеты, плана, профиля питания, дневника, воды, сканов, дня дневника, даты рождения; раздел `memory` — только зелёные записи. Нужны новые свойства (или объявленный opaque-раздел W2) и раздел red-аллергии; `format_version` → `1.1` | `tests/fixtures/amd001/export-success-positive.json`, `tests/fixtures/amd001/export-success-negative.json` |
+| `delete-success/1.0` | `deleted[]` — enum `ayla_personal_context`, `memory_green`; нужны значения для классов v0.9. Предложение (не норма): `ayla_goals`, `ayla_plan`, `ayla_nutrition_profile`, `ayla_food_diary`, `ayla_food_scans`, `ayla_water`, `ayla_diary_days`, `ayla_date_of_birth`, `memory_red_allergy` | `tests/fixtures/amd001/delete-success-positive.json`, `tests/fixtures/amd001/delete-success-negative.json` |
+| `delete-partial/1.0`, `delete-failure/1.0`, `export-failure/1.0` | Не требуется: шаги `ayla_delete` / `memory_delete` / `consent_withdraw` покрывают классы v0.9 | — |
+| `operation-status-read/1.0` | Не требуется: `included_classes` — свободные строки; состав канонических имён классов — §14 | — |
+| `subject-gone/1.0` | Не требуется | — |
+
+Встраивать в этот документ новые блоки `$schema: 2020-12` нельзя без правки
+`EXPECTED_SCHEMA_COUNT` в `scripts/validate_amd001_schemas.py`. Схемы
+`allergy-filter-result.schema.json` и `age-status.schema.json` (AYLA-DEC-0100)
+живут в `03 AI System/Contracts/` и сюда не встраиваются.
+
+Runtime на `4dbff523` / `0e2c0100` не совпадает и с текущими схемами: раздел
+`ayla` несёт `profile`, `specialist_profile`, `linked_identities`
+(`users/personal_data_api.py:289-296`), бот добавляет `personal_context`,
+`preferences`, `coverage` (`apps/identity/services/privacy.py:580-595`). Схемы —
+proposed norm (gate §12 #10), не описание runtime.
+
 ---
 
 ## 6. subject_gone
@@ -2766,6 +2881,10 @@ Delete-ответ содержит `retained[]`. Каждый элемент:
 3. Tombstones (`MemoryEntry` soft-deleted rows) — until `primary_purge_deadline`;
    `decision_status: owner_decision_required` until Legal confirms retention.
 4. Consent records — retained as withdrawal evidence; retention TBD;
+   `decision_status: owner_decision_required`.
+5. (v0.9) Tombstones of red allergy `MemoryEntry` rows — until
+   `primary_purge_deadline`; `decision_status: owner_decision_required`.
+6. (v0.9) `RedZoneAccessLog` rows for red-zone access and removal — retention TBD;
    `decision_status: owner_decision_required`.
 
 **Example (non-normative placeholder):**
@@ -2890,6 +3009,9 @@ and blocks activation until recorded.
 | `memory.forget_entry` | per-entry deletion | yes (user_id reference) | HMAC token (direct internal identifier only where operational correlation is required and access is restricted) | W3 ops | statutory request | W3 | owner_decision_required |
 | `memory.forget_all_requested` | mass-erasure intent | yes (user_id reference) | HMAC token (direct internal identifier only where operational correlation is required and access is restricted) | W3 ops | statutory request | W3 | owner_decision_required |
 | `AnalyticsEvent` (Ayla) | W2 internal deletion audit | yes (user_id reference) | HMAC token (direct internal identifier only where operational correlation is required and access is restricted) | W2 ops | statutory request | W2 | owner_decision_required |
+| `memory.forget_all_swept` (v0.9 inventory) | forget-all sweep outcome: counts and cleared field names, no values | yes (user_id reference) | HMAC token (as above) | owner_decision_required | statutory request | W3 | owner_decision_required |
+| `RedZoneAccessLog` (v0.9) | every red-zone read and removal | yes (subject reference; no content) | HMAC token (as above) | owner_decision_required | statutory request | W3 | owner_decision_required |
+| `memory.allergy.recorded` / `memory.allergy.forgotten` / `memory.allergy.accessed` / `memory.allergy.access_denied` (v0.9, AYLA-DEC-0100) | allergy write, removal, access and refused access; allergy content is never written | yes (subject reference) | HMAC token (as above) | owner_decision_required | statutory request | W3 | not implemented |
 
 **Norm:** `user_id`/`bot_user_id` являются персональными/псевдонимизированными
 данными и не могут считаться безопасной неперсональной metadata. До утверждения
@@ -3048,6 +3170,15 @@ lawful basis and cleanup of legacy rows require Legal/Privacy/Security decisions
 | 23 | Export filename pattern | proposed_norm | implementation_delta | W3 | no |
 | 24 | Export operation/auth/schema/failure handling | proposed_norm | not implemented | W3 | yes |
 | 25 | ConsentRecord expanded-field backfill verified | implementation_delta | not implemented | W3 | yes |
+| 26 | Export carries W2 classes v0.9 (goals, questionnaire, plan, nutrition profile, food diary, water, scans, diary day) | proposed_norm (AYLA-DEC-0101 / CD §66 — diary, water, scans; brief T-6 / inv. 21 — goals, questionnaire, plan, nutrition profile) | not implemented | W2/W3 | yes |
+| 27 | C5.2 `deleted` scope reports the v0.9 composition | proposed_norm | not implemented | W2 | yes |
+| 28 | C5.3 readback covers the v0.9 classes, not only `UserPersonalContext` | proposed_norm | not implemented | W2 | yes |
+| 29 | Red allergy: export carries it; «Забудь аллергии» and «Забудь всё» remove it with `RedZoneAccessLog` | proposed_norm (AYLA-DEC-0100) | partially implemented (forget-all sweep of all zones exists; write path absent; export withheld) | W3 | yes |
+| 30 | Date of birth: single W2 carrier; export carries it; forget-all removes it | proposed_norm (AYLA-DEC-0100) | not implemented (W2 field absent; W3 carrier conflict, §14) | W2/W3 | yes |
+| 31 | Schema bundle `format_version` 1.1 for the v0.9 classes (§5.10) | proposed_norm | not specified | W2/W3 | yes |
+
+v0.9: пункты 26–31 добавлены. `AMD-020 C5 Implementation Amendment` с ними не
+синхронизирован (25 ↔ 31) — Quality Bar H.
 
 Effective разрешается только после:
 
@@ -3130,8 +3261,14 @@ Effective разрешается только после:
 | 65 | AMD001-W6-063 | AMD001 v0.8.1 §4.5 old-persona cross-tenant denial | Post-relink user tries to access old persona of another tenant | User authenticated in tenant A; targets old persona in tenant B | Request old persona operation | 403 cross_tenant_violation / subject_mismatch | No operation created; access denied | N/A | none | N/A | privacy.old_persona_access_denied | no | Old persona access is tenant-scoped | Old-persona API call + tenant boundary check | NOT_IMPLEMENTED | NOT_EXECUTED | SPECIFIED |
 | 66 | AMD001-W6-064 | AMD001 v0.8.1 §4.2.4 parallel operation via new hash | Attempt to create parallel operation after HMAC rotation | Active operation exists under old scope_hash; new scope_hash after rotation | Send new delete request with new scope_hash | 202/200 joins active operation OR 409 operation_in_progress | No second destructive execution; alias mapping resolves to active operation | Active | none | N/A | privacy.operation_joined (alias) or privacy.operation_conflict | yes | Parallel destructive operations for same subject are prohibited | Rotation + new request + operation-state query | NOT_IMPLEMENTED | NOT_EXECUTED | SPECIFIED |
 | 67 | AMD001-W6-065 | AMD001 v0.8.1 §5.8 status-read schema validation | Status-read response conforms to operation-status-read schema | Any operation exists | Perform status read | 200 OK | Response validates against operation-status-read/1.0 schema; additionalProperties rejected | N/A | none | N/A | privacy.status_read | yes | Status read contract is machine-enforceable | Schema validation script + HTTP response | NOT_IMPLEMENTED | NOT_EXECUTED | SPECIFIED |
+| 68 | AMD001-W6-066 | AYLA-DEC-0101 (runtime evidence outside W6: catalog tests DRF-2214) | Forget-all erases W2 diary, water, scans, goals, plan and nutrition profile in one transaction | Subject has rows in every W2 class v0.9 on the account and on a linked identity; a neighbour subject has the same rows | Execute delete through the bot forget-all path (C5.2) | 200 OK, status `completed` | 0 rows of every W2 class v0.9 for every identity of the subject; photo files absent from object storage; neighbour unchanged | Released (safe outcome `completed`) | N/A | N/A | `privacy.personal_data_deleted` | yes (idempotent repeat) | The diary is erased together with goals, plan and profile — all or nothing | Per-class database query + object storage listing + neighbour diff | NOT_IMPLEMENTED | NOT_EXECUTED | SPECIFIED |
+| 69 | AMD001-W6-067 | AYLA-DEC-0101 | Photo file removal failure rolls the whole W2 erasure back | Subject has a food scan whose file cannot be removed (storage error injected) | Execute delete | 502 Bad Gateway, status `partial`; failed_steps=[`ayla_delete`] | No W2 class erased, `UserPersonalContext` included; a repeat after the storage recovers completes | Active; retryable | N/A | N/A | Partial event with `ayla_delete` error | yes | No state with rows erased and a photo file left without a row | Failure injection + database query + storage listing | NOT_IMPLEMENTED | NOT_EXECUTED | SPECIFIED |
+| 70 | AMD001-W6-068 | AYLA-DEC-0101; brief T-6 | Export carries goals, plan, nutrition profile, diary, water and scans | Subject has rows in every W2 class v0.9 | Send export request | 200 OK | Export contains every W2 class v0.9 for every identity of the subject and validates against the `format_version` 1.1 bundle (§5.10) | N/A | N/A | N/A | `privacy.personal_data_exported` | yes | Export does not under-report stored W2 classes | Export response + database query + schema validation | NOT_IMPLEMENTED | NOT_EXECUTED | BLOCKED |
+| 71 | AMD001-W6-069 | AYLA-DEC-0100 | Red allergy entry — export, then forget-all | Subject has an active red `kind=allergy` entry (separate consent given, `adult_eligibility_asserted`) | Export; forget-all; export again | 200 OK for each request | First export carries the entry; after forget-all 0 live red rows (tombstone) and the second export carries none | Released after forget-all completes | N/A | N/A | `memory.allergy.accessed` for the export read; `memory.allergy.forgotten` and one `RedZoneAccessLog` row per removed entry | yes | Allergy never survives forget-all; allergy content never appears in audit or events | Export responses + database query + `RedZoneAccessLog` query | NOT_IMPLEMENTED | NOT_EXECUTED | BLOCKED |
+| 72 | AMD001-W6-070 | AYLA-DEC-0100 | Date of birth — export, forget-all, age status after | Subject has declared a date of birth | Export; forget-all; read age status; attempt an allergy write | 200 OK for export and forget-all | Export carries the date; after forget-all no date is stored anywhere; age status `age_unknown`; the allergy write is refused until a new declaration | Released after forget-all completes | N/A | N/A | `privacy.personal_data_exported`, `privacy.personal_data_deleted` | yes | The full date of birth leaves W2 only in the subject's own export | Export response + database query in W2 and W3 + age-status read | NOT_IMPLEMENTED | NOT_EXECUTED | BLOCKED |
+| 73 | AMD001-W6-071 | §12 #27–28 | Delete response and readback report the v0.9 composition | Delete operation completed for a subject with rows in every W2 class v0.9 | Inspect the delete response and the C5.3 readback | 200 OK | `deleted[]` names every erased v0.9 class; the readback verdict covers every v0.9 class, not only `UserPersonalContext` | Released | N/A | N/A | `privacy.personal_data_deleted` with the v0.9 scope | N/A | «Удалено» is said only for classes confirmed by a read | Response body + readback + database query | NOT_IMPLEMENTED | NOT_EXECUTED | SPECIFIED |
 
-**Battery summary:** 67 scenario rows; 0 implemented; 0 executed; 8 blocked; 1 not applicable; 58 specified. No scenario is claimed as passing.
+**Battery summary:** 73 scenario rows; 0 implemented; 0 executed; 11 blocked; 1 not applicable; 61 specified. No scenario is claimed as passing. v0.9 added rows 68–73; rows 70–72 are blocked by the missing export shape (§5.10), the absent allergy write path (DRF-2132) and the absent date-of-birth field (§14).
 
 ## 14. Open Questions and Known Conflicts
 
@@ -3154,6 +3291,16 @@ Effective разрешается только после:
 | Handoff scope conflicts | 16 handoff files (§1.4) | OP6 / account-deletion promises exceed AMD-001 pilot boundary | `owner_decision_required` | Owner / Product / Legal / OP6 track | Reconcile customer-facing «delete all my data» copy with narrow AMD-001 scope | yes | no |
 | Formal Article 14 response | P0.2 | excluded from AMD-001; separate post-pilot track | `external_obligation` | Product/Legal | scope decision in separate track | no | no |
 | Full account deletion | P0.1 | excluded from AMD-001; separate post-pilot track | `external_obligation` | Product Architecture | separate track | no | no |
+| Two carriers of the date of birth (v0.9) | AYLA-DEC-0100; W3 `apps/identity/models.py:491-496`, `apps/identity/services/forget_all_sweep.py:80-88`, `apps/persona/memory_commands.py:66-78` | AYLA-DEC-0100: one carrier (W2 profile), removed by forget-all. W3 keeps `UserPreferences.birthday_date`, a full date; forget-all retains it and the command text promises it stays; AYLA-DEC-0101 forbids changing the command text | `owner_decision_required` | Owner / Product / Privacy | Which carrier remains; forget-all outcome for the greeting birthday; command wording | yes | yes |
+| «Выгрузка по ст. 14» in AYLA-DEC-0101 (v0.9) | AYLA-DEC-0101; §0 disclaimers | The decision names the export an Article 14 export; this document states it is not a formal Article 14 response | `owner_decision_required` | Owner / Legal | Confirm the export stays data portability, or change the disclaimer | yes | no |
+| Export shape for the v0.9 classes | §5.10 | Closed schemas reject the new sections; canonical class names for `included_classes` / `deleted[]` are not fixed | `implementation_delta` | W2/W3 | `format_version` 1.1 bundle and class names | no | yes |
+| C5.2 `deleted` scope and C5.3 readback cover `UserPersonalContext` only (v0.9) | `users/personal_data_api.py:30-31`, `users/personal_data_api.py:371-374`, `users/personal_data_api.py:420-429` | «Удалено» is not confirmed by a read for the v0.9 classes; rows written after the erasure are not seen | `implementation_delta` | W2 | DRF-2214 (composition reporting) | no | yes |
+| UserPersonalContext runtime semantics changed (v0.9) | `users/personal_context_erasure.py:110-154` | §1.1/§3.2 state a physical wipe; runtime keeps a tombstone row for a live account | `proposed_norm_pending_owner_confirmation` | W2/Product/Legal | Tombstone or physical wipe as the canonical semantics | yes | yes |
+| Red allergy withheld from the export (v0.9) | `apps/identity/export_coverage.py:196-201` | Contradicts AYLA-DEC-0100 «экспорт её отдаёт» | `implementation_delta` | W3 | Export section for red allergy entries via the audited reader | no | yes |
+| Date of birth in the export transits W3 (v0.9) | AYLA-DEC-0100 (bot and Mini App do not store or cache the date) | The bot aggregates the export; the full date passes through W3 | `owner_decision_required` | Privacy / Security | Confirm transit without storage or logging | no | yes |
+| Shape of plan action versions and scan photos in the export (v0.9) | AYLA-DEC-0092; AYLA-DEC-0101 | Current version only or full history; image file or metadata only | `owner_decision_required` | Owner / Privacy | Export shape | no | yes |
+| Diary Day under forget-all (v0.9) | AYLA-DEC-0095; AYLA-DEC-0101 | The entity is not named in AYLA-DEC-0101; DELETE is derived from «стирать дневник вместе со всем» | `owner_decision_required` | Owner | Confirm in the Ayla Diary and Water Contract | no | no |
+| Forget-all outcomes from CD §72 п.2–3 (v0.9) | CD §72 п.2, п.3 (21.09, evening); Data Inventory Matrix [N12] | Owner outcomes for the operator task transcript snapshot, in-app notification history, favourite specialists, in-app AI chat and `NutritionOutboxEvent` are recorded (§1.1 note) but not built into the forget-all path or measured at runtime; adding «избранное сохраняется» to the command text is a later owner word over the AYLA-DEC-0101 rule «текст команды не менять» — whether it is also recorded as a DEC was not checked | `implementation_delta` | W2/W3 | Runtime work and a DEC entry for the command-text change | no | yes |
 
 ---
 
@@ -3190,6 +3337,9 @@ Effective разрешается только после:
 | W6 battery | Owner ruling, P1.10; owner feedback v0.3 | §13 | — | owner_verdict_amd020_v01_2026-07-23.md §2; owner feedback 2026-07-23 |
 | Remove «no conflicts» | Owner verdict | §14 | — | owner_verdict_amd020_v01_2026-07-23.md §1 |
 | Post-pilot tracks as external obligation | Owner feedback v0.2 | §14 | — | owner feedback 2026-07-23 |
+| Diary, water, scans, goals, plan, nutrition profile in scope; wellness exclusion narrowed to sleep | AYLA-DEC-0101 (CD §66) — diary, water, scans; brief T-6 / inv. 21 — export of goals, questionnaire, plan, nutrition profile | §0, §1.1, §1.2, §1.3, §2.1, §3.2, §5.10, §12 #26–28, §13 #68–70, #73 | — | catalog `4dbff523`: `users/forget_all_catalog.py:77-158`, `users/personal_data_api.py:266-296`, `users/personal_data_api.py:356-374` |
+| Allergy (red) and date of birth in scope | AYLA-DEC-0100 | §1.1, §2.1, §3.2, §7, §9, §12 #29–30, §13 #71–72, §14 | — | bot `0e2c0100`: `apps/identity/services/forget_all_sweep.py`, `apps/identity/export_coverage.py:196-201`, `apps/identity/models.py:491-496` |
+| Link to Data Inventory Matrix and the forget-all matrix DRF-2134 | AYLA-DEC-0100 (Data Inventory, export/forget); CD §52 В4 | §1.5 | — | bot `0e2c0100`: `apps/identity/tests/test_forget_all_matrix.py` |
 
 ---
 
@@ -3251,6 +3401,12 @@ Effective разрешается только после:
 | J Writing precision | **PARTIAL** | Code-fence issue fixed; W6 battery rewritten as full test cases with preconditions/persisted state/barrier/audit/invariants; `subject_gone` redesigned for W2 implementability; scope_hash serialization formalized; remaining precision depends on owner decisions and final implementation evidence | §4.2, §5, §6, §13 | Finalize owner decisions and re-verify after implementation |
 
 **Итог Quality Bar:** FAIL/BLOCKED по пунктам B3, C1, D1, D3, G1; PARTIAL по B4, C3, F1, H, I, J.
+
+**v0.9:** Quality Bar не пересчитывалась. H остаётся PARTIAL и расширяется:
+схемы §5 и `AMD-020 C5 Implementation Amendment` не синхронизированы с
+расширением §1.1 (§5.10, §12 #26–31). G1 остаётся FAIL: v0.9 добавляет открытые
+решения в §14.
+
 Документ остаётся Draft/Proposed/Blocked с `review_status: pending_technical_re_review`.
 Пакет подготовлен для **повторного технического ревью**, но **не** к structured
 owner decision review, final owner approval, canonicalization или operational
@@ -3259,6 +3415,36 @@ activation.
 ---
 
 ## 18. Change Log
+
+### v0.9 — 2026-09-21
+
+- Pilot scope расширен по AYLA-DEC-0101: цели и анкета цели, план (включая
+  версии действий AYLA-DEC-0092 как целевое), профиль питания, дневник
+  (`FoodLog`, `DeletedFoodLog`, `SavedMeal`), вода (`WaterEntry`, `WaterLog`),
+  сканы с фото, день дневника (AYLA-DEC-0095, целевое) — в §1.1; исключение
+  wellness history в §1.2 сужено до истории сна; §1.3 обновлён.
+- По AYLA-DEC-0100 в §1.1 добавлены красная аллергия (`MemoryEntry`
+  `kind=allergy`) и дата рождения (целевое поле W2, единственный источник
+  возраста).
+- Добавлен §1.5 — связь с Data Inventory Matrix v1.1 и runtime-матрицей
+  «забудь всё» DRF-2134.
+- Обновлены §2.1, §2.3, §3.2, §3.3, §7, §9: новые классы, файлы сканов, записи
+  `RedZoneAccessLog`, события `memory.allergy.*`.
+- Runtime-факт `UserPersonalContext` исправлен: живой аккаунт получает
+  tombstone, а не физическое удаление строки (§1.1, §3.2, §14).
+- Добавлен §5.10 — влияние на схемы с перечнем фикстур; семь JSON Schema-блоков
+  и фикстуры `tests/fixtures/amd001` **не изменены**.
+- Readiness gate дополнен пунктами 26–31; W6 battery — сценариями 68–73
+  (73 строки: 11 blocked, 1 N/A, 61 specified).
+- §14 дополнен девятью вопросами, включая два носителя даты рождения и
+  формулировку «выгрузка по ст. 14».
+- По рецензии KB-D: основание экспорта целей, анкеты, плана и профиля
+  питания — бриф T-6 / инв. 21, а не AYLA-DEC-0101 («Поправка v0.9», §12 #26,
+  §15); «не в логах и событиях» для даты рождения — бриф M-1 «Минимизация».
+- По CD §72 п.2, п.3, п.14: заметка к §1.1 (исход по решению; runtime — не
+  измерено) и строка §14 — всего десять вопросов v0.9.
+- Статус документа не изменён: Draft / Proposed / Blocked / Not effective.
+- Runtime-свидетельства — каталог `4dbff523`, бот `0e2c0100` (21.09.2026).
 
 ### v0.8.1 — 2026-08-06
 
@@ -3377,4 +3563,4 @@ activation.
 
 ---
 
-**Конец документа — AMD-001 v0.8.1.1 (Draft, pending technical re-review)**
+**Конец документа — AMD-001 v0.9 (Draft, pending technical re-review)**

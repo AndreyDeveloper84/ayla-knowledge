@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ayla.local/schemas/age-status.schema.json",
+  "title": "Ayla Age Status",
+  "description": "Возрастной статус, который владелец даты рождения (профиль каталога) отдаёт наружу (AYLA-DEC-0100, M-1(i)). Полной даты рождения в этой форме нет по построению — additionalProperties: false. Основание всегда самодекларация: статусы не означают проверку или верификацию возраста. Наружу отдаются только статус и возраст в полных годах (плюс технические contract_version и basis); ни даты рождения, ни момента, когда её назвали, в форме нет. Запись аллергии разрешена только при adult_eligibility_asserted.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "status",
+    "basis"
+  ],
+  "properties": {
+    "contract_version": {
+      "description": "Версия контракта возрастного статуса. Потребитель отвергает неизвестную major; совместимая minor проходит.",
+      "type": "string",
+      "pattern": "^1\\.[0-9]+$"
+    },
+    "status": {
+      "description": "age_unknown — дата не названа или человек отказался; age_self_declared — дата названа, возраст вычислен, но проверка 18+ для этого запроса не выполнялась (правило выбора этого статуса — открытый вопрос CSR-OD-11); adult_eligibility_asserted — из самоназванной даты следует 18+ на момент запроса; minor_self_declared — из самоназванной даты следует младше 18.",
+      "type": "string",
+      "enum": [
+        "age_unknown",
+        "age_self_declared",
+        "adult_eligibility_asserted",
+        "minor_self_declared"
+      ]
+    },
+    "age_years": {
+      "description": "Возраст в полных годах, вычисленный владельцем даты рождения. Обязателен при всех статусах, кроме age_unknown; запрещён при age_unknown.",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 130
+    },
+    "basis": {
+      "description": "Основание статуса — только самодекларация (AYLA-DEC-0100).",
+      "const": "self_declaration"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "status": { "const": "age_unknown" } },
+        "required": ["status"]
+      },
+      "then": { "not": { "required": ["age_years"] } },
+      "else": { "required": ["age_years"] }
+    },
+    {
+      "if": {
+        "properties": { "status": { "const": "adult_eligibility_asserted" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": { "age_years": { "minimum": 18 } }
+      }
+    },
+    {
+      "if": {
+        "properties": { "status": { "const": "minor_self_declared" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": { "age_years": { "maximum": 17 } }
+      }
+    }
+  ]
+}

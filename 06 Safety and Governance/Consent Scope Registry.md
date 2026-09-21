@@ -4,7 +4,7 @@ title: Consent Scope Registry
 type: specification
 status: approved
 canonical_status: approved
-version: "1.4"
+version: "1.5"
 owner: User Context Domain Owner / Privacy Owner
 priority: P0
 knowledge_area:
@@ -19,7 +19,7 @@ concerns:
   - governance
   - audit
 created: 2026-07-27
-updated: 2026-08-20
+updated: 2026-09-21
 source_kind: canonical
 source_repository: ayla-knowledge
 classification: internal
@@ -41,6 +41,9 @@ related:
   - "[[Data Inventory Matrix]]"
   - "[[Ayla Memory Domain Contract]]"
   - "[[Ayla Context Resolution Contract]]"
+  - "[[OWNER_DECISION_REGISTER]]"
+  - "[[AMD-001 C5 Pilot Personal Context Export-Forget Contract]]"
+  - "[[Ayla Domain Event Registry]]"
 target_milestone: MVP vertical slice and Killer PRD canonization
 blocking_reason: >
   Persistent user context and cross-session personalization must remain
@@ -103,6 +106,24 @@ purpose).
    scope и необходимые для конкретного запроса.
 9. Документ задаёт продуктовые и архитектурные ограничения, но не заменяет
    обязательное Privacy/Legal заключение.
+10. Специальные категории данных — `health_related_signal`, флаги
+    здоровья профиля питания (беременность, кормление, диабет и любые
+    другие) и `allergy` (§4) — во внешнюю LLM не передаются: ни сами
+    значения, ни производный признак их наличия. До отдельного согласия и
+    контракта красной зоны для человека с любым флагом здоровья внешний
+    LLM-комментарий не вызывается; вместо него возвращается локальный
+    детерминированный нейтральный текст без оценки и советов
+    (в контурах питания и Диетолога — AYLA-DEC-0098; для прочих контуров
+    запрет следует из §4: `health_related_signal` — «запрещено»). Запрет
+    на передачу `allergy` в текст для любой модели — AYLA-DEC-0100, §5.9.
+11. Защита несовершеннолетних не снимается согласием. Запись в `allergy`
+    (§5.9) закрыта, пока у человека нет статуса возраста
+    `adult_eligibility_asserted`. Самодекларация возраста не является
+    верификацией (AYLA-DEC-0100). Закрытый набор статусов возраста:
+    `age_unknown` / `age_self_declared` / `adult_eligibility_asserted` /
+    `minor_self_declared`. Машиночитаемая форма статуса —
+    `03 AI System/Contracts/age-status.schema.json`: наружу только статус и
+    возраст в полных годах.
 
 ## 3. Термины
 
@@ -159,6 +180,19 @@ consent — пользователь, отправивший сообщение,
 | `health_related_signal` | Сведения или выводы о здоровье, диагнозах, симптомах и противопоказаниях | special/high | Вне MVP; запрещено | Wellness Domain (AMD-020: Raw Wellness History) |
 | `religious_or_diet_signal` | Религиозные убеждения или чувствительные диетические признаки | special/high | Заблокировано до Legal ruling | User Context Domain, под OD-1 — не окончательно |
 | `recommendation_booking_linkage` | Связь `recommendation_id` с `booking_id`, attribution type и техническими идентификаторами результата | medium | Разрешается по scope | Analytics Domain / Booking Domain — открытый вопрос по разграничению |
+| `allergy` | Аллергия, которую человек назвал сам и подтвердил отдельным явным согласием на эту запись. Фраза распознаётся только как кандидат (AYLA-DEC-0100) | special/high, зона `red` (AYLA-DEC-0100; перекрывает `yellow` из ADR-0012 для аллергий, см. §11.1) | Разрешается только по scope `allergy_safety_filter` (§5.9) | Memory & Identity Domain (MemoryEntry — source of truth persistent memory, [[Ayla Memory Domain Contract]] OR-MEM-1) |
+| `date_of_birth` | Дата рождения, названная человеком один раз. Это самодекларация, не юридическая проверка. Единственный источник возраста в продукте; наружу отдаются только статус возраста и возраст в полных годах (AYLA-DEC-0100) | high (pii) | Хранится в одном месте — в профиле каталога (AYLA-DEC-0100); scope использования — открытый вопрос `CSR-OD-11` | Физическое место — профиль каталога (`beautygo_backend`) по AYLA-DEC-0100; доменный владелец не назван — открытый вопрос `CSR-OD-11` |
+
+**Аллергии выделены из `health_related_signal` и
+`religious_or_diet_signal` (AYLA-DEC-0100).** Аллергия, которую человек
+назвал и подтвердил, относится только к категории `allergy`. Строки
+`health_related_signal` («Вне MVP; запрещено») и
+`religious_or_diet_signal` для неё не применяются. Для всех прочих
+сведений о здоровье, диете, религии и чувствительности кожи эти две
+строки действуют без изменений. Возраст в годах и статус возраста,
+вычисленные из `date_of_birth`, — производные значения; полная дата в
+ответах API, логах, событиях и промптах не появляется (бриф ред. 2,
+M-1 «Минимизация»).
 
 **Честно про пробелы:** для `explicit_goal`, `booking_history`,
 `interaction_history` нет прямого соответствия в Ownership Summary
@@ -187,6 +221,7 @@ AMD-020 — не придумываю владельца, оставляю ка�
 | `provider_preference` | `prefers_flexible_cancellation`, `favorite_masters`, `min_rating_preference` | `green` по контракту |
 | `religious_or_diet_signal` | `diet_type` | Спорно — контракт: `green`; ADR-0011 §4.2 (по цитате ADR-0012): `yellow` для vegan/keto/allergies; halal/kosher — под OD-1, требует Legal ruling |
 | `health_related_signal` | `skin_sensitivities` | Спорно — контракт: `green`; ADR-0011 §4.2: `yellow`; под OD-1 |
+| `allergy` | Поля в ADR-0012 нет. Runtime-носитель по решению — `identity.MemoryEntry` зоны `red` (AYLA-DEC-0100). Отдельный `kind` для аллергии в runtime отсутствует: `KIND_CHOICES` — `ai-bot-platform:apps/identity/models.py:851-859` @`0e2c0100`. Каталожные ключи `allergies` / `allergies_vague` в `_HEALTH_FLAG_KEYS` — `djangoproject:nutrition/serializers.py:503-510` @`4dbff523` — приём без согласия и без проверки возраста (бриф ред. 2, M-1), открытый вопрос `CSR-OD-12` | `red` (AYLA-DEC-0100). Для аллергий `diet_type` (`vegan/keto/allergies` → `yellow`) не применяется |
 
 **Открытый вопрос.** `explicit_goal`,
 `booking_history`, `interaction_history`, `recommendation_feedback`,
@@ -325,6 +360,15 @@ permissions:
 | Scope owner | Product Owner + User Context Domain Owner + Privacy Owner |
 | MVP status | `blocked` |
 | Blocking reason | Privacy/Legal approval required |
+
+**Граница с §5.8 (AYLA-DEC-0087).** Этот scope регулирует только
+проактивные **рекомендации услуг**. Он остаётся `blocked`; `CSR-OD-2`
+остаётся открытым; требование user-initiated для рекомендаций услуг не
+меняется (AYLA-DEC-0087, «Отношение к AYLA-DEC-0046»). Уведомления, на
+которые человек подписался сам (отчёты, вода, возврат к плану —
+AYLA-DEC-0087), регулирует отдельный scope
+`proactive_wellness_notification` (§5.8). Этот scope не расширяется до
+рекомендаций услуг и не служит основанием для них.
 
 ### 5.4. `cross_domain_personalization`
 
@@ -485,6 +529,150 @@ scope, а storage enforcement layer (см. §6 Enforcement ownership).
 | MVP status | `proposed` |
 | Blocking reason | — |
 
+### 5.8. `proactive_wellness_notification`
+
+Основание — AYLA-DEC-0087: proactive-уведомления по opt-in входят в
+продукт. Это не проактивные рекомендации услуг (§5.3). Классы
+уведомлений закрыты тремя видами из решения: отчёты, вода, возврат к
+плану.
+
+| Поле | Значение |
+|---|---|
+| Scope version | `1.0` |
+| Purpose | По подписке самого человека (opt-in) отправлять ему сообщения первым, закрытым набором из трёх видов по AYLA-DEC-0087 («отчёты, вода, возврат к плану»): (1) отчёты — в том числе дневной отчёт по дневнику питания и отчёты Диетолога; (2) напоминания о воде; (3) возврат к плану. Частота каждого вида — не часть Purpose (см. «Частоты, тихие часы, пояс») |
+| Allowed data | Данные, которые человек сам внёс в дневник питания и воду, и его план — только в объёме, нужном для текста уведомления этого вида. **Категории этих данных в §4 не зарегистрированы** — открытый вопрос `CSR-OD-13`. До регистрации runtime authorization по имени категории для этого scope невозможна |
+
+**Permissions (per-consumer):**
+
+```yaml
+permissions:
+  - consumer: ai-bot-platform
+    operations: [read, user_disclosure]
+    data_categories: []   # CSR-OD-13: категории дневника/воды/плана не зарегистрированы в §4
+```
+
+`ayla-ai-core` — не consumer этого scope. `model_transfer` не
+разрешён: основание для передачи этих данных модели решением не дано.
+`data_categories: []` означает «не определено», а не «всё» (§3, запрет
+wildcard).
+
+| Поле | Значение |
+|---|---|
+| Persistent context | Требуется: уведомление строится из сохранённых записей человека. Основание хранения этих записей — не этот scope |
+| Prohibited | Рекомендации услуг и любое коммерческое продвижение — это §5.3 (`blocked`); передача во внешнюю LLM специальных категорий и производного признака их наличия (§2 п. 10, AYLA-DEC-0098); использование `allergy` и `date_of_birth`; новые виды уведомлений сверх трёх перечисленных без изменения этого scope (§7); отправка без opt-in человека по этому виду; повторная отправка и повторные сообщения по старым дням дневника (AYLA-DEC-0095) |
+| Authorization basis | `explicit_consent` (форма — `CSR-OD-14`) — opt-in человека по каждому виду уведомления отдельно (AYLA-DEC-0087; журнал главного окна §2 F8: «Дневной отчёт при явном opt-in — разрешённый proactive. Вода при явном opt-in — то же»). Должен ли opt-in быть consent record по схеме §7 (с `notice_version` и `proof`) — открытый вопрос `CSR-OD-14`: в runtime это пользовательская настройка без версии текста (см. «Runtime-гейты» ниже) |
+| Consent requirement | Отдельный opt-in по каждому виду. По умолчанию выключено: без явной подписки ничего не отправляется |
+| Validity | До отключения человеком (вид или общий запрет) либо MAJOR-изменения scope (§7) |
+| Revocation effect | Немедленно прекратить отправку отключённого вида. Общий запрет «не пиши мне первым» прекращает все виды. Отзыв не удаляет записи дневника, воды и плана — их судьба определяется owning domain и «Забудь всё» (§11.3) |
+| Audit events | `authorization_scope_checked`, `consent_record_checked` (§9.1). Runtime-след каждой отправки — см. ниже; соответствие имён канону [[Ayla Domain Event Registry]] — открытый вопрос `CSR-OD-14` |
+| Scope owner | Product Owner + Privacy Owner |
+| MVP status | `approved` по решению (AYLA-DEC-0087); **категории данных — `CSR-OD-13`**. Пока `CSR-OD-13` не закрыт, `data_categories: []` и этот scope **не открывает доступа ни к каким данным**: runtime authorization по нему не проходит (§2 п. 1–2, fail-closed). Текущие runtime-отправки (см. «Runtime-гейты») идут вне Registry. Значения `active` в enum `mvp_status` (§3) нет. Включение для конкретного человека — только его opt-in |
+| Blocking reason | Данные — до закрытия `CSR-OD-13` (см. MVP status). Вид «возврат к плану» в runtime не построен — см. «Runtime-гейты» |
+
+**Частоты, тихие часы, пояс.** Потолки частоты — вне области этого
+Registry, как и остальные suppression-факторы Journey (§6 «Integration
+with Proactive Readiness Gate»). Для трассировки: потолки подтверждены
+владельцем как неизменные («потолки (14/нед, вода ≤3/день, коуч
+≤1/нед)», журнал главного окна §54). Частоты видов (например, дневной
+отчёт, еженедельный возврат к плану) — informative, по тому же журналу
+§54; Purpose их не ограничивает. Пояс человека — по AYLA-DEC-0095:
+профиль, иначе салон, иначе Москва; источник записывается.
+
+**Runtime-гейты (факт кода, не норма; `ai-bot-platform` @`0e2c0100`):**
+
+| Гейт | Где | Соответствие решениям |
+|---|---|---|
+| Общий запрет «не пиши мне первым» `BotUser.proactive_messages_opt_out` — проверяется первым | `apps/notifications/proactive.py:248-249`; поле `apps/identity/models.py:322-326`; фраза в чате — `apps/nutrition_proactive/optout.py:25-33` | Revocation effect |
+| Стёртый человек (`deleted_at`) не получает сообщений | `apps/notifications/proactive.py:251-252` | — |
+| `consent_at` (152-ФЗ) и **активный** `ConsentRecord` `personal_data` | `apps/notifications/proactive.py:254-279` | Базовое согласие; не purpose-scope (MDC §13 OD-MEM-4) |
+| Активное согласие `food_diary_processing` | `apps/nutrition_proactive/selection.py:171-174` | Runtime-тип без scope CSR (§5.10) |
+| Opt-in по виду: `daily_report_time` (по умолчанию `"off"`), `water_reminders` (по умолчанию `False`) — в `BotUser.context["nutrition_proactive"]`, не в `ConsentRecord` | `apps/nutrition_proactive/prefs.py:20-37, 55-61, 219-244`; чтение — `apps/nutrition_proactive/tasks.py:274-278, 411-414` | Opt-in по DEC-0087; форма хранения — `CSR-OD-14` |
+| Тихие часы 22:00–08:59 по местному времени | `apps/nutrition_proactive/prefs.py:80-84, 305-312`; `tasks.py:298-300, 430-432` | Фактор `quiet_hours` Journey |
+| Пояс: `BotUser.timezone` → `Tenant.timezone` → `Europe/Moscow`, источник возвращается | `apps/nutrition_proactive/prefs.py:250-285` | Совпадает с AYLA-DEC-0095 |
+| Потолки: вода ≤3/день; 7-дневные — отчёт 7, вода 21, прочие 1, всего 14 | `apps/nutrition_proactive/prefs.py:94-95, 120-132, 451-468`; `tasks.py:329, 442` | Журнал главного окна §54 |
+| Проверка текста перед отправкой: при срабатывании не отправляется ничего | `apps/notifications/proactive.py:282-303`; `tasks.py:341, 493` | — |
+| Класс отправителя по 38-ФЗ: отчёт и вода — `UNCLEAR` («owner decides») | `apps/notifications/proactive.py:160-164, 190-192` | Решение о классе не принято — `CSR-OD-14` |
+| Еженедельный возврат к плану (A4, DRF-2126) | Отправителя на `0e2c0100` нет. Есть только маркер «Не сейчас»: `apps/orchestrator/plan_lite_card.py:35-39, 108-110` | Вид разрешён решением; в runtime не построен |
+
+### 5.9. `allergy_safety_filter`
+
+Основание — AYLA-DEC-0100 (M-1, варианты (а) и (i)). Закрывает
+`CSR-OD-4` **только в части аллергий** (§12). Diet, religion и
+чувствительность кожи остаются под `CSR-OD-4`.
+
+| Поле | Значение |
+|---|---|
+| Scope version | `1.0` |
+| Purpose | Два читателя для обработки: (1) жёсткий фильтр состава в рекомендациях — в том числе в пути рекомендаций услуг (`provider_selection`, §5.2), к кандидатам которого фильтр применяется; (2) предупреждение сканера еды. Других читателей для обработки нет (AYLA-DEC-0100: «Аллергии читают только рекомендации (фильтр состава) и сканер (предупреждение)»). Кроме них — только доступ субъекта к собственной записи: показ («Что Ayla помнит», `user_disclosure`), экспорт (AMD-001), удаление («Забудь аллергии», «Забудь всё»); каждое такое чтение тоже журналируется (`memory.allergy.accessed`). Внешняя LLM — запрещена (§2 п. 10) |
+| Allowed data | `allergy`; для гейта записи — только статус возраста, производный от `date_of_birth` (полная дата scope не передаётся) |
+
+**Permissions (per-consumer):**
+
+```yaml
+permissions:
+  - consumer: ai-bot-platform
+    operations: [read, write, delete, user_disclosure]
+    data_categories: [allergy]
+```
+
+`ai-bot-platform` — physical custodian `MemoryEntry` ([[Ayla Memory Domain Contract]]
+ §9). `user_disclosure` означает показ человеку его
+собственной записи и текст предупреждения сканера. `ayla-ai-core` —
+**не consumer**: у него нет ни `read`, ни `model_transfer`. Передача
+`allergy` в `beautygo_backend` для фильтра состава в запросе к каталогу
+(журнал главного окна §52 «жёсткий фильтр состава в запросе к
+каталогу») операцией §3 не описана — открытый вопрос `CSR-OD-12`.
+
+**Результат фильтра.** Закрытый набор, бриф ред. 2, M-1:
+
+| Результат | Когда |
+|---|---|
+| `CONFLICT` | В известном составе найден аллерген человека. Рекомендации исключают позицию; сканер предупреждает |
+| `NO_CONFLICT_FOUND` | Состав известен полностью, аллерген не найден. Формулировка — не гарантия: «в известном составе <аллерген> не найден — состав может быть неполным» |
+| `UNKNOWN` | Состав неизвестен или неполон, либо распознавание неуверенно. Это **не** «безопасно»: рекомендации не показывают позицию как подходящую по аллергии; сканер сообщает, что не может проверить состав |
+
+Машиночитаемая форма — `03 AI System/Contracts/allergy-filter-result.schema.json`
+(`unknown_reason`: `composition_unknown` / `composition_incomplete` /
+`recognition_uncertain`). Закрытый словарь `reason_code` этой схемой не
+задан — открытый вопрос `CSR-OD-17`.
+
+| Поле | Значение |
+|---|---|
+| Persistent context | Требуется. Запись — `MemoryEntry` зоны `red`. Условия активации записи — [[Ayla Memory Domain Contract]] §12 (v1.1, `kind=allergy`) |
+| Prohibited | Передача `allergy` в текст для любой модели — промпт, context envelope, `model_transfer` (AYLA-DEC-0100); любое cross-domain использование (§5.4); любые утверждения о безопасности по одному отсутствию найденного аллергена («безопасно», «без аллергенов», «можно есть» и подобные); исход фильтра «безопасно» при неполном составе — только `UNKNOWN`; запись из выведенного (`inferred`) или без показа распознанной формулировки; запись без статуса `adult_eligibility_asserted` (§2 п. 11); `allergy` не входит в Allowed data `provider_selection`, `preference_memory`, `proactive_recommendation`, `proactive_wellness_notification` и не передаётся по ним — фильтр состава, который применяется к кандидатам рекомендаций, работает только по этому scope и отдаёт наружу только исход `CONFLICT` / `NO_CONFLICT_FOUND` / `UNKNOWN`, без самой аллергии; передача `allergy` провайдеру распознавания скана (внешняя модель) |
+| Authorization basis | `explicit_consent` |
+| Consent requirement | Отдельное явное согласие **на каждую запись**. Перед ним Ayla показывает распознанную формулировку. До сохранения человек один раз называет дату рождения. Без даты или при возрасте младше 18 запись не создаётся (AYLA-DEC-0100). Отображение per-entry согласия на схему §7 (запись согласия ключуется `subject_id` + `tenant_id` + `scope_id`, с инвариантом единственного effective state) — открытый вопрос `CSR-OD-15` |
+| Validity | До удаления записи или отзыва согласия. Срок хранения записи — [[Ayla Memory Domain Contract]] §12.1 |
+| Revocation effect | «Забудь аллергии» и «Забудь всё» удаляют запись (AYLA-DEC-0100). Отзыв согласия — немедленный запрет чтения. Дальнейший lifecycle записи — [[Ayla Memory Domain Contract]] §10. Удаление `date_of_birth` через «Забудь всё» делает аллергии недоступными до нового ответа (бриф ред. 2, M-1) |
+| Audit events | `memory.allergy.recorded`, `memory.allergy.forgotten`, `memory.allergy.accessed` (каждое чтение: кто читает — `recommendations` / `scanner`, purpose, время), `memory.allergy.access_denied` (каждый отказ: нет согласия, возраст, чужой purpose, «забыто»). Для доступа субъекта (показ, экспорт) `memory.allergy.accessed` пишется с purpose субъекта. Содержание аллергии в события не пишется (AYLA-DEC-0100; бриф ред. 2, M-1). Имена событий принадлежат [[Ayla Domain Event Registry]]; там их пока нет — **предлагаются к регистрации в Domain Event Registry (KB-E, DRF-2263)** (§9.1) |
+| Scope owner | Privacy Owner + User Context Domain Owner + Safety Owner |
+| MVP status | `approved` — по AYLA-DEC-0100 (разрешение владельца) |
+| Blocking reason | Условия активации записи на 21.09.2026 выполнены частично (4 из 24, [[Ayla Memory Domain Contract]] §12.1); запись аллергий не активируется, пока не выполнены все, либо пока владелец явно не примет предел. Большая часть невыполненного — DRF-2132. Перечень выполненных и невыполненных условий — [[Ayla Memory Domain Contract]] §12.1. Сегодня извлечение аллергии в runtime выбрасывается: `ai-bot-platform:apps/persona/memory_extract.py:425-437` @`0e2c0100` (`allergy_clause_dropped`). Любая red-запись отклоняется заглушкой возраста: `apps/identity/services/memory_writer.py:66-87` |
+
+### 5.10. Регистрация runtime-типов согласия (факт, не новые scopes)
+
+> Этот подраздел фиксирует фактическое состояние runtime. **Новых scopes
+> он не создаёт.** Если решения владельца нет, строка помечена как
+> открытый вопрос. Источник:
+> `ai-bot-platform:apps/consent/models.py:63-109` @`0e2c0100`
+> (`ConsentRecord.ConsentType`, девять значений).
+
+| Runtime-тип (`ConsentType`) | Строка | Scope CSR | Категория §4 | Статус соответствия |
+|---|---|---|---|---|
+| `personal_data` | `models.py:71` | нет | — | Базовое согласие 152-ФЗ; не purpose-authorization ([[Ayla Memory Domain Contract]] §13 OD-MEM-4). Используется как гейт proactive-отправок (§5.8) |
+| `marketing` | `models.py:72` | нет | — | Рекламное согласие (38-ФЗ ст. 18), гейт PROMO-отправителей (`apps/notifications/proactive.py:176-183`). Место в Registry — открытый вопрос `CSR-OD-16` |
+| `photo_biometric` | `models.py:73` | нет | — | Открытый вопрос `CSR-OD-16` |
+| `health` | `models.py:74` | нет | `health_related_signal` («Вне MVP; запрещено») | Решение владельца (журнал главного окна §48 п. 8б): новых отдельных согласий `HEALTH` не создавать, совместимость со старыми сохранить, удаление типа — после пилота. Scope нет — открытый вопрос `CSR-OD-16` |
+| `memory_green` | `models.py:79` | нет (целевой — `preference_memory`, §5.7) | `service_preference`, `provider_preference` | Legacy / deprecated ([[Ayla Memory Domain Contract]] §13 OD-MEM-4) |
+| `memory_yellow` | `models.py:80` | нет | — | Жёлтая зона не активируется ([[Ayla Memory Domain Contract]] §12) |
+| `memory_red` | `models.py:81` | нет (кандидат — `allergy_safety_filter`, §5.9) | `allergy` | Связь с per-entry согласием `MemoryEntry.consent_at` (`apps/identity/models.py:1000-1009`) — открытый вопрос `CSR-OD-15` |
+| `food_diary_processing` | `models.py:102-105` | нет | не зарегистрированы (`CSR-OD-13`) | Гейт дневника, сканера и proactive-отправок (§5.8). Scope нет — открытый вопрос `CSR-OD-13` |
+| `personal_calculation` | `models.py:106-109` | нет | — | Данные расчёта ориентира (вес, рост, возраст, пол, активность, цель) — периметр `NutritionProfile` ([[Ayla Memory Domain Contract]] §11, OD-MEM-2). Scope нет — открытый вопрос `CSR-OD-16` |
+
+Runtime-тип согласия не является `scope_id`. Наличие активного
+`ConsentRecord` одного из этих типов **не** означает разрешения
+purpose, не зарегистрированного в §5 (§2 п. 1–3).
+
 **Однозначно про первый релиз:** для базового session-only MVP
 обязательны только два scope — `intent_understanding` и
 `provider_selection` (§10.1). `preference_memory` **не блокирует первый
@@ -493,6 +681,11 @@ scope, а storage enforcement layer (см. §6 Enforcement ownership).
 `cross_domain_personalization`, `recommendation_explanation`,
 `recommendation_measurement`) могут
 оставаться `blocked`/`proposed` без остановки запуска **MVP Phase 1**.
+
+`proactive_wellness_notification` (§5.8) и `allergy_safety_filter`
+(§5.9) не входят в гейты §10.1/§10.2. У каждого свои условия: opt-in по
+виду уведомления; для `allergy_safety_filter` — условия [[Ayla Memory Domain Contract]]
+ §12.1 и завершение DRF-2132.
 
 ## 6. Runtime authorization contract
 
@@ -516,7 +709,7 @@ scope, §5) — разные оси; запрос ссылается на `scope
 ```yaml
 scope_id: provider_selection
 scope_version: "1.0"              # версия scope (§5.2), не registry_version документа
-registry_version: "1.4"           # версия этого документа на момент запроса, информативно
+registry_version: "1.5"           # версия этого документа на момент запроса, информативно
 context_mode: session | persistent   # session — без обращения к сохранённым фактам; persistent — требует зависимый scope, см. ниже
 subject_id: "<user-id>"
 tenant_id: "<tenant-id>"
@@ -620,7 +813,7 @@ reason:
 evaluated_scopes: []                # список scope, участвовавших в decision, с индивидуальным result (см. пример выше)
 failed_scope_id: null                # заполняется при deny с reason=required_scope_not_authorized
 scope_version: "1.0"               # версия scope, на который получен ответ
-registry_version: "1.4"            # версия документа на момент decision, для аудита эволюции контракта
+registry_version: "1.5"            # версия документа на момент decision, для аудита эволюции контракта
 allowed_data_categories: []        # при decision=allow — полный список запрошенных категорий; при deny — всегда []
 decision_id: "<audit-id>"
 decision_schema_version: "1.0"     # версия схемы самого authorization response — эволюционирует отдельно от registry_version документа
@@ -744,6 +937,7 @@ gate_1_consent_privacy(candidate, intent):
 | Readiness Gate фактор (Journey) | Соответствие в этом Registry |
 |---|---|
 | `proactivity_consent_missing` | Нет активного `granted` consent для scope `proactive_recommendation` (§5.3) |
+| `proactivity_consent_missing` для уведомлений по opt-in (AYLA-DEC-0087) | Нет opt-in человека по данному виду уведомления в scope `proactive_wellness_notification` (§5.8) |
 
 Остальные suppression-факторы (`explicit_do_not_disturb`,
 `topic_cooldown_active`, `high_workload_context`, `quiet_hours`,
@@ -947,7 +1141,12 @@ MVP должен поддерживать:
 - отключение всей persistent personalization;
 - команду «Что Ayla знает обо мне»;
 - удаление выбранного memory fact;
-- команду «Забыть это».
+- команду «Забыть это»;
+- команду «Забудь аллергии» — удаляет записи `allergy` (AYLA-DEC-0100, §5.9);
+- команду «Забудь всё» — её состав определяет
+  [[AMD-001 C5 Pilot Personal Context Export-Forget Contract]]. Она
+  включает записи `allergy` и `date_of_birth` (AYLA-DEC-0100) и дневник
+  питания (AYLA-DEC-0101), см. §11.3.
 
 Точная судьба исходных backend-фактов определяется owning domain и retention
 policy. Команда удаления memory fact не должна молча удалять подтверждённую
@@ -992,6 +1191,10 @@ booking history из её source of truth.
 | `scope_version_major_updated` | MAJOR-изменение scope, старый consent переходит в `expired` |
 | `required_scope_not_authorized` | Dependent authorization scope (§6) не прошёл проверку |
 | `cross_tenant_access_denied` | Запрос отклонён по `tenant_mismatch` (§6 Edge Cases) |
+| `memory.allergy.recorded` | Запись `allergy` создана после согласия и гейта возраста (§5.9); без содержания. Предлагается к регистрации в Domain Event Registry (KB-E, DRF-2263) |
+| `memory.allergy.forgotten` | Запись `allergy` удалена («Забудь аллергии» / «Забудь всё»); без содержания. Предлагается к регистрации в Domain Event Registry (KB-E, DRF-2263) |
+| `memory.allergy.accessed` | Каждое чтение `allergy`: кто читает (`recommendations` / `scanner` либо сам субъект — показ, экспорт), purpose, время; без содержания. Предлагается к регистрации в Domain Event Registry (KB-E, DRF-2263) |
+| `memory.allergy.access_denied` | Каждый отказ в доступе к `allergy`: причина (нет согласия, возраст, чужой purpose, «забыто»); без содержания. Предлагается к регистрации в Domain Event Registry (KB-E, DRF-2263) |
 
 Это полный канонический список для authorization/consent-домена этого
 Registry — не выборка и не минимальный подмножество.
@@ -1194,9 +1397,13 @@ Composer» выше.
 Таблица выше показывает только sensitivity zone для иллюстрации оси
 классификации, не разрешение на использование.
 
-**Уточнение по зоне аллергий:** аллергии (`vegan/keto/allergies`) в
-ADR-0012 дословно отнесены к `yellow`, не `red`. Единственный
-подтверждённый пример `red` в корпусе — подтверждённая беременность.
+**Уточнение по зоне аллергий (AYLA-DEC-0100).** ADR-0012 дословно
+относит аллергии (`vegan/keto/allergies`) к `yellow`. Для аллергий это
+перекрыто решением владельца: аллергия, которую человек назвал и
+подтвердил, хранится в зоне `red` как категория `allergy` (§4) по scope
+`allergy_safety_filter` (§5.9). Для vegan/keto и прочих диетических
+признаков классификация ADR-0012 и блок `CSR-OD-4` не меняются.
+Нормативна строка `allergy` в §4 и §5.9; этот раздел только сопоставляет.
 
 Runtime-проверка: authorization layer проверяет оба измерения — если хотя
 бы одно возвращает отказ (`consent_scope` не разрешён ИЛИ zone
@@ -1261,6 +1468,24 @@ history, что «directly contradicts AMD-001 exclusion»). Any данные,
 `RedZoneAccessLog` — подтверждено ADR-0012 — при экспорте включается
 только как metadata, не raw содержимое.
 
+**Изменения по решениям владельца 2026-09-21 (ссылка, модель не
+дублируется).**
+
+- AYLA-DEC-0101: «Забудь всё» (оба пути: бот и приложение) стирает
+  дневник питания — `FoodLog`, `WaterEntry`, `SavedMeal`, `FoodScan`
+  вместе с фотографиями — в той же транзакции «всё или ничего», что и
+  цели, план и профиль питания. Выгрузка по ст. 14 несёт дневник. В
+  части дневника это снимает исключение wellness history, описанное
+  выше. Нормативная правка — в
+  [[AMD-001 C5 Pilot Personal Context Export-Forget Contract]] (отдельный
+  PR). Runtime-лист — DRF-2214.
+- AYLA-DEC-0100: записи `allergy` и `date_of_birth` входят в экспорт и
+  удаляются «Забудь всё»; `allergy` удаляется также «Забудь аллергии».
+  Это частное исключение из абзаца выше о `health_related_signal`: к
+  `allergy` исключение экспорта не применяется (§4; AYLA-DEC-0100).
+- Прочие сведения о здоровье (`health_related_signal`) — как выше, без
+  изменений.
+
 **Не ввожу новую команду** («Экспортируй мои данные») — C5 уже определяет
 операционную модель через `operation_type: export`; конкретная
 пользовательская фраза, инициирующая её, — вопрос Conversation Design, не
@@ -1268,17 +1493,31 @@ history, что «directly contradicts AMD-001 exclusion»). Any данные,
 
 ## 11.4 Integration with Minor Protection
 
-**Требование не является нормативным до синхронизации и approval
-ADR-0011.** ADR-0011 в этом проекте существует только как
-несинхронизированная mirror-заглушка (`status: planned`, содержания нет).
-Фиксируется как **открытый вопрос**, не как подтверждённое правило:
+> **Informative.** Норма — §2 п. 11 (AYLA-DEC-0100); этот раздел её не
+> создаёт, а сопоставляет.
 
-**Открытый вопрос:** если ADR-0011 (после синхронизации) определяет защиту
-несовершеннолетних через блокировку yellow/red записей независимо от
-consent, то приоритет должен быть явно зафиксирован — protection
-несовершеннолетних не может быть снята одним лишь наличием `granted`
-consent в этом Registry. Требует подтверждения после активации mirror sync
-ADR-0011, не фиксируется здесь как решение.
+**Решено владельцем (AYLA-DEC-0100), норма — §2 п. 11.** Защита
+несовершеннолетних не снимается согласием. Без статуса
+`adult_eligibility_asserted` запись `allergy` закрыта. Самодекларация
+возраста не является верификацией: в данных и текстах нет слов
+«подтверждён», «верифицирован», «проверен» (бриф ред. 2, M-1).
+
+| Статус возраста | Значение (бриф ред. 2, M-1) | Запись `allergy` |
+|---|---|---|
+| `age_unknown` | Человек дату не называл или отказался | Закрыта |
+| `age_self_declared` | Человек назвал дату рождения; возраст вычислен, но проверка 18+ для этого запроса не выполнялась. Когда отдаётся именно этот статус, а не один из двух следующих, — открытый вопрос `CSR-OD-11` | Закрыта, пока статус не `adult_eligibility_asserted` |
+| `adult_eligibility_asserted` | Из названной даты следует 18+ на момент запроса; основание — только самодекларация | Разрешена при отдельном согласии |
+| `minor_self_declared` | Из названной даты следует младше 18 | Закрыта |
+
+Источник возраста один — `date_of_birth` (§4). Существующий
+`NutritionProfile.age` (`djangoproject:nutrition/models.py:481`
+@`4dbff523`) в дату рождения не превращается; для аллергий такой
+человек — `age_unknown`, пока сам не назовёт дату (бриф ред. 2, M-1).
+
+**Что остаётся открытым.** Правило §2 п. 11 сформулировано для
+`allergy`. Распространение его на прочие yellow/red записи и
+синхронизация с ADR-0011 (заглушка `status: planned`) — прежний
+открытый вопрос, решением не закрыт.
 
 ## 12. Open decisions
 
@@ -1287,11 +1526,19 @@ ADR-0011, не фиксируется здесь как решение.
 | CSR-OD-1 | Privacy/Legal основание и retention для recommendation measurement | Analytics activation |
 | CSR-OD-2 | Допустимость proactive personalization и формулировка отдельного consent | `proactive_recommendation` |
 | CSR-OD-3 | Cross-domain consent model | `cross_domain_personalization` |
-| CSR-OD-4 | Решение по diet/religion/skin-sensitivity signals | Соответствующие data categories |
+| CSR-OD-4 | Решение по diet/religion/skin-sensitivity signals. **В части аллергий закрыт AYLA-DEC-0100 (2026-09-21)**: аллергии — `red`, категория `allergy`, scope `allergy_safety_filter` (§4, §5.9). Diet, religion и skin-sensitivity остаются открытыми | Соответствующие data categories (кроме `allergy`) |
 | CSR-OD-6 | Совместимость consent между MINOR-версиями scope | Scope version migration |
 | CSR-OD-7 | Разделить Registry на нормативное ядро (правила, scopes, authorization basis, lifecycle) + отдельный Consent Runtime Authorization Contract (request/response, errors, tenant isolation, versioning) — интеграционные разделы (§6 integration, §11) остаются informative до решения | Структура документа, не блокирует MVP-контент |
 | CSR-OD-8 | Identity/tenancy контракт для global user scope (`tenant_id=null`) | Любое использование глобальной (не tenant-scoped) памяти — сейчас `blocked` |
 | CSR-OD-9 | System owner и runtime identity для `ayla-analytics` — отдельный сервис, модуль внутри `ai-bot-platform`, или часть backend | `recommendation_measurement` |
+| CSR-OD-10 | Global user scope для памяти: `MemoryEntry` в runtime глобальна по человеку (`ai-bot-platform:apps/identity/models.py:1141-1142`, «cross-tenant by design»; `has_memory_consent` — кросс-тенантно, `apps/consent/services.py:498-529` @`0e2c0100`), а §6 Edge Cases держит `tenant_id=null` в `blocked` до `CSR-OD-8`. AYLA-DEC-0100 этого не снимает | Активация записи `allergy` (§5.9) в глобальной форме |
+| CSR-OD-11 | (а) `date_of_birth`: scope использования (кто и для какой цели получает статус возраста и возраст в годах) и доменный владелец; правило, когда отдаётся `age_self_declared` (§11.4). (б) Второй носитель полной даты рождения в боте — `identity.UserPreferences.birthday_date` (`ai-bot-platform:apps/identity/models.py:491-496` @`0e2c0100`): «Забудь всё» его сохраняет (`forget_all_sweep.py:80-88`), и текст команды это обещает (`apps/persona/memory_commands.py:71-72, 76-77`). Это конфликтует с AYLA-DEC-0100 («хранится в одном месте», §4) и AYLA-DEC-0101 («текст команды не менять»). Вопрос владельцу, здесь не решается ([[Data Inventory Matrix]] Q2, AMD-001 §14) | Гейт возраста §5.9; перевод расчёта ориентира на единый источник возраста |
+| CSR-OD-12 | (а) Как `allergy` попадает в фильтр состава на стороне каталога и в предупреждение сканера (скан выполняется в `beautygo_backend`: `djangoproject:nutrition/views.py:171` `FoodScanView`, `nutrition/services/food_scanner_router.py:87` @`4dbff523`): операция передачи `beautygo_backend` в §3 не описана. (б) Судьба каталожного входа `health_flags.allergies` / `allergies_vague` без согласия и без проверки возраста (`djangoproject:nutrition/serializers.py:503-510` @`4dbff523`): закрыть или перевести на тот же периметр (бриф ред. 2, M-1 «Privacy/safety») | `allergy_safety_filter` на стороне рекомендаций |
+| CSR-OD-13 | Регистрация в §4 категорий данных дневника питания, воды и плана. Маппинг поле → категория — [[Data Inventory Matrix]] | `proactive_wellness_notification` (allowed data); scope для `food_diary_processing` |
+| CSR-OD-14 | Форма opt-in для `proactive_wellness_notification`: consent record по §7 (с `notice_version` / `proof`) или пользовательская настройка, как в runtime (`apps/nutrition_proactive/prefs.py:20-37`); класс отправителя по 38-ФЗ (в runtime `UNCLEAR`, `apps/notifications/proactive.py:160-164, 190-192`); канонические имена событий отправки | Нормативная форма согласия и аудита уведомлений |
+| CSR-OD-15 | Per-entry согласие на `allergy` против схемы §7 (ключ `subject_id` + `tenant_id` + `scope_id`, единственный effective state); роль runtime-типа `memory_red` рядом с `MemoryEntry.consent_at` | Реализация согласия §5.9 |
+| CSR-OD-16 | Место в Registry runtime-типов `marketing`, `photo_biometric`, `health`, `personal_calculation` (§5.10) | Регистрация соответствующих purposes |
+| CSR-OD-17 | Закрытый словарь `reason_code` результата фильтра (`allergy-filter-result.schema.json`): поле обязательно, словарь не задан | Реализация фильтра §5.9 (DRF-2132) |
 
 **Примечание о дублировании ID:** `CSR-OD-4` — тот же вопрос, что `OD-1` в
 ADR-0012/Killer PRD (diet_type/skin_sensitivities/religious inference,
@@ -1315,7 +1562,7 @@ Legal ruling). Это один открытый вопрос под тремя �
   откладывать не критично.
 - **Scope inheritance** (например, `provider_selection` наследует
   категории `intent_understanding`, чтобы не дублировать список) — полезно
-  при росте количества scopes, не нужно для текущих семи. Не вводится
+  при росте количества scopes, не нужно для текущих девяти. Не вводится
   сейчас, чтобы не усложнять MVP-контракт преждевременно.
 
 ## 13. Delivery ownership
@@ -1338,6 +1585,57 @@ Legal ruling). Это один открытый вопрос под тремя �
 > нормативной частью спецификации, включая формулировки, описывающие
 > процесс ревью. Нормативно только текущее состояние §1–§10 (см. пометку
 > Normative/Informative в начале документа).
+
+### v1.5 — 2026-09-21 — Amendment: proactive-уведомления по opt-in, аллергии (red), флаги здоровья и внешняя LLM, runtime-типы согласия (AYLA-DEC-0087, -0098, -0100, -0101)
+
+- AYLA-DEC-0087: новый scope `proactive_wellness_notification` (§5.8) —
+  отчёты, вода, возврат к плану, только по opt-in человека по каждому
+  виду. MVP status `approved` по решению; категории данных —
+  `CSR-OD-13`. `proactive_recommendation` (§5.3) остаётся `blocked`,
+  `CSR-OD-2` открыт: требование user-initiated для рекомендаций услуг не
+  меняется. §6 Proactive Readiness Gate дополнен строкой для уведомлений.
+- AYLA-DEC-0100: новые категории `allergy` (red; перекрывает `yellow`
+  ADR-0012 для аллергий) и `date_of_birth` (единственный источник
+  возраста; наружу — только статус и возраст в годах) — §4, §4.1. Новый
+  scope `allergy_safety_filter` (§5.9): фильтр рекомендаций и
+  предупреждение сканера; per-entry согласие; исход `UNKNOWN` при
+  неполном составе; запрет промпта LLM, cross-domain и гарантий
+  безопасности. `CSR-OD-4` закрыт в части аллергий (§12). §2 п. 11 —
+  защита несовершеннолетних не снимается согласием, статусы возраста;
+  §11.4 переведён с открытого вопроса на ссылку на эту норму. §9.1 —
+  события `memory.allergy.recorded` / `forgotten` / `accessed` /
+  `access_denied`. §8 — «Забудь аллергии», «Забудь всё».
+- AYLA-DEC-0098: §2 п. 10 — специальные категории и производный признак
+  их наличия во внешнюю LLM не передаются; при флаге здоровья внешний
+  LLM-комментарий не вызывается.
+- AYLA-DEC-0101: §11.3 — «Забудь всё» стирает дневник питания; модель
+  export/forget не дублируется, нормативная правка — в AMD-001 (отдельный
+  PR).
+- §5.10: зарегистрированы девять фактических runtime-типов согласия
+  `ai-bot-platform` (`apps/consent/models.py:63-109` @`0e2c0100`) с
+  сопоставлением со scopes и категориями. Новых scopes там, где решения
+  нет, не введено — открытые вопросы `CSR-OD-10…16`; `CSR-OD-17` —
+  словарь `reason_code` результата фильтра.
+- §6: `registry_version` в примерах приведён к `1.5` (правило §6).
+- §11.1 — «Уточнение по зоне аллергий»; §10 — абзац о том, что §5.8 и
+  §5.9 не входят в гейты §10.1/§10.2; §12.1 — число runtime-типов
+  («девяти»).
+- По рецензии KB-D: §5.8 Purpose приведён к AYLA-DEC-0087 дословно
+  («отчёты, вода, возврат к плану»; отчёты Диетолога включены, частоты —
+  informative); MVP status §5.8 — `approved` по решению, но до
+  `CSR-OD-13` данных не открывает. §5.9 — два читателя для обработки
+  (фильтр рекомендаций, в том числе в пути `provider_selection`, и
+  сканер) плюс доступ субъекта (показ, экспорт, удаление) с журналом;
+  запрет передачи провайдеру распознавания скана; ссылки на схемы
+  `allergy-filter-result` и `age-status`. События `memory.allergy.*`
+  помечены «предлагаются к регистрации в Domain Event Registry (KB-E,
+  DRF-2263)». `CSR-OD-11` дополнен вторым носителем даты рождения
+  (`UserPreferences.birthday_date`) — вопрос владельцу. `CSR-OD-12`
+  дополнен сканером. Состояние условий активации записи аллергий — 4 из
+  24 ([[Ayla Memory Domain Contract]] §12.1).
+- Разрешение на каноническое письмо по этим решениям — владелец,
+  2026-09-21 (OWNER_DECISION_REGISTER, партия DRF-2259). Статус документа
+  не изменён (approved).
 
 ### v1.4 — 2026-08-19 — Amendment: закрытие CSR-OD-5 (owner ruling)
 
