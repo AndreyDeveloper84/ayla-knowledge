@@ -3,7 +3,7 @@ node_id: ayla.ux.recommendation-owner-review-001
 task_id: UX-REC-002
 title: Decision Package — MVP Recommendation Contract (Owner Review 001)
 type: specification
-status: review
+status: archived
 version: "0.2"
 owner: UX Architecture
 knowledge_area:
@@ -34,6 +34,20 @@ basis:
   - gaps/UX-GAP-0104.md
   - decisions/ux-owner-decisions.md (UX-OD-004)
 ---
+
+> **Архив (PROPOSED 2026-09-12 — awaiting owner approval; Final
+> Reconciliation v1.0 §6.3).** Действие 1 этого разбора (перенос правила
+> «нет displayable объяснения → не показываем» в контракт §13) выполнено в
+> контракте v0.4; остальные действия закрыты amendment A4 (Recommendation UX
+> Addendum v0.2, пакет 2 B3/B4). Документ сохраняется как отчёт, на месте —
+> чтобы не рвать ссылки из `gaps/`, `screens/` и Addendum; `status` →
+> `archived`. Содержимое ниже не менялось.
+>
+> **KB-F (DRF-2270, из PR #21, на отдельное утверждение).** Перевод в
+> архив вынесен владельцем в отдельное утверждение (журнал главного окна
+> CD §71 п.1, вне git; строки 7.1 / 8.1 таблицы KB-E). При отказе `status`
+> возвращается к `review`, эта пометка снимается.
+
 
 # Decision Package — MVP Recommendation Contract (Owner Review 001)
 

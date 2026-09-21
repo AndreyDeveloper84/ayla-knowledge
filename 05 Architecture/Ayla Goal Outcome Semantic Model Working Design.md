@@ -72,6 +72,16 @@ related:
 > NBA-семейства до пилота не включаются (решение владельца 21.09, журнал
 > главного окна CD §71 п.2, вне git). Текст ниже не менялся.
 >
+> **KB-F (2026-09-22, DRF-2270; из PR #21, на отдельное утверждение).**
+> Если владелец утвердит KB-F, в [[Ayla MVP Recommendation Contract]] v0.6
+> дополнительно перенесены: WD §20 D-1 целиком (этап Semantic
+> Resolution), D-3 и D-10 (`SemanticResolutionResult` с `outcomes[]` и
+> `resolution_status`, без `semantic_readiness ⇒ ≥ 1` и без
+> `DesiredOutcome` — AYLA-DEC-0094), D-6 (режимы `SKIP / CONFIRM_ONE /
+> CHOOSE_MANY / ASK_CONTEXT`, коды C01, C02, C04, C05; «C03 = адаптивный
+> DecisionReadiness flow» — нет, AYLA-DEC-0097), D-7 (`action_type` →
+> вариант исполнения). D-8 по-прежнему не закрыт (CD §71 п.2).
+>
 > Документ фиксирует архитектурный checkpoint по семантике Goal / Outcome /
 > Recommendation перед проектированием Goal/Outcome Taxonomy и подготовкой
 > amendment к [[Ayla MVP Recommendation Contract]].
@@ -2209,6 +2219,13 @@ Goal/Outcome Semantic Taxonomy Design
   авторитетом.
 
 ### Change Log
+
+#### KB-F 2026-09-22 (без новой редакции текста; из PR #21, на отдельное утверждение)
+
+- в шапку добавлен перечень дельт WD §20, которые KB-F (DRF-2270)
+  переносит в [[Ayla MVP Recommendation Contract]] v0.6; версия, статус и
+  текст §1–§23 не изменены. Фраза PR #21 «D-8 закрыт B9» не переносится
+  (CD §71 п.2).
 
 #### Заметка 2026-09-21 (без новой редакции текста)
 
