@@ -1,6 +1,6 @@
 ---
 artifact: ux-owner-decisions
-version: "0.4"
+version: "0.5"
 status: approved
 date: 2026-07-29
 task_id: UX-SYNC-001
@@ -25,7 +25,7 @@ data_categories:
 security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
-updated: 2026-08-02
+updated: 2026-09-21
 review_cycle: monthly
 ---
 
@@ -248,7 +248,63 @@ decision:
     - proactive recommendations
 ```
 
+> **2026-09-21:** заменено решением **UX-OD-006** (ниже) по `AYLA-DEC-0087`. Текст и статус UX-OD-005 не менялись.
+
+## UX-OD-006 — client_home_h01_per_mockup_and_five_tab_navigation
+
+```yaml
+decision_id: UX-OD-006
+title: client_home_h01_per_mockup_and_five_tab_navigation
+status: accepted
+date: 2026-09-20
+registered: 2026-09-21
+owner: Product Owner
+replaces: [UX-OD-005]
+affected_screens: [SCR-CUST-010, SCR-CUST-001 (Mini App entry)]
+decision:
+  mini_app_home: >-
+    Главный экран клиента H01 — по макету DRF-1321 v1.2 (UX FREEZE
+    2026-08-25) с исключениями ниже: карточка цели с «Продолжить сегодняшний
+    план» (цель необязательна — без цели карточки нет), «План на сегодня»,
+    карточка ближайшей записи, быстрые действия (в том числе «стакан воды»),
+    «Продолжить разговор с Ayla» с последней темой, одно согласие вместо двух.
+  bottom_navigation: >-
+    Главная · План · Дневник · Записи · Профиль. «Услуги» уходят из нижней
+    панели в каталог.
+  excluded:
+    - вес и изменение веса («−2,4 кг»)
+    - проценты и графики прогресса результата (прогресс — только «N из M»)
+    - «Самочувствие» и активность в минутах (новые данные о человеке —
+      отдельное продуктовое решение)
+  included_on_data:
+    - цена в карточке записи — только если каталог отдаёт цену; нет цены —
+      нет строки
+    - срок цели — только если человек его указал; без напоминаний и процентов
+      времени
+constraints:
+  - цель необязательна (AYLA-DEC-0087): отсутствие цели не прячет план,
+    дневник, воду и записи
+  - Plan Lite без веса (AYLA-DEC-0088)
+  - proactive recommendations услуг по-прежнему не показываются; proactive-
+    уведомления по opt-in — отдельно (AYLA-DEC-0087)
+traceability:
+  - AYLA-DEC-0087 (K-1) — замена UX-OD-005
+  - AYLA-DEC-0088 (Plan Lite без веса)
+  - решение владельца 2026-09-20 по главному экрану клиента — журнал главного
+    окна `docs/CURRENT_DECISIONS_2026-09-16.md` §55 (рабочее дерево Ayla, вне
+    git); runtime-листы DRF-2144, DRF-2172, DRF-2173
+```
+
 ## Change Log
+
+### v0.5 (2026-09-21) — UX-OD-006 заменяет UX-OD-005 (DRF-2260)
+
+- Добавлено **UX-OD-006**: главный экран клиента H01 по макету DRF-1321
+  v1.2 и нижняя панель «Главная · План · Дневник · Записи · Профиль»
+  (решение владельца 2026-09-20), зарегистрировано по `AYLA-DEC-0087`.
+- UX-OD-005 заменено UX-OD-006: текст и статус UX-OD-005 не менялись,
+  добавлена пометка о замене.
+- UX-OD-001…004 не затронуты.
 
 ### v0.4 (2026-08-02) — Cancellation scope reconciliation
 
