@@ -4,7 +4,7 @@ title: Ayla Decision Log
 type: decision-log
 status: review
 activation_status: pending-infrastructure
-version: "1.12"
+version: "1.13"
 owner: Founder / Product Architecture
 priority: P0
 knowledge_area:
@@ -17,7 +17,7 @@ system_owner:
   - shared
 source_repository: ayla-knowledge
 created: 2026-07-18
-updated: 2026-08-20
+updated: 2026-09-21
 source_kind: canonical
 classification: internal
 data_sensitivity: none
@@ -1617,7 +1617,33 @@ KM-IM-1 от 2026-07-27, зарегистрирован 2026-07-28)
   `beautygo_backend` (UserPersonalContext → read model),
   `ayla-ai-core` (только ContextEnvelope/model_transfer).
 
+### Индекс: решения, полная запись которых ведётся в OWNER_DECISION_REGISTER
+
+По решению владельца 2026-09-21: полная запись — только в `00 Foundation/Canon Governance/OWNER_DECISION_REGISTER.md` (единственный источник истины); здесь — одна индексная строка на решение, без текста решения.
+
+| DEC | Название | Дата | Статус | Полная запись |
+|---|---|---|---|---|
+| AYLA-DEC-0087 | Goal необязательна; состав продукта; волна поправок KB; частичная замена Reset Roadmap (K-1) | 2026-09-21 | DECIDED | [[OWNER_DECISION_REGISTER]] — `AYLA-DEC-0087` |
+| AYLA-DEC-0088 | Plan Lite без веса (регистрация решения 2026-09-18) | 2026-09-18 | DECIDED | [[OWNER_DECISION_REGISTER]] — `AYLA-DEC-0088` |
+| AYLA-DEC-0089 | Таблица «цель → план по умолчанию» (регистрация решения 2026-09-19) | 2026-09-19 | DECIDED | [[OWNER_DECISION_REGISTER]] — `AYLA-DEC-0089` |
+| AYLA-DEC-0090 | Смена цели при активном плане (G-1) | 2026-09-21 | DECIDED | [[OWNER_DECISION_REGISTER]] — `AYLA-DEC-0090` |
+| AYLA-DEC-0091 | План без цели (P-1) | 2026-09-21 | DECIDED | [[OWNER_DECISION_REGISTER]] — `AYLA-DEC-0091` |
+| AYLA-DEC-0092 | Провенанс действия плана и одна актуальная версия (P-2) | 2026-09-21 | DECIDED | [[OWNER_DECISION_REGISTER]] — `AYLA-DEC-0092` |
+| AYLA-DEC-0093 | PLAN_CADENCE и запрет курсов из поведения (P-3) | 2026-09-21 | DECIDED | [[OWNER_DECISION_REGISTER]] — `AYLA-DEC-0093` |
+| AYLA-DEC-0094 | Desired Outcome не активируется в первом релизе (D-1) | 2026-09-21 | DECIDED | [[OWNER_DECISION_REGISTER]] — `AYLA-DEC-0094` |
+| AYLA-DEC-0095 | Завершение дня дневника и исправление закрытого дня (DY-1) | 2026-09-21 | DECIDED | [[OWNER_DECISION_REGISTER]] — `AYLA-DEC-0095` |
+| AYLA-DEC-0096 | Порядок safety и consent (N-1) | 2026-09-21 | DECIDED | [[OWNER_DECISION_REGISTER]] — `AYLA-DEC-0096` |
+| AYLA-DEC-0097 | Минимальный детерминированный Decision Engine до пилота (N-2) | 2026-09-21 | DECIDED | [[OWNER_DECISION_REGISTER]] — `AYLA-DEC-0097` |
+| AYLA-DEC-0098 | Флаги здоровья не передаются во внешнюю LLM (DT-1) | 2026-09-21 | DECIDED | [[OWNER_DECISION_REGISTER]] — `AYLA-DEC-0098` |
+| AYLA-DEC-0099 | Размер стакана — настраиваемая UI-механика (W-1) | 2026-09-21 | DECIDED | [[OWNER_DECISION_REGISTER]] — `AYLA-DEC-0099` |
+| AYLA-DEC-0100 | Аллергии — красная зона; возраст — самодекларация; фильтр с UNKNOWN (M-1) | 2026-09-21 | DECIDED | [[OWNER_DECISION_REGISTER]] — `AYLA-DEC-0100` |
+| AYLA-DEC-0101 | «Забудь всё» стирает дневник питания (регистрация решения 2026-09-21) | 2026-09-21 | DECIDED | [[OWNER_DECISION_REGISTER]] — `AYLA-DEC-0101` |
+
 ## Change Log
+
+### v1.13 — 2026-09-21
+
+- Добавлен индекс «решения, полная запись которых ведётся в OWNER_DECISION_REGISTER»: AYLA-DEC-0087…0101 (пакет «Цель → План → Дневник → Диетолог», DRF-2259). Полные записи — только в OWNER_DECISION_REGISTER по решению владельца 2026-09-21; текст решений сюда не дублируется.
 
 ### v1.12 — 2026-08-20
 
