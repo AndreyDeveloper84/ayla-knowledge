@@ -1,0 +1,8 @@
+{
+  "contract_version": "1.0",
+  "consumer": "recommendations",
+  "subject_ref": "subj_ref_7f3a",
+  "evaluated_at": "2026-09-21T12:00:00+03:00",
+  "result": "SAFE",
+  "reason_code": "composition_complete_no_match"
+}

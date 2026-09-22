@@ -1,0 +1,11 @@
+{
+  "contract_version": "1.0",
+  "consumer": "recommendations",
+  "subject_ref": "subj_ref_7f3a",
+  "evaluated_at": "2026-09-21T12:00:00+03:00",
+  "result": "NO_CONFLICT_FOUND",
+  "reason_code": "composition_complete_no_match",
+  "matched_allergen_refs": [
+    "mem_ref_01"
+  ]
+}

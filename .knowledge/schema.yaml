@@ -5,6 +5,7 @@ schema_changes:
   "1.15":
     - "register JSON Schema machine-readable contracts of stage C (plan-action, diary-day, decision-outcome; DRF-2261, AYLA-DEC-0092/0095/0097) with shared validator scripts/validate_contract_schemas.py"
     - "planning-rules-registry: PLAN_CADENCE kind and plan_template subject (AYLA-DEC-0093); registry major 1.0"
+    - "register allergy-filter-result and age-status JSON Schemas (DRF-2262, AYLA-DEC-0100)"
   "1.14":
     - "register document types `standard`, `map`, `research` (non-canonical research layer)"
     - "add `engineering-process` to the concerns vocabulary"
@@ -590,3 +591,19 @@ machine_readable_contracts:
     version_field: contract_version
     version: "1.0"
     contract: "05 Architecture/Ayla Decision Policy Contract.md"
+  allergy-filter-result:
+    format: json-schema
+    path: "03 AI System/Contracts/allergy-filter-result.schema.json"
+    fixtures: "tests/fixtures/allergy-filter-result"
+    validator: "scripts/validate_contract_schemas.py"
+    version_field: contract_version
+    version: "1.0"
+    contract: "06 Safety and Governance/Consent Scope Registry.md"
+  age-status:
+    format: json-schema
+    path: "03 AI System/Contracts/age-status.schema.json"
+    fixtures: "tests/fixtures/age-status"
+    validator: "scripts/validate_contract_schemas.py"
+    version_field: contract_version
+    version: "1.0"
+    contract: "06 Safety and Governance/Consent Scope Registry.md"

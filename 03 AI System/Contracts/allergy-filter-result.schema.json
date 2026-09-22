@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ayla.local/schemas/allergy-filter-result.schema.json",
+  "title": "Ayla Allergy Filter Result",
+  "description": "Результат локального аллергического фильтра (AYLA-DEC-0100, M-1). Три исхода: CONFLICT — в известном составе найден аллерген человека; NO_CONFLICT_FOUND — состав известен полностью, аллерген не найден; UNKNOWN — состав неизвестен или неполон, или распознавание неуверенно. Запрет гарантий: схема не содержит и не может содержать полей вида safe / is_safe / allergen_free — это держит additionalProperties: false; NO_CONFLICT_FOUND не является утверждением о безопасности. Потребители — только рекомендации (фильтр состава) и сканер (предупреждение). Содержание аллергии в результат не пишется: только opaque-ссылки на записи.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "result",
+    "consumer",
+    "subject_ref",
+    "evaluated_at",
+    "reason_code"
+  ],
+  "properties": {
+    "contract_version": {
+      "description": "Версия контракта результата фильтра. Потребитель отвергает неизвестную major; совместимая minor проходит.",
+      "type": "string",
+      "pattern": "^1\\.[0-9]+$"
+    },
+    "result": {
+      "description": "Трёхзначный исход фильтра (AYLA-DEC-0100). Значения «безопасно» нет по построению.",
+      "type": "string",
+      "enum": ["CONFLICT", "NO_CONFLICT_FOUND", "UNKNOWN"]
+    },
+    "consumer": {
+      "description": "Кто запросил фильтр. Закрытый список читателей аллергий (AYLA-DEC-0100): рекомендации и сканер.",
+      "type": "string",
+      "enum": ["recommendations", "scanner"]
+    },
+    "subject_ref": {
+      "description": "Opaque-ссылка на субъекта; не телефон, не имя, не внешний id канала.",
+      "type": "string",
+      "minLength": 1
+    },
+    "evaluated_at": {
+      "description": "Момент расчёта результата.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "reason_code": {
+      "description": "Машинный код причины исхода; закрытый словарь кодов — вне этой схемы (открытый вопрос).",
+      "type": "string",
+      "minLength": 1
+    },
+    "matched_allergen_refs": {
+      "description": "Opaque-ссылки на записи аллергии человека, совпавшие с составом. Обязателен и непуст при CONFLICT, запрещён при других исходах. Формулировка аллергии сюда не пишется.",
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "unknown_reason": {
+      "description": "Почему исход UNKNOWN. Обязателен при UNKNOWN, запрещён при других исходах.",
+      "type": "string",
+      "enum": ["composition_unknown", "composition_incomplete", "recognition_uncertain"]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "result": { "const": "CONFLICT" } },
+        "required": ["result"]
+      },
+      "then": { "required": ["matched_allergen_refs"] },
+      "else": { "not": { "required": ["matched_allergen_refs"] } }
+    },
+    {
+      "if": {
+        "properties": { "result": { "const": "UNKNOWN" } },
+        "required": ["result"]
+      },
+      "then": { "required": ["unknown_reason"] },
+      "else": { "not": { "required": ["unknown_reason"] } }
+    }
+  ]
+}
