@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ayla.local/schemas/plan-action.schema.json",
+  "title": "Ayla Plan Action Version",
+  "description": "Machine-readable appendix к Ayla Personal Plan Contract v0.1 (review / proposed / candidate). Одна неизменяемая версия действия плана Plan Lite (AYLA-DEC-0088, AYLA-DEC-0092). Изменение действия создаёт новую версию со ссылкой supersedes_action_id; удаление — версия со status=removed. В расчётах участвует только версия со status=active (AYLA-DEC-0092, AYLA-DEC-0097). contract_version этой схемы: major 1 (шаблон ^1\\.[0-9]+$). Поля категории для book_service НЕТ: в каталоге refs/prm/dev@4dbff523 категория у действия не хранится (wellness/models.py:489-490) — носитель категории, выбранной человеком (AYLA-DEC-0091), открытый вопрос контракта. Время действия (CD §63) — открытый вопрос, поля нет.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "action_id",
+    "plan_id",
+    "action_type",
+    "cadence",
+    "target_count",
+    "status",
+    "source",
+    "source_ref",
+    "source_version",
+    "changed_by",
+    "changed_at",
+    "reason_code",
+    "supersedes_action_id"
+  ],
+  "properties": {
+    "contract_version": {
+      "description": "Версия контракта схемы. Шаблон ^1\\.[0-9]+$: принимается любая minor major-версии 1. Потребитель отвергает неизвестную major и не интерпретирует документ по ближайшей известной (ТЗ §10, contract test «unknown major rejection»).",
+      "type": "string",
+      "pattern": "^1\\.[0-9]+$"
+    },
+    "action_id": {
+      "description": "Идентификатор ЭТОЙ версии действия. Версии неизменяемы (AYLA-DEC-0092).",
+      "type": "string",
+      "format": "uuid"
+    },
+    "plan_id": {
+      "description": "PersonalPlan, которому принадлежит версия (wellness/models.py:93).",
+      "type": "string",
+      "format": "uuid"
+    },
+    "action_type": {
+      "description": "Курируемый ключ обязательства; три типа Plan Lite (AYLA-DEC-0088; wellness/models.py:406-412). Расширение — только решением владельца.",
+      "type": "string",
+      "enum": ["book_service", "log_food", "log_water"]
+    },
+    "cadence": {
+      "description": "Организационная регулярность (PLAN_CADENCE, AYLA-DEC-0093); не курс процедур и не медицинское основание (wellness/models.py:414-419).",
+      "type": "string",
+      "enum": ["per_day", "per_week", "per_2_weeks"]
+    },
+    "target_count": {
+      "description": "Сколько раз за ведро каденса; пределы MAX_TARGET_COUNT=14 (wellness/plan_lite.py:58, :125).",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 14
+    },
+    "status": {
+      "description": "active — единственная актуальная версия действия; superseded — заменена новой версией; removed — действие удалено человеком/специалистом (версия-удаление, не стирание). AYLA-DEC-0092.",
+      "type": "string",
+      "enum": ["active", "superseded", "removed"]
+    },
+    "source": {
+      "description": "Источник версии действия (AYLA-DEC-0092). В плане без цели у каждого действия source=user_selected (AYLA-DEC-0091) — условие уровня плана, в этой схеме не выражается.",
+      "type": "string",
+      "enum": ["template", "user_selected", "user_edited", "specialist", "ayla_proposal_accepted"]
+    },
+    "source_ref": {
+      "description": "Ссылка на источник (ключ шаблона или предложения), null — источника-артефакта нет (например, user_selected). У user_edited — ссылка на исходный шаблон, если правлена строка шаблона, иначе null (правило текста контракта; схемой не проверяется). Формат ссылки для specialist и ayla_proposal_accepted не утверждён — открытый вопрос контракта.",
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "source_version": {
+      "description": "Версия источника; для template — PlanTemplate.version (wellness/models.py:516, целое ≥ 1). null — версии нет.",
+      "type": ["integer", "null"],
+      "minimum": 1
+    },
+    "changed_by": {
+      "description": "Кто создал эту версию (AYLA-DEC-0092).",
+      "type": "string",
+      "enum": ["user", "specialist", "system"]
+    },
+    "changed_at": {
+      "description": "Когда создана эта версия (серверное время, RFC 3339).",
+      "type": "string",
+      "format": "date-time"
+    },
+    "reason_code": {
+      "description": "Причина версии — закрытый список (AYLA-DEC-0092).",
+      "type": "string",
+      "enum": ["initial", "user_edit", "goal_changed", "plan_rebuilt", "action_removed", "specialist_change"]
+    },
+    "supersedes_action_id": {
+      "description": "action_id заменённой версии; null только у первой версии (reason_code=initial).",
+      "type": ["string", "null"],
+      "format": "uuid"
+    }
+  },
+  "allOf": [
+    {
+      "description": "Первая версия действия ничего не заменяет.",
+      "if": {
+        "properties": { "reason_code": { "const": "initial" } },
+        "required": ["reason_code"]
+      },
+      "then": {
+        "properties": { "supersedes_action_id": { "type": "null" } }
+      },
+      "else": {
+        "properties": { "supersedes_action_id": { "type": "string", "format": "uuid" } }
+      }
+    },
+    {
+      "description": "Версия из шаблона несёт ссылку и версию шаблона (AYLA-DEC-0092 «ссылка и версия источника»; AYLA-DEC-0093 «источник — решение §51 и версия шаблона»).",
+      "if": {
+        "properties": { "source": { "const": "template" } },
+        "required": ["source"]
+      },
+      "then": {
+        "properties": {
+          "source_ref": { "type": "string", "minLength": 1 },
+          "source_version": { "type": "integer", "minimum": 1 }
+        }
+      }
+    }
+  ]
+}

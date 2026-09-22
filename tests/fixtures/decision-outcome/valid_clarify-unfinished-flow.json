@@ -1,0 +1,19 @@
+{
+  "contract_version": "1.0",
+  "decision_outcome": "CLARIFY",
+  "reason_code": "insufficient_context_question",
+  "evidence_refs": [
+    {
+      "kind": "unfinished_flow",
+      "ref": "example-flow-1"
+    }
+  ],
+  "provenance": {
+    "policy": "ayla-decision-policy",
+    "step": "unfinished_flow"
+  },
+  "blocked_capabilities": [],
+  "calculated_at": "2026-09-21T09:00:00+03:00",
+  "policy_version": "example-policy-v1",
+  "clarify_question_ref": "example-question-1"
+}

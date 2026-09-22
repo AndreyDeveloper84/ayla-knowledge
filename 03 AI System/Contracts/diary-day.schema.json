@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ayla.local/schemas/diary-day.schema.json",
+  "title": "Ayla Diary Day",
+  "description": "Machine-readable appendix к Ayla Diary and Water Contract v0.1 (review / proposed / candidate). Внешнее представление дня дневника (DiaryDay) по AYLA-DEC-0095. contract_version: major 1 (шаблон ^1\\.[0-9]+$).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "user_ref",
+    "local_date",
+    "timezone",
+    "timezone_source",
+    "closed_at",
+    "closed_by",
+    "corrected_at",
+    "assessment",
+    "contract_version"
+  ],
+  "properties": {
+    "user_ref": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Непрозрачная ссылка на человека. Не несёт ПДн и не разбирается потребителем."
+    },
+    "local_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Локальная календарная дата дня по поясу человека (AYLA-DEC-0095)."
+    },
+    "timezone": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z][A-Za-z0-9_+-]*(/[A-Za-z0-9_+-]+)*$",
+      "description": "IANA-имя пояса, по которому определена local_date (например, Europe/Moscow)."
+    },
+    "timezone_source": {
+      "type": "string",
+      "enum": ["user_profile", "tenant", "default_moscow"],
+      "description": "Откуда взят пояс: профиль человека, салон или умолчание Europe/Moscow (AYLA-DEC-0095; инв. 6 ТЗ — подстановка видна)."
+    },
+    "closed_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Момент завершения дня; null — день открыт."
+    },
+    "closed_by": {
+      "type": ["string", "null"],
+      "enum": ["user", "auto", null],
+      "description": "Кто завершил день: кнопка «Завершить день» (user) или автозакрытие в 04:00 (auto); null — день открыт."
+    },
+    "corrected_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Последнее исправление или удаление записи в завершённом дне; null — не исправлялся."
+    },
+    "assessment": {
+      "type": "string",
+      "enum": ["not_assessed", "assessed"],
+      "description": "Производное: оценка дня допустима только у завершённого дня при действующем ориентире (инв. 14–15 ТЗ)."
+    },
+    "contract_version": {
+      "type": "string",
+      "pattern": "^1\\.[0-9]+$",
+      "description": "Шаблон ^1\\.[0-9]+$: принимается любая minor major-версии 1. Потребитель отвергает неизвестную major и не интерпретирует документ по ближайшей известной (ТЗ §10, contract test «unknown major rejection»)."
+    }
+  },
+  "allOf": [
+    {
+      "description": "Открытый день: нет способа завершения, нет оценки, нет исправления (AYLA-DEC-0095). Иначе — способ завершения обязателен.",
+      "if": {
+        "properties": { "closed_at": { "type": "null" } },
+        "required": ["closed_at"]
+      },
+      "then": {
+        "properties": {
+          "closed_by": { "const": null },
+          "assessment": { "const": "not_assessed" },
+          "corrected_at": { "const": null }
+        }
+      },
+      "else": {
+        "properties": {
+          "closed_by": { "enum": ["user", "auto"] }
+        }
+      }
+    }
+  ]
+}

@@ -4,7 +4,7 @@ title: Ayla Domain Capability Registry
 type: specification
 status: draft
 decision_status: proposed
-version: "1.2"
+version: "1.3"
 owner: Product Architecture
 priority: P0
 knowledge_area:
@@ -27,7 +27,7 @@ security_sensitivity: low
 ai_indexing: allowed
 export_policy: full
 created: 2026-07-27
-updated: 2026-08-17
+updated: 2026-09-21
 review_cycle: before-major-change
 implements:
   - "[[Ayla Constitution]]"
@@ -1724,6 +1724,321 @@ open_questions:
   - "Какая cross-repository policy регулирует breaking changes (см. §11)."
 ```
 
+### 6.28. CAP-028 — Goal Context Management
+
+```yaml
+capability_id: CAP-028
+canonical_name: Goal Context Management
+name: Goal Context Management
+status: identified
+classification: core
+characteristics: []
+confidence: medium
+evidence_status: partial
+business_purpose: держать цель человека как необязательный сквозной контекст: дословная формулировка, курируемый ключ только по выбору человека, жизненный цикл цели.
+business_outcome: человек может назвать цель своими словами и сменить её; отсутствие цели ничего не блокирует.
+owned_concepts:
+  - Goal (ClientGoal)
+  - Goal Text (verbatim)
+  - Goal Key (curated)
+  - Goal State
+non_owned_concepts:
+  - Desired Outcome (обездвижен, AYLA-DEC-0094)
+  - Personal Plan (CAP-029)
+authoritative_responsibility: цель человека и её состояние.
+key_invariants:
+  - Ayla не выдумывает Goal и связь Intent → Goal.
+  - Ключ цели ставит только человек (выбор).
+  - Отсутствие цели не блокирует дневник, воду, вопрос, запись и явно выбранное действие.
+  - Смена цели не меняет активный план молча (AYLA-DEC-0090).
+upstream_capabilities:
+  - CAP-003
+downstream_capabilities:
+  - CAP-029
+  - CAP-004
+candidate_contexts:
+  - User Context
+mvp_scope: in
+introduced_by: {decision: AYLA-DEC-0087}
+evidence:
+  - source: "[[OWNER_DECISION_REGISTER]]"
+    section: "AYLA-DEC-0087"
+    claim: "Решение владельца 2026-09-21 (пакет «Цель → План → Дневник → Диетолог»)."
+  - source: "[[Ayla Goal and Desired Outcome Contract]]"
+    section: "Назначение; Инварианты"
+    claim: "Контракт этапа C (candidate); runtime сверен с кодом в разделе «Граница API / runtime» контракта."
+open_questions: []
+```
+
+### 6.29. CAP-029 — Personal Plan (Plan Lite)
+
+```yaml
+capability_id: CAP-029
+canonical_name: Personal Plan (Plan Lite)
+name: Personal Plan (Plan Lite)
+status: identified
+classification: core
+characteristics: []
+confidence: medium
+evidence_status: partial
+business_purpose: план из 1–3 действий (записаться на услугу / дневник N дней / вода N раз), создаваемый только подтверждением человека; прогресс — «N из M».
+business_outcome: у человека есть понятный план и видимое выполнение без наблюдений тела.
+owned_concepts:
+  - Personal Plan
+  - Plan Action (versioned)
+  - Plan Template (carrier)
+  - Plan Cadence
+non_owned_concepts:
+  - Goal (CAP-028)
+  - Appointment (CAP-011)
+  - Food/Water facts (CAP-030, CAP-031)
+authoritative_responsibility: план, версии его действий и их провенанс.
+key_invariants:
+  - LLM не создаёт и не меняет план; предложение ≠ подтверждение; подтверждение — только кнопкой.
+  - Одна актуальная версия действия участвует в расчётах (AYLA-DEC-0092).
+  - PLAN_CADENCE — только организационная регулярность, не курс процедур (AYLA-DEC-0093).
+  - Без цели Ayla план не предлагает; план без цели собирает только человек (AYLA-DEC-0091).
+upstream_capabilities:
+  - CAP-028
+downstream_capabilities:
+  - CAP-004
+  - CAP-021
+candidate_contexts:
+  - Wellness
+mvp_scope: in
+introduced_by: {decision: AYLA-DEC-0088}
+evidence:
+  - source: "[[OWNER_DECISION_REGISTER]]"
+    section: "AYLA-DEC-0088"
+    claim: "Решение владельца 2026-09-21 (пакет «Цель → План → Дневник → Диетолог»)."
+  - source: "[[Ayla Personal Plan Contract]]"
+    section: "Назначение; Инварианты"
+    claim: "Контракт этапа C (candidate); runtime сверен с кодом в разделе «Граница API / runtime» контракта."
+open_questions: []
+```
+
+### 6.30. CAP-030 — Food Diary
+
+```yaml
+capability_id: CAP-030
+canonical_name: Food Diary
+name: Food Diary
+status: identified
+classification: core
+characteristics: []
+confidence: medium
+evidence_status: partial
+business_purpose: записи еды с происхождением (текст / фото / исправлено человеком), день дневника с завершением, правка и удаление с пересчётом.
+business_outcome: человек видит проверяемые факты питания; оценка дня — только по завершённому дню.
+owned_concepts:
+  - Food Log Entry
+  - Entry Origin
+  - Diary Day (closed / corrected)
+non_owned_concepts:
+  - Nutrition Target (CAP-032)
+  - Food Recognition (CAP-033)
+authoritative_responsibility: записи дневника и состояние дня дневника.
+key_invariants:
+  - Распознанное не пишется без подтверждения человеком.
+  - Оценка дня — только по завершённому дню (AYLA-DEC-0095).
+  - Исправление или удаление пересчитывает производные итоги.
+  - «Забудь всё» стирает дневник (AYLA-DEC-0101).
+upstream_capabilities:
+  - CAP-002
+  - CAP-033
+downstream_capabilities:
+  - CAP-029
+  - CAP-034
+candidate_contexts:
+  - Nutrition
+mvp_scope: in
+introduced_by: {decision: AYLA-DEC-0095}
+evidence:
+  - source: "[[OWNER_DECISION_REGISTER]]"
+    section: "AYLA-DEC-0095"
+    claim: "Решение владельца 2026-09-21 (пакет «Цель → План → Дневник → Диетолог»)."
+  - source: "[[Ayla Diary and Water Contract]]"
+    section: "Назначение; Инварианты"
+    claim: "Контракт этапа C (candidate); runtime сверен с кодом в разделе «Граница API / runtime» контракта."
+open_questions: []
+```
+
+### 6.31. CAP-031 — Water Tracking
+
+```yaml
+capability_id: CAP-031
+canonical_name: Water Tracking
+name: Water Tracking
+status: identified
+classification: supporting
+characteristics: []
+confidence: medium
+evidence_status: partial
+business_purpose: учёт воды в миллилитрах; стакан — настраиваемая UI-механика.
+business_outcome: человек отмечает воду удобно, данные хранятся точно.
+owned_concepts:
+  - Water Entry (ml)
+  - Glass Size (UI preference)
+non_owned_concepts:
+  - Fluids Target (CAP-032)
+authoritative_responsibility: записи воды.
+key_invariants:
+  - Вода хранится в миллилитрах.
+  - Размер стакана — не норма; новый размер — только для будущих записей (AYLA-DEC-0099).
+  - Норма воды не выдумывается.
+upstream_capabilities:
+  - CAP-002
+downstream_capabilities:
+  - CAP-029
+  - CAP-034
+candidate_contexts:
+  - Nutrition
+mvp_scope: in
+introduced_by: {decision: AYLA-DEC-0099}
+evidence:
+  - source: "[[OWNER_DECISION_REGISTER]]"
+    section: "AYLA-DEC-0099"
+    claim: "Решение владельца 2026-09-21 (пакет «Цель → План → Дневник → Диетолог»)."
+  - source: "[[Ayla Diary and Water Contract]]"
+    section: "Назначение; Инварианты"
+    claim: "Контракт этапа C (candidate); runtime сверен с кодом в разделе «Граница API / runtime» контракта."
+open_questions: []
+```
+
+### 6.32. CAP-032 — Nutrition Target
+
+```yaml
+capability_id: CAP-032
+canonical_name: Nutrition Target
+name: Nutrition Target
+status: identified
+classification: supporting
+characteristics: []
+confidence: medium
+evidence_status: partial
+business_purpose: ориентир питания с происхождением каждого значения (рассчитан Ayla / от специалиста / нет ориентира), без выдуманных параметров.
+business_outcome: человек видит, откуда взялись цифры; ручной ориентир не теряется.
+owned_concepts:
+  - Nutrition Target
+  - Target Provenance
+  - Target Confirmation
+non_owned_concepts:
+  - Food Diary (CAP-030)
+authoritative_responsibility: действующий ориентир и его происхождение.
+key_invariants:
+  - Отсутствие входа не маскируется умолчанием.
+  - Ручной ориентир не пересчитывается и не уничтожается молча.
+  - Старый подтверждённый ориентир не исчезает до подтверждения нового.
+upstream_capabilities:
+  - CAP-002
+downstream_capabilities:
+  - CAP-030
+  - CAP-034
+candidate_contexts:
+  - Nutrition
+mvp_scope: in
+introduced_by: {decision: AYLA-DEC-0087}
+evidence:
+  - source: "[[OWNER_DECISION_REGISTER]]"
+    section: "AYLA-DEC-0087"
+    claim: "Решение владельца 2026-09-21 (пакет «Цель → План → Дневник → Диетолог»)."
+  - source: "[[Ayla Dietitian Capability Contract]]"
+    section: "Назначение; Инварианты"
+    claim: "Контракт этапа C (candidate); runtime сверен с кодом в разделе «Граница API / runtime» контракта."
+open_questions: []
+```
+
+### 6.33. CAP-033 — Food Recognition (Scanner)
+
+```yaml
+capability_id: CAP-033
+canonical_name: Food Recognition (Scanner)
+name: Food Recognition (Scanner)
+status: identified
+classification: supporting
+characteristics: []
+confidence: medium
+evidence_status: partial
+business_purpose: распознавание еды по фото с бюджетом, учётом стоимости и подтверждением человеком до записи.
+business_outcome: человек быстро вносит еду фото, не получая выдуманного результата.
+owned_concepts:
+  - Food Scan
+  - Recognition Budget
+  - Recognition Confidence
+non_owned_concepts:
+  - Food Diary (CAP-030)
+  - Allergy (Memory red zone, CAP-001)
+authoritative_responsibility: результат скана и счётчики бюджета.
+key_invariants:
+  - Скан не создаёт запись дневника без подтверждения.
+  - Неуверенное распознавание не выдаётся за факт.
+  - Аллергический фильтр: неполный состав — UNKNOWN, не «безопасно» (AYLA-DEC-0100).
+upstream_capabilities:
+  - CAP-002
+downstream_capabilities:
+  - CAP-030
+candidate_contexts:
+  - Nutrition
+mvp_scope: in
+introduced_by: {decision: AYLA-DEC-0087}
+evidence:
+  - source: "[[OWNER_DECISION_REGISTER]]"
+    section: "AYLA-DEC-0087"
+    claim: "Решение владельца 2026-09-21 (пакет «Цель → План → Дневник → Диетолог»)."
+  - source: "[[Ayla Diary and Water Contract]]"
+    section: "Назначение; Инварианты"
+    claim: "Контракт этапа C (candidate); runtime сверен с кодом в разделе «Граница API / runtime» контракта."
+open_questions: []
+```
+
+### 6.34. CAP-034 — Dietitian (Nutrition Explanation)
+
+```yaml
+capability_id: CAP-034
+canonical_name: Dietitian (Nutrition Explanation)
+name: Dietitian (Nutrition Explanation)
+status: identified
+classification: supporting
+characteristics: []
+confidence: medium
+evidence_status: partial
+business_purpose: объяснение фактов дневника и ориентира в разрешённых границах; не врач и не диетолог (Constitution Ст. XII).
+business_outcome: человек понимает свои данные без медицинских выводов и давления.
+owned_concepts:
+  - Nutrition Explanation
+  - Insufficient-Data Response
+  - Report Surface Caps
+non_owned_concepts:
+  - Nutrition Target (CAP-032)
+  - Food Diary (CAP-030)
+  - Safety Policy (CAP-014)
+authoritative_responsibility: тексты объяснений и отчётов питания; ничего не записывает в ориентир или план.
+key_invariants:
+  - Флаги здоровья и признак их наличия во внешнюю LLM не передаются; при флаге LLM-комментарий не вызывается (AYLA-DEC-0098).
+  - Оценка дня — только по завершённому дню (AYLA-DEC-0095).
+  - Предложение изменения применяется только после подтверждения человеком.
+  - Аллергии Диетолог не читает (AYLA-DEC-0100).
+upstream_capabilities:
+  - CAP-030
+  - CAP-031
+  - CAP-032
+  - CAP-014
+downstream_capabilities:
+  - CAP-021
+candidate_contexts:
+  - Nutrition
+mvp_scope: in
+introduced_by: {decision: AYLA-DEC-0098}
+evidence:
+  - source: "[[OWNER_DECISION_REGISTER]]"
+    section: "AYLA-DEC-0098"
+    claim: "Решение владельца 2026-09-21 (пакет «Цель → План → Дневник → Диетолог»)."
+  - source: "[[Ayla Dietitian Capability Contract]]"
+    section: "Назначение; Инварианты"
+    claim: "Контракт этапа C (candidate); runtime сверен с кодом в разделе «Граница API / runtime» контракта."
+open_questions: []
+```
+
 ---
 
 ## 7. Capability Dependencies
@@ -1863,6 +2178,13 @@ Reconciliation показывает, где предположительно р�
 | CAP-025 | Product Measurement and Experimentation | Measurement / Evaluation | unresolved |
 | CAP-026 | Audit and Observability | Observability / Governance | unresolved |
 | CAP-027 | Decision Governance | Knowledge Governance / Architecture Governance | unresolved |
+| CAP-028 | Goal Context Management | User Context | unresolved |
+| CAP-029 | Personal Plan (Plan Lite) | Wellness | unresolved |
+| CAP-030 | Food Diary | Nutrition | unresolved |
+| CAP-031 | Water Tracking | Nutrition | unresolved |
+| CAP-032 | Nutrition Target | Nutrition | unresolved |
+| CAP-033 | Food Recognition (Scanner) | Nutrition | unresolved |
+| CAP-034 | Dietitian (Nutrition Explanation) | Nutrition | unresolved |
 
 Примечания:
 
@@ -1905,6 +2227,13 @@ MVP scope фиксируется только там, где исходный д
 | CAP-025 | undetermined | — | — | — |
 | CAP-026 | undetermined | — | — | — |
 | CAP-027 | undetermined | — | — | — |
+| CAP-028 | in | — | — | AYLA-DEC-0087 (состав продукта — AYLA-DEC-0087) |
+| CAP-029 | in | — | — | AYLA-DEC-0088 (состав продукта — AYLA-DEC-0087) |
+| CAP-030 | in | — | — | AYLA-DEC-0095 (состав продукта — AYLA-DEC-0087) |
+| CAP-031 | in | — | — | AYLA-DEC-0099 (состав продукта — AYLA-DEC-0087) |
+| CAP-032 | in | — | — | AYLA-DEC-0087 (состав продукта — AYLA-DEC-0087) |
+| CAP-033 | in | — | — | AYLA-DEC-0087 (состав продукта — AYLA-DEC-0087) |
+| CAP-034 | in | — | — | AYLA-DEC-0098 (состав продукта — AYLA-DEC-0087) |
 
 ---
 
@@ -1941,6 +2270,13 @@ MVP scope фиксируется только там, где исходный д
 | CAP-025 | partial | medium | PV + Killer PRD ссылки из v1.0 §13.3, не верифицированы |
 | CAP-026 | partial | medium | PV + Killer PRD ссылки из v1.0 §13.3, не верифицированы |
 | CAP-027 | partial | medium | PV + Killer PRD ссылки из v1.0 §13.3, не верифицированы |
+| CAP-028 | partial | medium | решение владельца (AYLA-DEC-0087) + контракт этапа C (candidate); runtime сверен в контракте |
+| CAP-029 | partial | medium | решение владельца (AYLA-DEC-0088) + контракт этапа C (candidate); runtime сверен в контракте |
+| CAP-030 | partial | medium | решение владельца (AYLA-DEC-0095) + контракт этапа C (candidate); runtime сверен в контракте |
+| CAP-031 | partial | medium | решение владельца (AYLA-DEC-0099) + контракт этапа C (candidate); runtime сверен в контракте |
+| CAP-032 | partial | medium | решение владельца (AYLA-DEC-0087) + контракт этапа C (candidate); runtime сверен в контракте |
+| CAP-033 | partial | medium | решение владельца (AYLA-DEC-0087) + контракт этапа C (candidate); runtime сверен в контракте |
+| CAP-034 | partial | medium | решение владельца (AYLA-DEC-0098) + контракт этапа C (candidate); runtime сверен в контракте |
 
 ---
 
@@ -2016,6 +2352,11 @@ Capability-специфичные открытые вопросы реестра
 ---
 
 ## 13. Change Log
+
+### v1.3 — 2026-09-21 (DRF-2261)
+
+- Добавлены CAP-028…CAP-034 (Goal Context Management, Personal Plan (Plan Lite), Food Diary, Water Tracking, Nutrition Target, Food Recognition (Scanner), Dietitian (Nutrition Explanation)) по решениям владельца AYLA-DEC-0087…0101: `status: identified`, `mvp_scope: in`, `introduced_by` — решение владельца; evidence — запись реестра решений и контракт этапа C.
+- Строки добавлены в §8 (resolution `unresolved` — контексты не подтверждены), §9 и §10. Статус документа (draft) не меняется.
 
 ### v1.2 — 2026-07-27
 

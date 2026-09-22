@@ -1,0 +1,11 @@
+{
+  "user_ref": "usr_2b81d0c4",
+  "local_date": "2026-09-19",
+  "timezone": "Europe/Moscow",
+  "timezone_source": "fallback",
+  "closed_at": "2026-09-20T01:00:00Z",
+  "closed_by": "auto",
+  "corrected_at": null,
+  "assessment": "not_assessed",
+  "contract_version": "1.0"
+}

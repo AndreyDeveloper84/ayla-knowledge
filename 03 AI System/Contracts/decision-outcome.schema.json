@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ayla.local/schemas/decision-outcome.schema.json",
+  "title": "Ayla Decision Outcome",
+  "description": "Machine-readable appendix к Ayla Decision Policy Contract v0.1 (review / proposed / candidate). Исход минимального детерминированного выбора следующего шага (AYLA-DEC-0097, N-2) после входного пути из четырёх ступеней (AYLA-DEC-0096, N-1). Закрытый набор исходов ACT / CLARIFY / NO_ACTION / BLOCKED / HANDOFF. Модель (LLM) исход не выбирает, только формулирует выбранное. contract_version этой схемы: major 1 (шаблон ^1\\.[0-9]+$). Правило версий: additive-поле — minor; удаление, переименование поля или изменение семантики — major и change control. Потребитель обязан отвергнуть документ с неизвестной ему major-версией contract_version и не интерпретировать его по ближайшей известной (ТЗ §10, contract test «unknown major rejection»). Начальный словарь reason_code утверждён владельцем (CD §72 п.22), дорабатывается по ходу с новой policy_version. Значения provenance.step, константа provenance.policy и поля clarify_question_ref / handoff_reason — proposed (предложение контракта, ОВ-16; AYLA-DEC-0097 называет только семь полей и пять исходов). Словарь reason_code версионируется вместе с policy_version; схема проверяет только форму кода, принадлежность коду словаря проверяет потребитель по policy_version.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "decision_outcome",
+    "reason_code",
+    "evidence_refs",
+    "provenance",
+    "blocked_capabilities",
+    "calculated_at",
+    "policy_version"
+  ],
+  "properties": {
+    "contract_version": {
+      "type": "string",
+      "pattern": "^1\\.[0-9]+$",
+      "description": "Версия формы исхода, независимая от policy_version. Шаблон ^1\\.[0-9]+$: принимается любая minor major-версии 1. Потребитель отвергает неизвестную major и не интерпретирует документ по ближайшей известной (ТЗ §10, contract test «unknown major rejection»)."
+    },
+    "decision_outcome": {
+      "type": "string",
+      "enum": ["ACT", "CLARIFY", "NO_ACTION", "BLOCKED", "HANDOFF"],
+      "description": "AYLA-DEC-0097. ACT — есть допустимое полезное действие, его входы известны. CLARIFY — конкретный ответ человека способен продолжить сценарий; один вопрос; поток стоит до ответа. NO_ACTION — нет ни полезного действия, ни полезного вопроса. BLOCKED — действие запрещено согласием, safety, возрастом или выключателем; объяснение без обхода. HANDOFF — нужен человек-оператор. Недостаточность данных не приравнивается к NO_ACTION."
+    },
+    "reason_code": {
+      "type": "string",
+      "pattern": "^[a-z_]+$",
+      "description": "Начальный словарь кодов утверждён владельцем (CD §72 п.22); доработка — новой policy_version. Код причины из словаря версии policy_version. Код, отсутствующий в словаре этой версии, потребитель отвергает."
+    },
+    "evidence_refs": {
+      "type": "array",
+      "description": "Ссылки на факты, на которых основан исход (ссылки, не копии сырого текста — Конституция ст. VII «Аудит»). Для ACT — не меньше одной.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "ref"],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "pattern": "^[a-z_]+$",
+            "description": "Вид факта. Словарь видов — открытый вопрос контракта (§17); версионируется вместе с policy_version."
+          },
+          "ref": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Идентификатор факта в его источнике истины (например, id актуальной версии действия плана по AYLA-DEC-0092). Не текст сообщения и не значение персональных данных."
+          }
+        }
+      }
+    },
+    "provenance": {
+      "description": "Proposed: состав provenance (policy, step) — предложение контракта (ОВ-16), не поле DEC сверх «происхождения».",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["policy", "step"],
+      "properties": {
+        "policy": {
+          "type": "string",
+          "const": "ayla-decision-policy"
+        },
+        "step": {
+          "type": "string",
+          "enum": [
+            "safety",
+            "explicit_intent",
+            "unfinished_flow",
+            "scheduled_action",
+            "plan_next_action",
+            "plan_proposal",
+            "none"
+          ],
+          "description": "Proposed (ОВ-16). Ступень порядка AYLA-DEC-0097, давшая исход. none — ни одна ступень не дала действия или вопроса."
+        }
+      }
+    },
+    "blocked_capabilities": {
+      "type": "array",
+      "description": "Функции, недоступные на момент расчёта (согласие, safety, возраст, выключатель). Для BLOCKED — не меньше одной. Словарь имён функций — открытый вопрос контракта (§17).",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z_]+$"
+      },
+      "uniqueItems": true
+    },
+    "calculated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Момент расчёта исхода (RFC 3339, со смещением)."
+    },
+    "policy_version": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Версия правил выбора; меняется при любом изменении порядка, состава правил или словаря reason_code."
+    },
+    "clarify_question_ref": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Proposed: поле — предложение контракта (ОВ-16), не поле DEC. Ссылка на один конкретный вопрос (не его текст; текст формулирует модель). Обязателен при CLARIFY, запрещён при любом другом исходе."
+    },
+    "handoff_reason": {
+      "type": "string",
+      "pattern": "^[a-z_]+$",
+      "description": "Proposed: поле — предложение контракта (ОВ-16), не поле DEC. Причина передачи оператору. Обязателен при HANDOFF; вне HANDOFF — открытый вопрос ОВ-14 (сейчас не запрещён)."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "decision_outcome": { "const": "CLARIFY" } },
+        "required": ["decision_outcome"]
+      },
+      "then": { "required": ["clarify_question_ref"] },
+      "else": { "not": { "required": ["clarify_question_ref"] } }
+    },
+    {
+      "if": {
+        "properties": { "decision_outcome": { "const": "HANDOFF" } },
+        "required": ["decision_outcome"]
+      },
+      "then": { "required": ["handoff_reason"] }
+    },
+    {
+      "if": {
+        "properties": { "decision_outcome": { "const": "ACT" } },
+        "required": ["decision_outcome"]
+      },
+      "then": {
+        "properties": { "evidence_refs": { "minItems": 1 } }
+      }
+    },
+    {
+      "if": {
+        "properties": { "decision_outcome": { "const": "BLOCKED" } },
+        "required": ["decision_outcome"]
+      },
+      "then": {
+        "properties": { "blocked_capabilities": { "minItems": 1 } }
+      }
+    }
+  ]
+}

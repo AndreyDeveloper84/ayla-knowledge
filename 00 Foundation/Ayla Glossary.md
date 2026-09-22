@@ -4,7 +4,7 @@ title: Ayla Glossary
 type: terminology-standard
 status: review
 activation_status: pending-infrastructure
-version: "2.1"
+version: "2.2"
 owner: Product Architecture
 priority: P0
 knowledge_area:
@@ -17,7 +17,7 @@ system_owner:
   - ayla-knowledge
 source_repository: ayla-knowledge
 created: 2026-07-18
-updated: 2026-07-19
+updated: 2026-09-21
 source_kind: canonical
 classification: internal
 data_sensitivity: none
@@ -653,7 +653,84 @@ Restraint`, не инициирует действие и не предлага�
 ### No Action
 
 **Русское название:** отсутствие действия  
-**Определение:** осознанный результат при недостатке контекста, отсутствии готовности, риске или отсутствии полезного варианта.
+**Определение:** осознанный наблюдаемый результат, когда сейчас нет ни полезного действия, ни полезного вопроса.  
+**Not:** недостаточность данных сама по себе. Если конкретный ответ человека способен продолжить сценарий, результат — `CLARIFY`; если действие запрещено согласием, безопасностью, возрастом или выключателем — `BLOCKED` (см. Decision Outcome).  
+**Defined by:** `AYLA-DEC-0097`; [[Ayla Decision Policy Contract]]  
+**Status:** accepted (решение владельца 2026-09-21; контракт — candidate)  
+**Owner:** Product Architecture  
+**Изменено 2026-09-21:** прежнее определение включало «недостаток контекста» — оно противоречило `AYLA-DEC-0097` и заменено.  
+
+### Decision Outcome
+
+**Русское название:** исход выбора следующего шага  
+**Definition:** закрытый набор исходов минимального детерминированного выбора следующего шага: `ACT` — есть допустимое полезное действие; `CLARIFY` — конкретный ответ человека способен продолжить сценарий, задаётся один вопрос; `NO_ACTION` — полезного действия или вопроса сейчас нет; `BLOCKED` — действие запрещено согласием, безопасностью, возрастом или выключателем; `HANDOFF` — нужен человек-оператор.  
+**Not:** NBA-семейства (ADDRESS / SUPPORT / RECOVER / OBSERVE) — до пилота не включаются (решение владельца 2026-09-21).  
+**Defined by:** `AYLA-DEC-0097`; [[Ayla Decision Policy Contract]]; `03 AI System/Contracts/decision-outcome.schema.json`  
+**Status:** accepted (решение); схема и контракт — candidate  
+**Owner:** Product Architecture  
+
+### Plan Lite
+
+**Русское название:** персональный план (облегчённый)  
+**Definition:** план из 1–3 действий (записаться на услугу / вести дневник N дней / вода N раз), создаваемый только явным подтверждением человека; прогресс — только «N из M действий», без наблюдений тела.  
+**Not:** Plan Composer; курс процедур; прогноз результата.  
+**Defined by:** `AYLA-DEC-0088`, `AYLA-DEC-0089`, `AYLA-DEC-0091`; [[Ayla Personal Plan Contract]]  
+**Status:** accepted (решение); контракт — candidate  
+**Owner:** Product Architecture  
+**Code name:** `PersonalPlan` (каталог, `wellness`)  
+
+### Plan Action
+
+**Русское название:** действие плана  
+**Definition:** неизменяемая версия обязательства внутри плана с провенансом (источник, ссылка и версия источника, кто и когда изменил, причина, ссылка на заменённую версию). В расчётах участвует только одна актуальная версия действия; заменённые и удалённые версии — история.  
+**Defined by:** `AYLA-DEC-0092`; [[Ayla Personal Plan Contract]]; `03 AI System/Contracts/plan-action.schema.json`  
+**Status:** accepted (решение); контракт и схема — candidate  
+**Owner:** Product Architecture  
+**Code name:** `PlanAction`  
+
+### Plan Cadence
+
+**Русское название:** регулярность действия плана  
+**Definition:** подтверждённая человеком организационная регулярность действия плана (`PLAN_CADENCE` реестра правил планирования).  
+**Not:** медицинская или косметологическая польза; совместимость процедур; минимальный или максимальный интервал; обязательное число процедур (курс).  
+**Defined by:** `AYLA-DEC-0093`; `03 AI System/Contracts/planning-rules-registry.yaml`  
+**Status:** accepted  
+**Owner:** Product Owner (данные таблицы), Product Architecture (семантика)  
+
+### Diary Day
+
+**Русское название:** день дневника  
+**Definition:** локальная календарная дата человека по его поясу, к которой относятся записи дневника; завершается кнопкой «Завершить день» или автоматически в 04:00 следующих суток (момент автозакрытия, не граница принадлежности). Оценка дня — только после завершения. Исправленный завершённый день остаётся завершённым с пометкой «исправлен».  
+**Defined by:** `AYLA-DEC-0095`; [[Ayla Diary and Water Contract]]; `03 AI System/Contracts/diary-day.schema.json`  
+**Status:** accepted (решение); контракт и схема — candidate  
+**Owner:** Product Architecture  
+
+### Nutrition Target Provenance
+
+**Русское название:** происхождение ориентира питания  
+**Definition:** источник каждого значения ориентира: рассчитан Ayla по утверждённой методике, введён от специалиста, или ориентира нет. Отсутствие входа не маскируется значением по умолчанию; ручной ориентир не пересчитывается молча.  
+**Not:** норма; медицинское назначение.  
+**Defined by:** [[Ayla Dietitian Capability Contract]]; решение владельца 2026-09-21 об ориентирах (журнал главного окна `docs/CURRENT_DECISIONS_2026-09-16.md` §63, вне git)  
+**Status:** proposed  
+**Owner:** Product Architecture  
+
+### Age Status
+
+**Русское название:** статус возраста  
+**Definition:** производный признак возраста для модулей: `age_unknown`, `age_self_declared`, `adult_eligibility_asserted`, `minor_self_declared`, и возраст в полных годах. Основание — самодекларация даты рождения.  
+**Not:** юридическая верификация возраста; полная дата рождения (хранится в одном месте и наружу не отдаётся).  
+**Defined by:** `AYLA-DEC-0100`  
+**Status:** accepted (решение); схема — candidate  
+**Owner:** Product Architecture, Privacy Owner  
+
+### Allergy Filter Result
+
+**Русское название:** результат аллергического фильтра  
+**Definition:** `CONFLICT` — в известном составе найден аллерген; `NO_CONFLICT_FOUND` — состав известен полностью, аллерген не найден; `UNKNOWN` — состав неизвестен или неполон.  
+**Not:** гарантия безопасности. «Безопасно», «без аллергенов», «можно есть» по отсутствию найденного аллергена не говорится.  
+**Defined by:** `AYLA-DEC-0100`  
+**Status:** accepted (решение); схема — candidate  
+**Owner:** Product Architecture, Privacy Owner  
 
 ---
 
@@ -1462,6 +1539,12 @@ Glossary v2.1 считается утверждённым, когда:
 ---
 
 # Change Log
+
+## v2.2 — 2026-09-21 (DRF-2261)
+
+- `No Action` приведён к `AYLA-DEC-0097`: недостаточность данных — не `NO_ACTION` (исход `CLARIFY` или `BLOCKED`).
+- Добавлены термины этапа C: Decision Outcome, Plan Lite, Plan Action, Plan Cadence, Diary Day, Nutrition Target Provenance, Age Status, Allergy Filter Result — по `AYLA-DEC-0088`…`0100`.
+- Зрелость терминов: `accepted` там, где термин задан решением владельца; контракты и схемы, на которые они ссылаются, — candidate. Glossary зрелость не повышает (§1.2).
 
 ## v2.1 — 2026-07-19
 

@@ -69,7 +69,9 @@ class PlanningRulesValidatorTests(unittest.TestCase):
     def test_valid_minimal_registry_passes(self) -> None:
         self.assertEqual(validate(_valid_registry()), [])
 
-    def test_fourteenth_kind_is_rejected(self) -> None:
+    def test_fifteenth_kind_is_rejected(self) -> None:
+        # Перечень — 14 типов после AYLA-DEC-0093; пятнадцатый рантайм не заводит.
+        self.assertEqual(len(CLOSED_KINDS), 14)
         registry = _valid_registry()
         registry["kinds"] = sorted(CLOSED_KINDS) + ["MADE_UP_KIND"]
         self.assertTrue(any("kinds" in error for error in validate(registry)))
@@ -178,6 +180,99 @@ class PlanningRulesValidatorTests(unittest.TestCase):
         registry = load_registry(REGISTRY_PATH)
         clone = copy.deepcopy(registry)
         self.assertEqual(validate(clone), [])
+
+
+def _cadence_rule(**overrides: object) -> dict:
+    rule: dict = {
+        "rule_id": "PR-PLAN_CADENCE-BODY_SHAPE",
+        "kind": "PLAN_CADENCE",
+        "status": "KNOWN",
+        "value": {
+            "actions": [
+                {"action_type": "book_service", "cadence": "per_week", "target_count": 1},
+                {"action_type": "log_food", "cadence": "per_week", "target_count": 5},
+                {"action_type": "log_water", "cadence": "per_day", "target_count": 6},
+            ]
+        },
+        "unit": "plan_action_count_per_cadence",
+        "applicability": {
+            "scope": "GENERAL",
+            "subject_kind": "plan_template",
+            "subject_ids": ["body_shape"],
+            "conditions": [],
+        },
+        "provenance": {
+            "source": "ayla-knowledge:00 Foundation/Canon Governance/OWNER_DECISION_REGISTER.md:AYLA-DEC-0089",
+            "version": "0.4",
+        },
+    }
+    rule.update(overrides)
+    return rule
+
+
+class PlanCadenceTests(unittest.TestCase):
+    """AYLA-DEC-0093: PLAN_CADENCE — только организационная регулярность плана."""
+
+    def test_valid_cadence_rule_passes(self) -> None:
+        self.assertEqual(validate(_valid_registry(rules=[_cadence_rule()])), [])
+
+    def test_committed_registry_has_seven_known_cadences_and_nothing_else_known(self) -> None:
+        # Таблица §51 = 7 целей; KNOWN — только PLAN_CADENCE (курсы услуг не выдуманы).
+        rules = load_registry(REGISTRY_PATH)["rules"]
+        known = [r for r in rules if r["status"] == "KNOWN"]
+        self.assertEqual(len(known), 7)
+        self.assertTrue(all(r["kind"] == "PLAN_CADENCE" for r in known))
+        self.assertEqual(
+            sorted(r["applicability"]["subject_ids"][0] for r in known),
+            ["body_shape", "event", "new_look", "recharge", "relax", "self_care", "skin_care"],
+        )
+
+    def test_repetition_stays_intentionally_unsupported(self) -> None:
+        rules = {r["rule_id"]: r for r in load_registry(REGISTRY_PATH)["rules"]}
+        self.assertEqual(rules["PR-REPETITION-0001"]["status"], "INTENTIONALLY_UNSUPPORTED")
+        self.assertIsNone(rules["PR-REPETITION-0001"]["value"])
+
+    def test_cadence_on_canonical_service_is_rejected(self) -> None:
+        rule = _cadence_rule()
+        rule["applicability"]["subject_kind"] = "canonical_service"
+        errors = validate(_valid_registry(rules=[rule]))
+        self.assertTrue(any("PLAN_CADENCE допустим только" in error for error in errors))
+
+    def test_plan_template_cannot_carry_service_rules(self) -> None:
+        rule = _valid_rule(rule_id="PR-MIN_INTERVAL-0009", kind="MIN_INTERVAL")
+        rule["applicability"]["subject_kind"] = "plan_template"
+        errors = validate(_valid_registry(rules=[rule]))
+        self.assertTrue(any("допустим только у PLAN_CADENCE" in error for error in errors))
+
+    def test_cadence_cannot_be_intentionally_unsupported(self) -> None:
+        rule = _cadence_rule(status="INTENTIONALLY_UNSUPPORTED", value=None, unit=None)
+        errors = validate(_valid_registry(rules=[rule]))
+        self.assertTrue(any("не бывает INTENTIONALLY_UNSUPPORTED" in error for error in errors))
+
+    def test_cadence_without_actions_is_rejected(self) -> None:
+        errors = validate(_valid_registry(rules=[_cadence_rule(value={"actions": []})]))
+        self.assertTrue(any("value.actions" in error for error in errors))
+
+    def test_invented_action_type_is_rejected(self) -> None:
+        rule = _cadence_rule(value={"actions": [{"action_type": "log_sleep", "cadence": "per_day", "target_count": 1}]})
+        errors = validate(_valid_registry(rules=[rule]))
+        self.assertTrue(any("action_type" in error for error in errors))
+
+    def test_invented_cadence_is_rejected(self) -> None:
+        rule = _cadence_rule(value={"actions": [{"action_type": "book_service", "cadence": "every_other_day", "target_count": 1}]})
+        errors = validate(_valid_registry(rules=[rule]))
+        self.assertTrue(any("cadence" in error for error in errors))
+
+    def test_target_count_out_of_range_is_rejected(self) -> None:
+        for bad in (0, 15, True, "5"):
+            rule = _cadence_rule(value={"actions": [{"action_type": "log_water", "cadence": "per_day", "target_count": bad}]})
+            errors = validate(_valid_registry(rules=[rule]))
+            self.assertTrue(any("target_count" in error for error in errors), bad)
+
+    def test_duplicate_action_type_is_rejected(self) -> None:
+        act = {"action_type": "log_water", "cadence": "per_day", "target_count": 5}
+        errors = validate(_valid_registry(rules=[_cadence_rule(value={"actions": [act, dict(act)]})]))
+        self.assertTrue(any("повторяется" in error for error in errors))
 
 
 if __name__ == "__main__":
